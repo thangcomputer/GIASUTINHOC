@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@payos/node": "^2.0.5",
+    "@react-oauth/google": "^0.13.5",
     "axios": "^1.15.0",
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
@@ -25,6 +27,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "framer-motion": "^12.38.0",
+    "google-auth-library": "^10.6.2",
     "helmet": "^8.1.0",
     "lucide-react": "^1.8.0",
     "marked": "^18.0.0",

@@ -30,3 +30,7 @@ dist/uploads/
 
 # Secrets
 server/config/settings.json
+
+ssh_query.cjs
+.env
+.env.*

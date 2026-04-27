@@ -1,7 +1,11 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
+import { OAuth2Client } from 'google-auth-library';
 import Student from '../models/Student.js';
 import Transaction from '../models/Transaction.js';
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy_client_id');
 
 const router = express.Router();
 
@@ -106,8 +110,25 @@ router.post('/login', async (req, res) => {
 // ─────────────────────────────────────────────
 router.post('/google', async (req, res) => {
   try {
-    const { email, name, avatar } = req.body;
-    if (!email) return res.status(400).json({ success: false, message: 'Thiếu thông tin Google Email' });
+    const { credential } = req.body;
+    if (!credential) return res.status(400).json({ success: false, message: 'Thiếu Token Google' });
+
+    let email, name, avatar;
+    try {
+      // Dùng endpoint userinfo để giải mã access_token
+      const resp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${credential}` }
+      });
+      const payload = await resp.json();
+      if (!resp.ok) throw new Error(payload.error_description || 'Invalid token');
+      email = payload.email;
+      name = payload.name;
+      avatar = payload.picture;
+    } catch (tokenErr) {
+      return res.status(401).json({ success: false, message: 'Token Google không hợp lệ hoặc đã hết hạn.' });
+    }
+
+    if (!email) return res.status(400).json({ success: false, message: 'Không lấy được Email từ Google' });
 
     const db = Student.db.db;
     const cleanEmail = email.toLowerCase().trim();

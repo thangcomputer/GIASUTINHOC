@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { Lock, HelpCircle, ArrowRight, Loader2, Eye, EyeOff, User, AtSign } from 'lucide-react'
+import { useGoogleLogin } from '@react-oauth/google';
 
 export default function AuthPage() {
   const [searchParams] = useSearchParams()
@@ -74,32 +75,31 @@ export default function AuthPage() {
     }
   }
 
-  const handleGoogleLogin = async () => {
-    const userEmail = window.prompt('Nhập địa chỉ Gmail của bạn:')
-    if (!userEmail) return
-    const cleanEmail = userEmail.toLowerCase().trim()
-    if (!cleanEmail.includes('@')) { Swal.fire('Email không hợp lệ.'); return }
-    setLoading(true); setErrorMsg('')
-    try {
-      const res = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, name: cleanEmail.split('@')[0] })
-      })
-      const data = await res.json()
-      if (data.success) {
-        const user = data.data
-        localStorage.setItem('auth_token', 'google_sso_' + user._id)
-        localStorage.setItem('user_info', JSON.stringify({ id: user._id, name: user.name, identifier: user.email, credits: user.coins }))
-        localStorage.setItem('giasu_user', JSON.stringify(user))
-        window.location.replace(redirectTo)
-      } else throw new Error(data.message)
-    } catch (err) {
-      setErrorMsg(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoading(true); setErrorMsg('');
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: tokenResponse.credential || tokenResponse.access_token || tokenResponse.id_token })
+        })
+        const data = await res.json()
+        if (data.success) {
+          const user = data.data
+          localStorage.setItem('auth_token', 'google_sso_' + user._id)
+          localStorage.setItem('user_info', JSON.stringify({ id: user._id, name: user.name, identifier: user.email, credits: user.coins }))
+          localStorage.setItem('giasu_user', JSON.stringify(user))
+          window.location.replace(redirectTo)
+        } else throw new Error(data.message)
+      } catch (err) {
+        setErrorMsg(err.message)
+      } finally {
+        setLoading(false)
+      }
+    },
+    onError: () => setErrorMsg('Đăng nhập Google thất bại.')
+  });
 
   const switchMode = (m) => { setMode(m); setErrorMsg(''); setIdentifier(''); setPassword(''); setPasswordConfirm(''); setName('') }
 
