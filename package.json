@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start:backend": "node server/server.js",
-    "dev:all": "concurrently \"npm run dev\" \"npm run start:backend\""
+    "dev:all": "concurrently \"npm run dev\" \"npm run start:backend\"",
+    "deploy": "node scripts/deploy_vps.cjs",
+    "sync": "git add . && git commit -m \"auto-sync\" && git push origin main && node scripts/vps_pull.cjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
