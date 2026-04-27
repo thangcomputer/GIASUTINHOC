@@ -1,6 +1,5 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
-import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import Student from '../models/Student.js';
 import Transaction from '../models/Transaction.js';
