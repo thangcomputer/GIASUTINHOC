@@ -53,6 +53,9 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads
   etag: true
 }));
 
+// Hỗ trợ Let's Encrypt SSL Challenge của aaPanel 
+app.use('/.well-known', express.static(path.join(__dirname, '..', '.well-known')));
+
 // ─── API Routes ───────────────────────────────
 app.use('/api/billing',      billingRoutes);
 app.use('/api/ai',           aiRoutes);
