@@ -1,0 +1,96 @@
+HÀM VLOOKUP - TRA CỨU TÀI LIỆU MICROSOFT EXCEL
+
+HÀM VLOOKUP LÀ GÌ?
+VLOOKUP là viết tắt của "Vertical Lookup" - tức là dò tìm theo chiều dọc.
+Hãy tưởng tượng bạn có một cuốn danh bạ điện thoại. Bạn tìm tên người, rồi nhìn ngang ra số điện thoại của họ - đó chính xác là cách VLOOKUP hoạt động.
+
+Cú pháp: =VLOOKUP(giá_trị_tìm; bảng_dữ_liệu; số_cột_lấy; 0)
+
+Ví dụ thực tế:
+- Bảng chấm điểm có cột A là mã học viên, cột B là tên, cột C là điểm
+- Bạn muốn nhập mã học viên, hệ thống tự hiển thị điểm: =VLOOKUP(A1; $A$1:$C$100; 3; 0)
+- Tham số cuối = 0 nghĩa là tìm kiếm chính xác (exact match)
+
+Lỗi thường gặp:
+- #N/A: Không tìm thấy giá trị - kiểm tra lại dữ liệu có đúng không
+- #REF!: Số cột vượt quá kích thước bảng
+- Kết quả sai: Quên khóa vùng bằng dấu $ (nên dùng $A$1:$C$100)
+
+---
+
+HÀM IF - ĐẶT ĐIỀU KIỆN TRONG EXCEL
+
+IF kiểm tra một điều kiện và trả về kết quả khác nhau tùy theo đúng hay sai.
+Ví dụ đời thường: "Nếu trời mưa thì lấy ô, nếu không thì thôi" - đó là logic IF.
+
+Cú pháp: =IF(điều_kiện; giá_trị_nếu_đúng; giá_trị_nếu_sai)
+
+Ví dụ thực tế:
+- Đánh giá kết quả thi: =IF(C2>=800; "ĐẠT"; "CHƯA ĐẠT")
+- Tính thưởng: =IF(D2>100; D2*0.1; 0)
+- Lồng nhiều điều kiện: =IF(C2>=900; "Xuất sắc"; IF(C2>=800; "Tốt"; "Cần cố gắng"))
+
+---
+
+PIVOT TABLE - TỔNG HỢP DỮ LIỆU THẦN TỐC
+
+Pivot Table như một người kế toán siêu tốc - bạn đưa cho họ hàng nghìn dòng dữ liệu, họ trả lại bảng tổng hợp hoàn chỉnh trong vài giây.
+
+Cách tạo Pivot Table:
+1. Chọn vùng dữ liệu (có tiêu đề cột)
+2. Insert > PivotTable
+3. Kéo thả các trường vào vùng Rows, Columns, Values
+4. Values tự động tính tổng (SUM), đếm (COUNT), trung bình (AVERAGE)
+
+Ứng dụng thực tế:
+- Doanh số theo từng tháng, từng nhân viên
+- Điểm trung bình theo từng môn học
+- Số lượng đơn hàng theo khu vực
+
+---
+
+HÀM SUMIF - TÍNH TỔNG CÓ ĐIỀU KIỆN
+
+Cú pháp: =SUMIF(vùng_điều_kiện; điều_kiện; vùng_tính_tổng)
+Ví dụ: Tính tổng doanh số của nhân viên "Nguyễn Văn A": =SUMIF(B2:B100; "Nguyễn Văn A"; C2:C100)
+
+---
+
+HÀM COUNTIF - ĐẾM CÓ ĐIỀU KIỆN
+
+Cú pháp: =COUNTIF(vùng; điều_kiện)
+Ví dụ: =COUNTIF(D2:D100; ">=800") - đếm số học viên đạt 800 điểm trở lên
+
+---
+
+ĐỊNH DẠNG CELL - FORMAT CELLS
+
+Định dạng số tiền: Ctrl+1 > Number > Currency hoặc Accounting
+Định dạng ngày: Ctrl+1 > Date > chọn kiểu dd/mm/yyyy
+Định dạng phần trăm: Ctrl+Shift+5
+Canh lề: Ctrl+E (giữa), Ctrl+L (trái), Ctrl+R (phải)
+
+---
+
+PHÍM TẮT EXCEL QUAN TRỌNG NHẤT
+
+Ctrl+C / Ctrl+V: Sao chép / Dán
+Ctrl+Z: Hoàn tác
+Ctrl+S: Lưu file
+Ctrl+Home: Về ô A1
+Ctrl+End: Ô cuối cùng có dữ liệu
+Ctrl+Shift+End: Chọn đến ô cuối
+F2: Chỉnh sửa ô đang chọn
+Alt+Enter: Xuống dòng trong cùng một ô
+Ctrl+F: Tìm kiếm
+Ctrl+H: Tìm và thay thế
+Ctrl+1: Mở hộp Format Cells
+
+---
+
+LỖI THƯỜNG GẶP VÀ CÁCH SỬA
+
+#VALUE!: Kiểu dữ liệu sai - ví dụ cộng chữ với số. Kiểm tra lại dữ liệu đầu vào.
+#DIV/0!: Chia cho 0. Dùng: =IF(B2=0; 0; A2/B2)
+#NAME?: Tên hàm sai chính tả. Kiểm tra lại tên hàm.
+#REF!: Tham chiếu ô không hợp lệ, thường do xóa cột/hàng được tham chiếu.

@@ -1,0 +1,311 @@
+# HƯỚNG DẪN MICROSOFT WORD - TÀI LIỆU ĐÀO TẠO CHÍNH THỨC
+# Nguồn: https://support.microsoft.com/vi-vn/word
+# Phiên bản: Microsoft 365 / Word 2021/2019/2016
+
+---
+
+## 1. MICROSOFT WORD LÀ GÌ?
+
+Microsoft Word là phần mềm soạn thảo văn bản hàng đầu thế giới, thuộc bộ Microsoft 365. Word cho phép:
+- Tạo và chỉnh sửa tài liệu văn bản chuyên nghiệp
+- Định dạng chữ, đoạn văn, trang in
+- Chèn bảng, hình ảnh, biểu đồ, SmartArt
+- Kiểm tra chính tả và ngữ pháp tự động
+- Chia sẻ và cộng tác theo thời gian thực qua OneDrive
+- Xuất file dạng PDF, HTML
+
+### Ứng dụng của Word:
+- Soạn thảo văn bản hành chính, công văn
+- Viết luận văn, báo cáo, tiểu luận
+- Tạo CV, hợp đồng, hóa đơn
+- Viết thư, email mẫu
+- Tạo tài liệu hướng dẫn, sách giáo khoa
+
+---
+
+## 2. GIAO DIỆN WORD - CÁC THÀNH PHẦN CHÍNH
+
+### 2.1 Ribbon (Thanh Công cụ)
+- **File**: Mở, Lưu, In, Xuất PDF, Chia sẻ
+- **Home**: Định dạng Font, Paragraph, Clipboard, Styles
+- **Insert**: Chèn Table, Picture, Shape, Header/Footer, Page Number
+- **Design**: Theme, Colors, Fonts, Watermark, Page Color
+- **Layout (Page Layout)**: Lề trang, kích thước giấy, hướng giấy, cột, ngắt trang
+- **References**: Mục lục tự động, Footnote, Citation
+- **Mailings**: Trộn thư (Mail Merge)
+- **Review**: Kiểm tra chính tả, Track Changes, Comment
+- **View**: Chế độ xem, Zoom, Split, Navigation Pane
+
+### 2.2 Ruler (Thước)
+- Thước nằm ngang phía trên vùng soạn thảo
+- Dùng để căn Tab, căn lề, định khoảng thụt đầu dòng
+- Bật/tắt thước: Tab View → Ruler
+
+### 2.3 Thanh trạng thái (Status Bar)
+- Phía dưới cùng: hiển thị số trang, số từ, ngôn ngữ, chế độ xem
+
+[IMAGE_HINT: Microsoft Word 365 interface screenshot showing Ribbon with Home tab active, ruler, document area with sample Vietnamese text, status bar at bottom]
+
+---
+
+## 3. ĐỊNH DẠNG VĂN BẢN CƠ BẢN
+
+### 3.1 Định dạng Font (Chữ)
+| Thao tác | Phím tắt | Nút trong Ribbon |
+|---|---|---|
+| In đậm (Bold) | Ctrl+B | **B** |
+| In nghiêng (Italic) | Ctrl+I | *I* |
+| Gạch chân (Underline) | Ctrl+U | U̲ |
+| Gạch giữa (Strikethrough) | - | ~~abc~~ |
+| Chỉ số trên | Ctrl+Shift+= | x² |
+| Chỉ số dưới | Ctrl+= | x₂ |
+| Xóa toàn bộ định dạng | Ctrl+Space | Eraser |
+| Thay đổi font chữ | - | Hộp tên font |
+| Thay đổi cỡ chữ | - | Hộp số cỡ |
+| Tăng/giảm cỡ chữ | Ctrl+] / Ctrl+[ | A↑ A↓ |
+| Màu chữ | - | A với màu |
+| Tô màu nền chữ | - | Cái bút highlight |
+
+### 3.2 Định dạng Paragraph (Đoạn văn)
+**Căn lề:**
+- Căn trái: Ctrl+L
+- Căn phải: Ctrl+R
+- Căn giữa: Ctrl+E
+- Căn đều 2 bên: Ctrl+J
+
+**Giãn dòng (Line Spacing):**
+1. Chọn đoạn văn → Tab Home → Line and Paragraph Spacing
+2. Hoặc: Ctrl+1 (giãn đơn), Ctrl+2 (giãn đôi), Ctrl+5 (giãn 1.5)
+
+**Thụt đầu dòng (Indent):**
+- Tab: thụt vào
+- Shift+Tab: thụt ra
+- Hoặc kéo mũi tên trên Ruler
+
+**Khoảng cách trước/sau đoạn:**
+Tab Layout → Spacing Before/After (VD: 6pt trước, 6pt sau)
+
+### 3.3 Sao chép định dạng - Format Painter
+1. Chọn đoạn văn có định dạng mẫu
+2. Tab Home → Format Painter (biểu tượng cái chổi)
+3. Tô quét lên đoạn cần áp dụng định dạng
+4. Nhấp đúp vào Format Painter để áp dụng cho nhiều chỗ
+
+---
+
+## 4. STYLES (KIỂU ĐỊNH DẠNG)
+
+### 4.1 Styles là gì?
+Styles là tập hợp định dạng được đặt tên sẵn (màu sắc, font, cỡ chữ, giãn dòng). Dùng Styles giúp:
+- Văn bản định dạng nhất quán toàn bộ tài liệu
+- Dễ thay đổi toàn bộ định dạng chỉ bằng 1 thao tác
+- Tự động tạo Mục lục (Table of Contents)
+
+### 4.2 Áp dụng Heading Styles (Tiêu đề)
+- **Heading 1**: Tiêu đề chương lớn nhất (VD: CHƯƠNG 1)
+- **Heading 2**: Tiêu đề mục (VD: 1.1. Giới thiệu)
+- **Heading 3**: Tiêu đề tiểu mục (VD: 1.1.1. Khái niệm)
+- **Normal**: Đoạn văn thông thường
+
+Cách áp dụng: Chọn đoạn văn → Tab Home → Styles → chọn kiểu
+
+### 4.3 Tùy chỉnh Style
+Nhấp phải vào Style → Modify → chỉnh sửa font, màu, cỡ chữ → OK
+
+---
+
+## 5. BẢNG (TABLE) TRONG WORD
+
+### 5.1 Tạo bảng
+Cách 1: Tab Insert → Table → kéo chọn số cột × hàng
+Cách 2: Tab Insert → Table → Insert Table → nhập số cột, hàng
+Cách 3: Tab Insert → Table → Draw Table → vẽ tay ô bảng
+
+### 5.2 Chỉnh sửa bảng
+- Thêm hàng/cột: nhấp phải vào ô → Insert → chọn loại
+- Xóa hàng/cột: nhấp phải → Delete Cells/Rows/Columns
+- Gộp ô: chọn các ô cần gộp → nhấp phải → Merge Cells
+- Tách ô: nhấp phải vào ô → Split Cells → nhập số cột/hàng
+
+### 5.3 Định dạng bảng
+- Chọn bảng → xuất hiện Tab Table Design và Layout
+- Table Design: chọn kiểu bảng từ thư viện, tô màu
+- Layout: căn chỉnh nội dung ô (top/middle/bottom), chia đều chiều rộng cột
+
+### 5.4 Chuyển văn bản ↔ Bảng
+- **Văn bản thành bảng**: Chọn văn bản → Insert → Table → Convert Text to Table
+- **Bảng thành văn bản**: Chọn bảng → Layout → Data → Convert to Text
+
+---
+
+## 6. CHÈN ĐỐI TƯỢNG
+
+### 6.1 Chèn hình ảnh
+- Tab Insert → Pictures → chọn: This Device (máy tính), Stock Images, Online Pictures
+- Sau khi chèn: nhấp vào ảnh → Tab Picture Format → cắt ảnh, áp dụng hiệu ứng, điều chỉnh vị trí
+
+**Vị trí ảnh:**
+- Inline (In Line with Text): ảnh trong dòng văn bản
+- Square/Tight/Through: văn bản bao quanh ảnh
+- Behind/In Front: ảnh nằm sau/trước văn bản
+
+### 6.2 Chèn hình khối (Shape)
+Tab Insert → Shapes → chọn hình → kéo vẽ trên trang
+- Nhấp phải shape → Format Shape để đổi màu, viền, bóng đổ
+
+### 6.3 Chèn SmartArt
+Tab Insert → SmartArt → chọn loại sơ đồ:
+- List: danh sách điểm
+- Process: quy trình các bước
+- Hierarchy: sơ đồ tổ chức
+- Cycle: vòng lặp
+- Pyramid: kim tự tháp
+- Relationship: quan hệ, venn diagram
+
+### 6.4 Chèn Text Box
+Tab Insert → Text Box → kéo vẽ hộp văn bản tự do trên trang
+
+### 6.5 Chèn Header và Footer
+Tab Insert → Header/Footer → chọn kiểu
+- Nội dung phổ biến: tên tài liệu, số trang, ngày tháng
+- Số trang tự động: Insert → Page Number → chọn vị trí
+
+---
+
+## 7. CÀI ĐẶT TRANG IN (PAGE SETUP)
+
+### 7.1 Kích thước và hướng giấy
+- Tab Layout → Size → A4 (21 × 29.7 cm) — phổ biến nhất
+- Tab Layout → Orientation → Portrait (dọc) / Landscape (ngang)
+
+### 7.2 Cài đặt lề trang (Margins)
+Chuẩn luận văn/báo cáo Việt Nam:
+- Lề trên: 2-2.5 cm
+- Lề dưới: 2-2.5 cm
+- Lề trái: 3-3.5 cm (để đóng gáy)
+- Lề phải: 1.5-2 cm
+
+Cách cài: Tab Layout → Margins → Custom Margins → nhập số cm
+
+### 7.3 Ngắt trang và ngắt đoạn
+- **Page Break** (ngắt trang): Ctrl+Enter → bắt đầu trang mới
+- **Section Break** (ngắt đoạn): Tab Layout → Breaks → chọn loại Section Break
+  - Next Page: section mới bắt đầu trang mới
+  - Continuous: section mới cùng trang
+
+### 7.4 Chia cột (Columns)
+Tab Layout → Columns → chọn số cột (1, 2, 3 cột hoặc tùy chỉnh)
+
+---
+
+## 8. MỤC LỤC TỰ ĐỘNG
+
+### 8.1 Điều kiện để tạo mục lục
+- Các tiêu đề trong tài liệu phải dùng Heading Styles (Heading 1, 2, 3)
+
+### 8.2 Tạo mục lục
+1. Đặt con trỏ ở nơi muốn chèn mục lục (thường đầu tài liệu)
+2. Tab References → Table of Contents → chọn kiểu
+3. Mục lục tự động xuất hiện với số trang
+
+### 8.3 Cập nhật mục lục
+Khi nội dung thay đổi → nhấp vào mục lục → Update Table → Update Entire Table
+
+---
+
+## 9. KIỂM TRA VÀ CHỈNH SỬA
+
+### 9.1 Kiểm tra chính tả
+- Từ sai chính tả: gạch đỏ bên dưới
+- Từ sai ngữ pháp: gạch xanh/tím bên dưới
+- Nhấp phải vào từ sai → chọn gợi ý sửa
+
+### 9.2 Tìm và thay thế
+- Ctrl+F: Tìm kiếm từ trong văn bản
+- Ctrl+H: Tìm và thay thế (Find & Replace)
+
+### 9.3 Track Changes (Theo dõi thay đổi)
+- Tab Review → Track Changes → bật lên
+- Mọi thay đổi được đánh dấu màu đỏ
+- Chấp nhận/từ chối: Tab Review → Accept/Reject
+
+### 9.4 Comments (Ghi chú)
+- Chọn đoạn cần ghi chú → Tab Review → New Comment
+- Ghi chú xuất hiện ở lề phải tài liệu
+
+---
+
+## 10. LƯU VÀ XUẤT FILE
+
+### 10.1 Định dạng file Word
+- **.docx**: Định dạng Word 2007+ (mặc định)
+- **.doc**: Word 97-2003 (tương thích cũ)
+- **.pdf**: Xuất sang PDF không chỉnh sửa được
+- **.txt**: Chỉ văn bản thuần
+
+### 10.2 Lưu file
+- Ctrl+S: Lưu
+- F12 hoặc Ctrl+Shift+S: Lưu thành tên mới (Save As)
+
+### 10.3 Xuất PDF
+File → Export → Create PDF/XPS → Publish
+Hoặc: File → Print → chọn máy in "Microsoft Print to PDF"
+
+---
+
+## 11. MAIL MERGE (TRỘN THƯ)
+
+### 11.1 Mail Merge là gì?
+Tạo hàng loạt văn bản cá nhân hóa từ 1 mẫu + danh sách dữ liệu (Excel/Access).
+VD: In 100 giấy mời cho 100 người, mỗi cái có tên khác nhau.
+
+### 11.2 Các bước thực hiện
+Bước 1: Tạo file dữ liệu trong Excel (cột: Họ tên, Địa chỉ, Email...)
+Bước 2: Mở Word → Tab Mailings → Start Mail Merge → Letters
+Bước 3: Select Recipients → Use Existing List → chọn file Excel
+Bước 4: Chèn trường dữ liệu: Insert Merge Field → chọn cột
+Bước 5: Preview Results → kiểm tra kết quả
+Bước 6: Finish & Merge → Print Documents / Edit Individual Documents
+
+---
+
+## 12. PHÍM TẮT WORD QUAN TRỌNG
+
+| Phím tắt | Chức năng |
+|---|---|
+| Ctrl+N | Tạo tài liệu mới |
+| Ctrl+O | Mở file |
+| Ctrl+S | Lưu |
+| Ctrl+P | In |
+| Ctrl+Z | Hoàn tác |
+| Ctrl+Y | Làm lại |
+| Ctrl+A | Chọn tất cả |
+| Ctrl+C / Ctrl+V | Sao chép / Dán |
+| Ctrl+F | Tìm kiếm |
+| Ctrl+H | Tìm và thay thế |
+| Ctrl+Enter | Ngắt trang mới |
+| Ctrl+Home | Về đầu tài liệu |
+| Ctrl+End | Về cuối tài liệu |
+| F7 | Kiểm tra chính tả |
+| Alt+Shift+D | Chèn ngày hiện tại |
+| Ctrl+Shift+C | Sao chép định dạng |
+| Ctrl+Shift+V | Dán định dạng |
+
+---
+
+## 13. CÂU HỎI THƯỜNG GẶP VỀ WORD
+
+**Q: Làm sao đánh số trang từ trang thứ 2 trở đi?**
+A: Insert → Page Number → Format Page Numbers → Start at: 0. Sau đó vào Header/Footer trang 1 → chọn "Different First Page" để trang 1 không hiện số.
+
+**Q: Tại sao số trang bị ngắt quãng (1, 2, 3, 1, 2)?**
+A: Do tài liệu có Section Break với "Restart Page Numbering". Vào Header/Footer → Page Number → Format Page Numbers → Continue from Previous Section.
+
+**Q: Làm sao thụt đầu dòng tự động?**
+A: Chọn đoạn văn → Format → Paragraph → Special: First Line → nhập 1.25cm.
+
+**Q: Làm sao so sánh 2 phiên bản tài liệu?**
+A: Tab Review → Compare → chọn 2 file để so sánh.
+
+**Q: Cách tạo watermark (hình nền mờ)?**
+A: Tab Design → Watermark → Custom Watermark → nhập text hoặc chọn ảnh.

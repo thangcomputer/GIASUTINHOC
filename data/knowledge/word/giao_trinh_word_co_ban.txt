@@ -1,0 +1,130 @@
+MICROSOFT WORD - GIÁO TRÌNH CƠ BẢN ĐẾN NÂNG CAO
+
+GIAO DIỆN WORD - NHẬN BIẾT CÁC THÀNH PHẦN
+
+Ribbon: Thanh công cụ chính ở trên cùng, chia thành các Tab: Home, Insert, Layout, References...
+Quick Access Toolbar: Góc trên trái, chứa lệnh dùng thường xuyên (Save, Undo, Redo)
+Ruler: Thước kẻ để căn lề và tab
+Status Bar: Thanh dưới cùng, hiển thị số trang, số từ, ngôn ngữ
+
+---
+
+ĐỊNH DẠNG VĂN BẢN CƠ BẢN
+
+Font chữ: Home > Font > chọn kiểu chữ (nên dùng Times New Roman hoặc Arial cho văn bản tiếng Việt)
+Cỡ chữ: Thông thường dùng 12pt cho thân bài, 14-16pt cho tiêu đề
+In đậm: Ctrl+B (Bold)
+In nghiêng: Ctrl+I (Italic)  
+Gạch chân: Ctrl+U (Underline)
+Màu chữ: Home > Font Color
+Màu nền: Home > Text Highlight Color
+
+Canh lề văn bản:
+- Canh trái: Ctrl+L (thông thường)
+- Canh giữa: Ctrl+E (cho tiêu đề)
+- Canh phải: Ctrl+R
+- Canh đều 2 bên: Ctrl+J (dùng cho văn bản chính thức)
+
+---
+
+CĂN LỀ TRANG (PAGE MARGINS)
+
+Layout > Margins > chọn preset hoặc Custom Margins
+Lề chuẩn văn bản hành chính Việt Nam:
+- Trên: 2cm, Dưới: 2cm
+- Trái: 3cm, Phải: 2cm
+
+---
+
+TIÊU ĐỀ VÀ SỐ TRANG
+
+Thêm Header/Footer: Insert > Header / Footer
+Thêm số trang: Insert > Page Number > chọn vị trí
+Bắt đầu số trang từ trang khác: Layout > Page Setup > Layout > Different first page
+
+---
+
+TẠO MỤC LỤC TỰ ĐỘNG
+
+Bước 1: Định dạng các tiêu đề bằng Heading Styles (Home > Styles > Heading 1, Heading 2...)
+Bước 2: Đặt con trỏ vào vị trí muốn chèn mục lục
+Bước 3: References > Table of Contents > chọn kiểu mục lục
+Bước 4: Khi nội dung thay đổi, click vào mục lục > Update Table
+
+---
+
+TRACK CHANGES - THEO DÕI THAY ĐỔI
+
+Review > Track Changes: Bật/tắt chế độ theo dõi chỉnh sửa
+Khi bật: mọi thay đổi sẽ được đánh dấu màu (thêm = màu chữ, xóa = gạch ngang)
+Chấp nhận/từ chối: Review > Accept / Reject
+
+---
+
+MAIL MERGE - TRỘN THƯ
+
+Dùng để tạo nhiều thư/phong bì/nhãn với nội dung cá nhân hóa từ danh sách Excel.
+Bước 1: Mailings > Start Mail Merge > Letters
+Bước 2: Select Recipients > Use an Existing List > chọn file Excel
+Bước 3: Chèn trường: Insert Merge Field > chọn tên cột
+Bước 4: Preview Results để xem trước
+Bước 5: Finish & Merge > Print Documents hoặc Edit Individual Documents
+
+---
+
+PHÍM TẮT WORD QUAN TRỌNG
+
+Ctrl+N: Tạo file mới
+Ctrl+O: Mở file
+Ctrl+S: Lưu
+Ctrl+P: In
+Ctrl+Z: Hoàn tác
+Ctrl+Y: Làm lại
+Ctrl+A: Chọn tất cả
+Ctrl+F: Tìm kiếm
+Ctrl+H: Tìm và thay thế
+Ctrl+Enter: Xuống trang mới
+F7: Kiểm tra chính tả
+Ctrl+Shift+C: Sao chép định dạng
+Ctrl+Shift+V: Dán định dạng
+
+---
+
+ĐỊNH DẠNG ĐOẠN VĂN (PARAGRAPH)
+
+Giãn dòng (Line Spacing): Home > Line Spacing > chọn 1.0, 1.5, 2.0 hoặc Multiple
+Giãn đoạn (Spacing Before/After): Layout > Spacing
+Thụt đầu dòng (Indent): Tab để thụt vào, hoặc kéo thanh Ruler
+Dấu Tab tùy chỉnh: Nhấn đúp vào Ruler để đặt Tab stops
+
+---
+
+CHÈN BẢNG (TABLE)
+
+Insert > Table > kéo chọn số hàng/cột
+Hoặc: Insert > Table > Insert Table > nhập số hàng, cột
+
+Thao tác với bảng:
+- Thêm hàng: Click vào hàng cuối > Tab để thêm hàng mới
+- Xóa hàng/cột: Right-click > Delete Rows/Columns
+- Gộp ô: Chọn nhiều ô > Table Layout > Merge Cells
+- Tách ô: Table Layout > Split Cells
+
+---
+
+CHÈN HÌNH ẢNH
+
+Insert > Pictures > chọn ảnh từ máy tính
+Hoặc Insert > Online Pictures để tìm ảnh trực tuyến
+Sau khi chèn:
+- Kéo góc để thay đổi kích thước (kéo góc để giữ tỷ lệ)
+- Picture Format > Wrap Text > Square/Tight để văn bản bao quanh ảnh
+
+---
+
+LỖI THƯỜNG GẶP TRONG WORD
+
+Chữ tự gạch chân đỏ: Lỗi chính tả - Right-click > Ignore All hoặc thêm vào từ điển
+Font chữ bị lỗi (hiển thị ô vuông): Thiếu font Unicode - cài font Times New Roman hoặc đổi encoding
+Mục lục không cập nhật: Click vào mục lục > Update Field > Update entire table
+File nặng: Insert > Pictures sau đó Compress Pictures để giảm kích thước

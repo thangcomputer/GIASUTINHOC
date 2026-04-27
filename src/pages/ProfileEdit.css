@@ -1,0 +1,162 @@
+/* ─── Avatar change button ──────────────── */
+.avatar-change-btn {
+  position: absolute;
+  bottom: 0; right: -2px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: 2px solid #020617;
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 2;
+}
+.avatar-change-btn:hover { transform: scale(1.1); }
+
+/* ─── Edit mode inline ───────────────────── */
+.btn-edit-icon {
+  background: rgba(99,102,241,0.1);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 8px;
+  color: #818cf8;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  transition: all 0.2s;
+}
+.btn-edit-icon:hover { background: rgba(99,102,241,0.25); }
+
+.edit-fields { width: 100%; margin: 8px 0; }
+.edit-label {
+  display: block; font-size: 0.78rem; font-weight: 600;
+  color: #64748b; margin: 10px 0 4px;
+}
+.edit-input {
+  width: 100%; box-sizing: border-box;
+  background: rgba(30,41,59,0.8);
+  border: 1px solid rgba(148,163,184,0.15);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: #f1f5f9; font-size: 0.88rem;
+  outline: none; transition: border 0.2s;
+}
+.edit-input:focus { border-color: #6366f1; }
+.edit-msg {
+  font-size: 0.82rem; margin-top: 8px;
+  padding: 6px 10px; border-radius: 8px;
+}
+.edit-msg.success { color: #34d399; background: rgba(16,185,129,0.08); }
+.edit-msg.error   { color: #f87171; background: rgba(239,68,68,0.08); }
+
+.edit-actions { display: flex; gap: 8px; margin-top: 12px; }
+.btn-edit-save {
+  flex: 1; padding: 9px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none; border-radius: 10px;
+  color: #fff; font-weight: 700; font-size: 0.85rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: all 0.2s;
+}
+.btn-edit-save:disabled { opacity: 0.6; cursor: wait; }
+.btn-edit-cancel {
+  flex: 1; padding: 9px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.15);
+  border-radius: 10px;
+  color: #f87171; font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: all 0.2s;
+}
+.btn-edit-cancel:hover { background: rgba(239,68,68,0.15); }
+
+/* ─── Security Tab ───────────────────────── */
+.security-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+@media (max-width: 900px) { .security-grid { grid-template-columns: 1fr; } }
+
+.security-card { padding: 26px 24px; border-radius: 18px; }
+.security-card-header {
+  display: flex; align-items: flex-start; gap: 14px;
+  margin-bottom: 22px;
+}
+.security-icon-wrap {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(99,102,241,0.1); color: #818cf8;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.security-card-header h3 { font-size: 1rem; font-weight: 700; color: #e2e8f0; margin: 0 0 4px; }
+.security-card-header p  { font-size: 0.8rem; color: #64748b; margin: 0; }
+
+.security-field { margin-bottom: 14px; }
+.security-field label {
+  display: block; font-size: 0.82rem; font-weight: 600;
+  color: #94a3b8; margin-bottom: 6px;
+}
+.pw-field-wrap { position: relative; }
+.security-input {
+  width: 100%; box-sizing: border-box;
+  background: rgba(30,41,59,0.7);
+  border: 1px solid rgba(148,163,184,0.12);
+  border-radius: 11px; padding: 11px 42px 11px 14px;
+  color: #f1f5f9; font-size: 0.9rem; outline: none;
+  transition: border 0.2s;
+}
+.security-input:focus { border-color: #6366f1; }
+.pw-toggle {
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; color: #64748b;
+  cursor: pointer; display: flex; align-items: center;
+  transition: color 0.2s;
+}
+.pw-toggle:hover { color: #a5b4fc; }
+
+/* Password strength */
+.pw-strength {
+  display: flex; align-items: center; gap: 4px;
+  margin: 6px 0 12px;
+}
+.pw-strength-bar {
+  height: 4px; flex: 1; border-radius: 4px;
+  transition: background 0.3s;
+}
+.pw-strength-label { font-size: 0.75rem; font-weight: 600; margin-left: 6px; min-width: 65px; }
+
+.security-save-btn {
+  width: 100%; padding: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none; border-radius: 12px;
+  color: #fff; font-weight: 700; font-size: 0.9rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+}
+.security-save-btn:hover:not(:disabled) { filter: brightness(1.1); }
+.security-save-btn:disabled { opacity: 0.6; cursor: wait; }
+
+/* Account info rows */
+.account-info-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(148,163,184,0.06);
+}
+.account-info-row:last-of-type { border-bottom: none; }
+.ai-label { font-size: 0.82rem; color: #64748b; }
+.ai-value { font-size: 0.88rem; color: #e2e8f0; font-weight: 600; }
+
+.btn-edit-profile {
+  width: 100%; margin-top: 16px; padding: 11px;
+  background: rgba(99,102,241,0.1);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 12px; color: #a5b4fc;
+  font-weight: 600; font-size: 0.9rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.2s;
+}
+.btn-edit-profile:hover { background: rgba(99,102,241,0.2); }

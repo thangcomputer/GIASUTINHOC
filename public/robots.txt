@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /auth
+Disallow: /deposit
+
+# Cho phép Google Bot crawl đầy đủ trang chủ và bài học
+User-agent: Googlebot
+Allow: /
+Allow: /lessons
+Allow: /chat
+Allow: /quiz
+
+# Sitemap
+Sitemap: https://giasuai.vn/sitemap.xml
+
+# Crawl delay (không để quá cao)
+Crawl-delay: 1

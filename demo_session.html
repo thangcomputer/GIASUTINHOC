@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo — Phiên Học Thực Hành Gia Sư AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=SVN-Gilroy:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f5;
+      --sandbox-bg: #e8ecf0;
+      --card: #ffffff;
+      --blue: #1a56db;
+      --blue-light: #3b82f6;
+      --blue-pale: #dbeafe;
+      --orange: #f97316;
+      --orange-pale: #ffedd5;
+      --green: #10b981;
+      --red: #dc2626;
+      --text-dark: #1e293b;
+      --text-mid: #475569;
+      --text-soft: #94a3b8;
+      --border: rgba(0,0,0,0.08);
+      --shadow: 0 4px 24px rgba(0,0,0,0.06);
+      --shadow-lg: 0 12px 48px rgba(0,0,0,0.12);
+    }
+
+    html, body {
+      height: 100%; width: 100%;
+      font-family: 'Be Vietnam Pro', sans-serif;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    /* ══════ TOP HEADER ══════ */
+    .top-bar {
+      height: 52px;
+      background: var(--blue);
+      display: flex; align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(26,86,219,0.3);
+      position: relative; z-index: 100;
+    }
+    .top-bar .app-name {
+      font-weight: 800; font-size: 1.1rem; color: #fff;
+      letter-spacing: -0.3px;
+    }
+    .top-bar .lesson-badge {
+      background: rgba(255,255,255,0.15);
+      color: #fff; font-size: 0.78rem; padding: 3px 12px;
+      border-radius: 20px; font-weight: 600;
+    }
+    .top-bar .spacer { flex: 1; }
+    .top-bar .progress-wrap {
+      display: flex; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.85); font-size: 0.82rem;
+    }
+    .top-bar .progress-bar-outer {
+      width: 120px; height: 6px;
+      background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden;
+    }
+    .top-bar .progress-bar-inner {
+      width: 40%; height: 100%;
+      background: #fbbf24; border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+    .top-bar .exit-btn {
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+      color: #fff; padding: 5px 14px; border-radius: 20px;
+      font-size: 0.78rem; cursor: pointer; font-family: inherit; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .top-bar .exit-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* ══════ MAIN LAYOUT ══════ */
+    .main-layout {
+      display: flex;
+      height: calc(100vh - 52px);
+    }
+
+    /* ══════ LEFT: SANDBOX 70% ══════ */
+    .sandbox {
+      flex: 0 0 70%;
+      background: var(--sandbox-bg);
+      position: relative;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+
+    .sandbox-titlebar {
+      height: 36px;
+      background: #d1d5db;
+      display: flex; align-items: center; padding: 0 12px; gap: 8px;
+      border-bottom: 1px solid #c4c8cf;
+      flex-shrink: 0;
+    }
+    .sandbox-titlebar .win-btn {
+      width: 13px; height: 13px; border-radius: 50%;
+      border: none; cursor: pointer;
+    }
+    .win-close { background: #ef4444; }
+    .win-min   { background: #f59e0b; }
+    .win-max   { background: #10b981; }
+    .sandbox-titlebar .sandbox-title {
+      margin-left: 8px;
+      font-size: 0.82rem; color: #4b5563; font-weight: 600;
+    }
+
+    .sandbox-body {
+      flex: 1; display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Word-like toolbar */
+    .word-toolbar {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 6px 12px;
+      display: flex; align-items: center; gap: 4px;
+      flex-shrink: 0;
+    }
+    .word-toolbar .tb-grp {
+      display: flex; gap: 2px;
+      padding-right: 8px; margin-right: 4px;
+      border-right: 1px solid #e5e7eb;
+    }
+    .word-toolbar .tb-grp:last-child { border-right: none; }
+    .word-toolbar button {
+      width: 30px; height: 28px;
+      background: transparent; border: 1px solid transparent;
+      border-radius: 4px; cursor: pointer; font-size: 0.85rem;
+      display: flex; align-items: center; justify-content: center;
+      font-family: inherit; font-weight: 700; color: #374151;
+      transition: all 0.15s;
+    }
+    .word-toolbar button:hover { background: #f3f4f6; border-color: #d1d5db; }
+    .word-toolbar button.active { background: #dbeafe; border-color: #93c5fd; color: #1a56db; }
+    .word-toolbar select {
+      height: 28px; padding: 0 8px; border: 1px solid #d1d5db;
+      border-radius: 4px; background: #fff; font-size: 0.82rem;
+      font-family: inherit; cursor: pointer;
+    }
+
+    /* Word canvas */
+    .word-canvas {
+      flex: 1; overflow-y: auto;
+      background: #e8ecf0;
+      padding: 24px;
+      display: flex; justify-content: center;
+    }
+    .word-paper {
+      background: #fff;
+      width: 540px; min-height: 700px;
+      padding: 48px 52px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .word-paper [contenteditable] {
+      outline: none;
+      font-size: 1rem; line-height: 1.8; color: #111827;
+      min-height: 600px;
+      font-family: 'Times New Roman', Times, serif;
+    }
+    .word-paper .highlight-hint {
+      position: absolute; top: 48px; left: 52px; right: 52px;
+      background: rgba(251, 191, 36, 0.25);
+      border-radius: 4px; pointer-events: none;
+      height: 28px; animation: blink-hint 2s ease-in-out infinite;
+    }
+    @keyframes blink-hint {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* ══════ RIGHT: AI TUTOR 30% ══════ */
+    .ai-panel {
+      flex: 0 0 30%;
+      background: #fff;
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.06);
+      position: relative; z-index: 10;
+    }
+
+    /* Avatar section */
+    .avatar-section {
+      background: linear-gradient(160deg, #1e3a8a 0%, #1a56db 60%, #3b82f6 100%);
+      padding: 20px 20px 0;
+      display: flex; flex-direction: column; align-items: center;
+      position: relative; overflow: hidden; flex-shrink: 0;
+    }
+    .avatar-section::before {
+      content: '';
+      position: absolute; top: -40px; right: -40px;
+      width: 140px; height: 140px;
+      background: rgba(255,255,255,0.05); border-radius: 50%;
+    }
+    .tutor-name-tag {
+      background: rgba(255,255,255,0.15);
+      color: #fff; font-size: 0.72rem; font-weight: 700;
+      padding: 3px 12px; border-radius: 20px;
+      letter-spacing: 0.5px; margin-bottom: 8px;
+    }
+    .avatar-wrap {
+      width: 110px; height: 110px;
+      border-radius: 50%; overflow: hidden;
+      border: 4px solid rgba(255,255,255,0.4);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      background: #dbeafe;
+      position: relative;
+    }
+    .avatar-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    /* Animated speaking ring */
+    .avatar-wrap.speaking::after {
+      content: '';
+      position: absolute; inset: -6px;
+      border-radius: 50%;
+      border: 3px solid rgba(251,191,36,0.8);
+      animation: speakRing 1s ease-in-out infinite;
+    }
+    @keyframes speakRing {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.5; }
+    }
+    .tutor-status {
+      color: rgba(255,255,255,0.7); font-size: 0.72rem; margin-top: 6px;
+      display: flex; align-items: center; gap: 5px; padding-bottom: 16px;
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: #4ade80;
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4 }
+    }
+
+    .avatar-wave {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 20px;
+      background: #fff; clip-path: ellipse(55% 100% at 50% 100%);
+    }
+
+    /* Speech bubble */
+    .speech-section {
+      padding: 20px 18px 0;
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .speech-label {
+      font-size: 0.7rem; font-weight: 700; color: var(--text-soft);
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .speech-bubble {
+      background: var(--blue-pale);
+      border: 1.5px solid #93c5fd;
+      border-radius: 16px 16px 16px 4px;
+      padding: 16px 18px;
+      flex: 1;
+      overflow-y: auto;
+      position: relative;
+    }
+    .speech-text {
+      font-size: 1.05rem; line-height: 1.65; color: var(--text-dark);
+      font-weight: 500;
+    }
+    .speech-text .highlight { color: var(--blue); font-weight: 700; }
+    .speech-text .step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--blue); color: #fff;
+      font-size: 0.8rem; font-weight: 800;
+      margin-right: 6px; flex-shrink: 0;
+    }
+
+    /* Typing cursor */
+    .typing-cursor {
+      display: inline-block;
+      width: 3px; height: 1.1em;
+      background: var(--blue);
+      border-radius: 2px;
+      animation: blink 0.8s step-end infinite;
+      vertical-align: text-bottom; margin-left: 2px;
+    }
+
+    /* Step indicators */
+    .step-indicators {
+      display: flex; gap: 6px; margin-top: 14px; justify-content: center;
+    }
+    .step-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #cbd5e1; cursor: pointer; transition: all 0.2s;
+    }
+    .step-dot.active { background: var(--blue); width: 24px; border-radius: 4px; }
+    .step-dot.done { background: var(--green); }
+
+    /* Control panel */
+    .control-panel {
+      padding: 16px 18px 20px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .ctrl-label {
+      font-size: 0.7rem; font-weight: 700; color: var(--text-soft);
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;
+      text-align: center;
+    }
+    .big-btns {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px; margin-bottom: 12px;
+    }
+    .big-btn {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 6px;
+      border-radius: 16px; border: 2px solid transparent;
+      padding: 14px 0; cursor: pointer; transition: all 0.2s;
+      font-family: inherit; position: relative; overflow: hidden;
+    }
+    .big-btn .btn-icon { font-size: 1.6rem; line-height: 1; }
+    .big-btn .btn-label {
+      font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.2px; text-align: center; line-height: 1.2;
+    }
+
+    /* Mic button */
+    .btn-mic {
+      background: linear-gradient(135deg, #1a56db, #3b82f6);
+      color: #fff; border-color: #1a56db;
+      box-shadow: 0 4px 16px rgba(26,86,219,0.3);
+    }
+    .btn-mic:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(26,86,219,0.4);
+    }
+    .btn-mic.listening {
+      animation: micPulse 1.5s ease-in-out infinite;
+      background: linear-gradient(135deg, #1a56db, #6366f1);
+    }
+    @keyframes micPulse {
+      0%, 100% { box-shadow: 0 4px 16px rgba(26,86,219,0.4), 0 0 0 0 rgba(26,86,219,0.4); }
+      50% { box-shadow: 0 4px 16px rgba(26,86,219,0.4), 0 0 0 16px rgba(26,86,219,0); }
+    }
+    .ripple-ring {
+      position: absolute; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.5);
+      animation: rippleOut 1.5s ease-out infinite;
+    }
+    .ripple-ring-1 { width: 120%; height: 120%; animation-delay: 0s; }
+    .ripple-ring-2 { width: 150%; height: 150%; animation-delay: 0.4s; }
+    @keyframes rippleOut {
+      0% { opacity: 0.8; transform: scale(0.5); }
+      100% { opacity: 0; transform: scale(1); }
+    }
+
+    /* Speaker button */
+    .btn-replay {
+      background: #f8fafc;
+      color: var(--text-dark); border-color: #e2e8f0;
+    }
+    .btn-replay:hover {
+      background: #f1f5f9; border-color: #cbd5e1;
+      transform: translateY(-2px);
+    }
+
+    /* SOS button */
+    .btn-sos {
+      background: linear-gradient(135deg, #dc2626, #f97316);
+      color: #fff; border-color: #dc2626;
+      box-shadow: 0 4px 16px rgba(220,38,38,0.25);
+    }
+    .btn-sos:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(220,38,38,0.35);
+    }
+
+    /* Quick reply */
+    .quick-replies {
+      display: flex; gap: 6px; flex-wrap: wrap;
+    }
+    .qr-btn {
+      background: #f1f5f9; border: 1px solid #e2e8f0;
+      color: var(--text-mid); padding: 6px 12px;
+      border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .qr-btn:hover {
+      background: var(--blue-pale); border-color: #93c5fd; color: var(--blue);
+    }
+
+    /* ══════ CONFETTI overlay ══════ */
+    #confetti-layer {
+      position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+    }
+    .conf-piece {
+      position: absolute; width: 8px; height: 8px; border-radius: 2px;
+      opacity: 0;
+      animation: confettiFall var(--d, 1.5s) ease-out var(--delay, 0s) 1 forwards;
+    }
+    @keyframes confettiFall {
+      0% { opacity: 1; transform: translate( var(--tx, 0px), -20px ) rotate(0deg); }
+      100% { opacity: 0; transform: translate( var(--tx, 0px), 80vh)  rotate(720deg); }
+    }
+
+    /* ══════ STAR BADGE pop-up ══════ */
+    .star-badge {
+      position: fixed; top: 80px; left: 50%;
+      transform: translateX(-50%) scale(0);
+      background: linear-gradient(135deg, #fbbf24, #f97316);
+      color: #fff; font-size: 1.4rem; font-weight: 800;
+      padding: 12px 32px; border-radius: 50px;
+      box-shadow: 0 8px 32px rgba(251,191,36,0.5);
+      z-index: 9998; pointer-events: none;
+      animation: none;
+    }
+    .star-badge.pop {
+      animation: badgePop 2.5s ease forwards;
+    }
+    @keyframes badgePop {
+      0%   { transform: translateX(-50%) scale(0) rotate(-10deg); opacity: 0; }
+      20%  { transform: translateX(-50%) scale(1.1) rotate(2deg); opacity: 1; }
+      30%  { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 1; }
+      70%  { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 1; }
+      100% { transform: translateX(-50%) scale(0) rotate(10deg); opacity: 0; }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .main-layout { flex-direction: column; }
+      .sandbox { flex: 0 0 55%; }
+      .ai-panel { flex: 0 0 45%; border-left: none; border-top: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+  <div style="font-size:1.4rem;">🎓</div>
+  <div class="app-name">Thắng Tin Học</div>
+  <div class="lesson-badge">Bài 2: Định Dạng Chữ trong Word</div>
+  <div class="spacer"></div>
+  <div class="progress-wrap">
+    <span>Tiến độ:</span>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar" style="width: 40%"></div>
+    </div>
+    <span id="progressText">2/5 bước</span>
+  </div>
+  <button class="exit-btn">✕ Thoát</button>
+</header>
+
+<!-- MAIN -->
+<div class="main-layout">
+
+  <!-- ══ LEFT: SANDBOX ══ -->
+  <section class="sandbox">
+    <div class="sandbox-titlebar">
+      <button class="win-btn win-close"></button>
+      <button class="win-btn win-min"></button>
+      <button class="win-btn win-max"></button>
+      <span class="sandbox-title">📝 Microsoft Word — Bài Thực Hành Của Bạn</span>
+    </div>
+    <div class="sandbox-body">
+      <!-- Word-like Toolbar -->
+      <div class="word-toolbar">
+        <div class="tb-grp">
+          <select id="fontName">
+            <option>Times New Roman</option>
+            <option>Arial</option>
+            <option>Calibri</option>
+          </select>
+          <select id="fontSize">
+            <option>12</option><option>14</option><option selected>16</option>
+            <option>18</option><option>24</option><option>32</option>
+          </select>
+        </div>
+        <div class="tb-grp">
+          <button id="btnBold" title="In Đậm (Ctrl+B)"><b>B</b></button>
+          <button id="btnItalic" title="In Nghiêng (Ctrl+I)"><i>I</i></button>
+          <button id="btnUnder" title="Gạch Chân (Ctrl+U)"><u>U</u></button>
+        </div>
+        <div class="tb-grp">
+          <button title="Căn Trái">⬛</button>
+          <button title="Căn Giữa">⬛</button>
+          <button title="Căn Phải">⬛</button>
+        </div>
+      </div>
+
+      <!-- Word Canvas -->
+      <div class="word-canvas">
+        <div class="word-paper" id="wordPaper">
+          <div class="highlight-hint" id="highlightHint"></div>
+          <div contenteditable="true" id="wordContent">
+            <p style="text-align:center; font-size:1.3em; font-weight:bold; margin-bottom: 12px;">ĐƠN XIN NGHỈ PHÉP</p>
+            <br>
+            <p>Kính gửi: Ban Giám Đốc Công Ty</p>
+            <br>
+            <p>Tôi tên là: Nguyễn Thị An</p>
+            <p>Chức vụ: Nhân viên Kinh Doanh</p>
+            <br>
+            <p>Nay tôi làm đơn này kính xin Ban Giám Đốc cho phép tôi được nghỉ phép trong thời gian từ ngày <strong>20/04/2025</strong> đến ngày <strong>22/04/2025</strong>.</p>
+            <br>
+            <p>Lý do nghỉ phép: Có việc gia đình đột xuất cần giải quyết tại quê hương.</p>
+            <br>
+            <p>Tôi cam kết bàn giao công việc trước khi nghỉ và hoàn thành đầy đủ khi trở lại.</p>
+            <br>
+            <p style="text-align:right;">TP.HCM, ngày 19 tháng 04 năm 2025</p>
+            <p style="text-align:right;">Người làm đơn</p>
+            <p style="text-align:right; margin-top: 60px;"><em>Nguyễn Thị An</em></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ RIGHT: AI TUTOR PANEL ══ -->
+  <aside class="ai-panel">
+
+    <!-- Avatar -->
+    <div class="avatar-section">
+      <div class="tutor-name-tag">🤖 TRỢ GIẢNG ANTIGRAVITY</div>
+      <div class="avatar-wrap speaking" id="avatarWrap">
+        <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=TrợGiảng&backgroundColor=b6e3f4&eyeType=happy&mouthType=smile" 
+             alt="Gia sư AI"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'font-size:3rem;line-height:110px;text-align:center\'>👨‍🏫</div>'" />
+      </div>
+      <div class="tutor-status">
+        <div class="status-dot"></div>
+        <span id="statusText">Đang hướng dẫn bước 2...</span>
+      </div>
+      <div class="avatar-wave"></div>
+    </div>
+
+    <!-- Speech section -->
+    <div class="speech-section">
+      <div class="speech-label">💬 Hướng Dẫn</div>
+      <div class="speech-bubble">
+        <p class="speech-text" id="speechText">
+          Tuyệt lắm! Bước tiếp theo nhé — <span class="highlight">tiêu đề "ĐƠN XIN NGHỈ PHÉP"</span> đang cần được in đậm & to hơn một chút để trông chuyên nghiệp hơn.<br/><br/>
+          Bạn hãy dùng chuột bôi đen dòng tiêu đề đó đi nhé — giống như tô màu bằng bút dạ quang vậy!<span class="typing-cursor"></span>
+        </p>
+      </div>
+      <div class="step-indicators">
+        <div class="step-dot done" title="Bước 1: Mở Word"></div>
+        <div class="step-dot active" title="Bước 2: Bôi đen tiêu đề"></div>
+        <div class="step-dot" title="Bước 3: Nhấn In Đậm"></div>
+        <div class="step-dot" title="Bước 4: Chỉnh cỡ chữ"></div>
+        <div class="step-dot" title="Bước 5: Lưu file"></div>
+      </div>
+    </div>
+
+    <!-- Control panel -->
+    <div class="control-panel">
+      <div class="ctrl-label">Bảng Điều Khiển</div>
+      <div class="big-btns">
+        <!-- Mic -->
+        <button class="big-btn btn-mic" id="btnMic" onclick="toggleMic()">
+          <div class="btn-icon">🎙️</div>
+          <div class="btn-label">Bấm<br/>Để Nói</div>
+        </button>
+        <!-- Replay -->
+        <button class="big-btn btn-replay" onclick="replayAudio()">
+          <div class="btn-icon">🔊</div>
+          <div class="btn-label">Nghe<br/>Lại</div>
+        </button>
+        <!-- SOS -->
+        <button class="big-btn btn-sos" onclick="callTeacher()">
+          <div class="btn-icon">📞</div>
+          <div class="btn-label">Gọi<br/>Giáo Viên</div>
+        </button>
+      </div>
+      <div class="quick-replies">
+        <button class="qr-btn" onclick="quickReply('Con hiểu rồi!')">✅ Hiểu rồi!</button>
+        <button class="qr-btn" onclick="quickReply('Bôi đen bằng cách nào?')">🤔 Cách nào?</button>
+        <button class="qr-btn" onclick="quickReply('Cho con xem lại ví dụ')">👁️ Ví dụ</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- STAR BADGE -->
+<div class="star-badge" id="starBadge">⭐ Giỏi lắm! Chính xác!</div>
+
+<!-- Confetti layer -->
+<div id="confetti-layer"></div>
+
+<script>
+  /* ── Interactive Word Toolbar ── */
+  const content = document.getElementById('wordContent');
+
+  document.getElementById('btnBold').onclick = function() {
+    this.classList.toggle('active');
+    document.execCommand('bold');
+    content.focus();
+    checkProgress();
+  };
+  document.getElementById('btnItalic').onclick = function() {
+    this.classList.toggle('active');
+    document.execCommand('italic');
+    content.focus();
+  };
+  document.getElementById('btnUnder').onclick = function() {
+    this.classList.toggle('active');
+    document.execCommand('underline');
+    content.focus();
+  };
+  document.getElementById('fontSize').onchange = function() {
+    document.execCommand('fontSize', false, 7);
+    const fontEl = document.querySelector('font[size="7"]');
+    if (fontEl) {
+      fontEl.removeAttribute('size');
+      fontEl.style.fontSize = this.value + 'pt';
+    }
+    content.focus();
+  };
+  document.getElementById('fontName').onchange = function() {
+    document.execCommand('fontName', false, this.value);
+    content.focus();
+  };
+
+  /* ── Step progress ── */
+  let currentStep = 1;
+  const steps = [
+    { msg: "Xin chào! Tôi là Trợ giảng Antigravity. Hôm nay mình sẽ học cách định dạng văn bản trong Word nhé. Đầu tiên, bạn hãy nhìn vào tờ đơn bên trái — đây là bài thực hành của chúng ta!", status: "Đang giới thiệu bài học..." },
+    { msg: "Tuyệt lắm! Bước tiếp theo — <span class='highlight'>tiêu đề 'ĐƠN XIN NGHỈ PHÉP'</span> đang cần được in đậm & to hơn. Bạn hãy dùng chuột bôi đen dòng tiêu đề đó đi nhé — giống như tô màu bằng bút dạ quang vậy!", status: "Đang hướng dẫn bước 2..." },
+    { msg: "Tốt lắm! Bây giờ bạn đã bôi đen tiêu đề rồi. Tiếp theo, hãy nhấn vào nút chữ <strong>B</strong> (In Đậm) trên thanh công cụ phía trên — nút đó nằm ngay sau ô chọn cỡ chữ nhé!", status: "Hướng dẫn nhấn In Đậm..." },
+    { msg: "Xuất sắc! 🌟 Tiêu đề đã đậm hơn rồi. Bước cuối — hãy chỉnh <span class='highlight'>cỡ chữ tiêu đề lên 18 hoặc 24</span> để nó nổi bật hơn. Chọn ở ô số ngay cạnh tên font chữ nhé.", status: "Hướng dẫn chỉnh cỡ chữ..." },
+    { msg: "Hoàn hảo! Bạn đã định dạng thành công tờ đơn. Nhớ nhấn <strong>Ctrl + S</strong> để lưu lại thành quả nhé. Giỏi lắm — bạn đã nắm được kỹ năng định dạng cơ bản trong Word rồi!", status: "Hoàn thành bài học! 🎉" },
+  ];
+
+  function setStep(step) {
+    if (step >= steps.length) step = steps.length - 1;
+    currentStep = step;
+    document.getElementById('speechText').innerHTML = steps[step].msg + (step < steps.length-1 ? '<span class="typing-cursor"></span>' : '');
+    document.getElementById('statusText').textContent = steps[step].status;
+    const dots = document.querySelectorAll('.step-dot');
+    dots.forEach((d, i) => {
+      d.className = 'step-dot';
+      if (i < step) d.classList.add('done');
+      else if (i === step) d.classList.add('active');
+    });
+    const pct = Math.round((step / (steps.length - 1)) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressText').textContent = step + '/' + (steps.length-1) + ' bước';
+  }
+  setStep(1);
+
+  /* ── Check progress / trigger praise ── */
+  let praised = false;
+  function checkProgress() {
+    if (!praised) {
+      praised = true;
+      setTimeout(() => {
+        showPraise("⭐ Giỏi lắm! Đúng rồi!");
+        setStep(2);
+      }, 600);
+    }
+  }
+
+  /* ── Praise animation ── */
+  function showPraise(msg) {
+    const badge = document.getElementById('starBadge');
+    badge.textContent = msg;
+    badge.classList.remove('pop');
+    void badge.offsetWidth; // reflow
+    badge.classList.add('pop');
+    fireConfetti();
+  }
+
+  function fireConfetti() {
+    const layer = document.getElementById('confetti-layer');
+    const colors = ['#fbbf24','#f97316','#10b981','#3b82f6','#818cf8','#ec4899'];
+    for (let i = 0; i < 60; i++) {
+      const div = document.createElement('div');
+      div.className = 'conf-piece';
+      div.style.setProperty('--tx', (Math.random() * 100 - 50) + 'vw');
+      div.style.setProperty('--d', (1.2 + Math.random() * 0.8) + 's');
+      div.style.setProperty('--delay', (Math.random() * 0.4) + 's');
+      div.style.left = (10 + Math.random() * 80) + 'vw';
+      div.style.top = '60px';
+      div.style.background = colors[Math.floor(Math.random() * colors.length)];
+      div.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      div.style.width = (6 + Math.random() * 6) + 'px';
+      div.style.height = (6 + Math.random() * 6) + 'px';
+      layer.appendChild(div);
+      setTimeout(() => div.remove(), 2500);
+    }
+  }
+
+  /* ── Mic toggle ── */
+  let listening = false;
+  const phrases = [
+    "Con muốn bôi đen bằng cách nào?",
+    "Thầy ơi, con chưa thấy nút In Đậm",
+    "Dạ xong rồi Thầy ơi!",
+    "Cháu không biết làm bước tiếp theo",
+    "Wow, con làm được rồi!"
+  ];
+  let phraseIdx = 0;
+  function toggleMic() {
+    const btn = document.getElementById('btnMic');
+    if (!listening) {
+      listening = true;
+      btn.classList.add('listening');
+      btn.querySelector('.btn-label').textContent = 'Đang nghe...';
+      // Add ripple rings
+      ['ripple-ring-1','ripple-ring-2'].forEach(cls => {
+        const div = document.createElement('div');
+        div.className = 'ripple-ring ' + cls;
+        btn.appendChild(div);
+      });
+      document.getElementById('statusText').textContent = '🎙️ Đang lắng nghe bạn...';
+      
+      setTimeout(() => {
+        listening = false;
+        btn.classList.remove('listening');
+        btn.querySelector('.btn-label').innerHTML = 'Bấm<br/>Để Nói';
+        btn.querySelectorAll('.ripple-ring').forEach(r => r.remove());
+        const phrase = phrases[phraseIdx % phrases.length];
+        phraseIdx++;
+        // AI responds
+        document.getElementById('statusText').textContent = '💭 Đang suy nghĩ...';
+        setTimeout(() => {
+          document.getElementById('statusText').textContent = '🔊 Đang trả lời...';
+          document.getElementById('avatarWrap').classList.add('speaking');
+          const nextStep = Math.min(currentStep + 1, steps.length - 1);
+          setStep(nextStep);
+          if (nextStep === steps.length - 1) showPraise("🎉 Tuyệt vời! Hoàn thành!");
+          setTimeout(() => {
+            document.getElementById('avatarWrap').classList.remove('speaking');
+            document.getElementById('statusText').textContent = steps[currentStep].status;
+          }, 3000);
+        }, 1000);
+      }, 2500);
+    }
+  }
+
+  /* ── Replay ── */
+  function replayAudio() {
+    document.getElementById('statusText').textContent = '🔊 Đang đọc lại hướng dẫn...';
+    document.getElementById('avatarWrap').classList.add('speaking');
+    if ('speechSynthesis' in window) {
+      const text = document.getElementById('speechText').innerText;
+      const utt = new SpeechSynthesisUtterance(text.slice(0, 200));
+      utt.lang = 'vi-VN'; utt.rate = 0.9;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utt);
+      utt.onend = () => {
+        document.getElementById('avatarWrap').classList.remove('speaking');
+        document.getElementById('statusText').textContent = steps[currentStep].status;
+      };
+    } else {
+      setTimeout(() => {
+        document.getElementById('avatarWrap').classList.remove('speaking');
+        document.getElementById('statusText').textContent = steps[currentStep].status;
+      }, 3000);
+    }
+  }
+
+  /* ── Call teacher ── */
+  function callTeacher() {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:24px;padding:40px;max-width:380px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.3);">
+        <div style="font-size:4rem;margin-bottom:12px;">📞</div>
+        <h2 style="color:#dc2626;font-size:1.4rem;margin-bottom:8px;">Đang kết nối Giáo Viên...</h2>
+        <p style="color:#64748b;font-size:0.95rem;line-height:1.6;margin-bottom:24px;">Hệ thống đang chuyển bạn sang chế độ <strong>đào tạo 1 kèm 1 trực tiếp</strong>. Giáo viên sẽ tham gia trong giây lát!</p>
+        <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#dc2626;animation:blink 0.6s ease-in-out infinite;"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:#dc2626;animation:blink 0.6s ease-in-out 0.2s infinite;"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:#dc2626;animation:blink 0.6s ease-in-out 0.4s infinite;"></div>
+        </div>
+        <button onclick="this.closest('div[style]').remove()" style="background:#f1f5f9;border:none;padding:10px 24px;border-radius:20px;cursor:pointer;font-weight:600;color:#64748b;font-size:0.9rem;">✕ Huỷ</button>
+      </div>`;
+    document.body.appendChild(overlay);
+  }
+
+  /* ── Quick replies ── */
+  function quickReply(msg) {
+    document.getElementById('statusText').textContent = '💭 Đang suy nghĩ...';
+    document.getElementById('avatarWrap').classList.add('speaking');
+    setTimeout(() => {
+      const nextStep = Math.min(currentStep + 1, steps.length - 1);
+      setStep(nextStep);
+      document.getElementById('avatarWrap').classList.remove('speaking');
+    }, 1200);
+  }
+
+  // Remove highlight hint when user clicks in word area
+  document.getElementById('wordContent').addEventListener('mouseup', () => {
+    document.getElementById('highlightHint').style.display = 'none';
+  });
+</script>
+</body>
+</html>

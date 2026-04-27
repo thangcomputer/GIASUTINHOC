@@ -1,0 +1,308 @@
+# HƯỚNG DẪN MICROSOFT POWERPOINT - TÀI LIỆU ĐÀO TẠO CHÍNH THỨC
+# Nguồn: https://support.microsoft.com/vi-vn/powerpoint
+# Phiên bản: Microsoft 365 / PowerPoint 2021/2019/2016
+
+---
+
+## 1. MICROSOFT POWERPOINT LÀ GÌ?
+
+Microsoft PowerPoint là phần mềm tạo bài thuyết trình (presentation) chuyên nghiệp thuộc bộ Microsoft 365. PowerPoint cho phép:
+- Tạo slide trình chiếu với văn bản, hình ảnh, video, biểu đồ
+- Thêm hiệu ứng chuyển tiếp (Transition) giữa các slide
+- Thêm hiệu ứng động (Animation) cho từng đối tượng
+- Trình chiếu với chế độ Presenter View (xem ghi chú riêng)
+- Xuất file PDF, Video, hoặc file PowerPoint
+
+### Ứng dụng của PowerPoint:
+- Thuyết trình kinh doanh, báo cáo dự án
+- Bài giảng giáo viên, học sinh
+- Hội nghị, hội thảo chuyên ngành
+- Pitch sản phẩm, startup
+- Tốt nghiệp, bảo vệ luận văn
+
+---
+
+## 2. GIAO DIỆN POWERPOINT - CÁC THÀNH PHẦN CHÍNH
+
+### 2.1 Ribbon (Thanh Công cụ)
+- **File**: Mở, Lưu, Xuất, Chia sẻ
+- **Home**: Clipboard, Slides, Font, Paragraph, Drawing, Editing
+- **Insert**: New Slide, Table, Picture, Shape, Chart, Video, Audio, Hyperlink
+- **Design**: Themes, Variants, Slide Size, Format Background
+- **Transitions**: Hiệu ứng chuyển slide
+- **Animations**: Hiệu ứng cho đối tượng trong slide
+- **Slide Show**: Cài đặt và chạy trình chiếu
+- **Review**: Kiểm tra chính tả, Comment
+- **View**: Chế độ xem, Zoom, Slide Master
+
+### 2.2 Slide Panel (Khung slide)
+- Bên trái: thu nhỏ của tất cả slide — nhấp để chọn slide
+- Có thể kéo để sắp xếp lại thứ tự
+
+### 2.3 Vùng soạn thảo slide (Slide Canvas)
+- Khu vực trung tâm để thiết kế nội dung slide
+- Nhấp đúp để chỉnh sửa đối tượng
+
+### 2.4 Notes Panel (Khung ghi chú)
+- Phía dưới slide — ghi chú cho presenter
+- Không hiển thị trong trình chiếu, chỉ presenter thấy
+
+[IMAGE_HINT: Microsoft PowerPoint 365 interface screenshot showing Ribbon at top, Slide panel on left, main slide canvas in center, notes panel at bottom, with a sample presentation slide visible]
+
+---
+
+## 3. LÀM VIỆC VỚI SLIDE
+
+### 3.1 Thêm slide mới
+- Tab Home → New Slide → chọn layout
+- Hoặc nhấp phải vào Slide Panel → New Slide
+- Phím tắt: Ctrl+M
+
+### 3.2 Các loại Layout phổ biến
+| Layout | Mô tả |
+|---|---|
+| Title Slide | Trang bìa: tiêu đề lớn + phụ đề |
+| Title and Content | Tiêu đề + vùng nội dung (text, ảnh, chart...) |
+| Two Content | Tiêu đề + 2 vùng nội dung cạnh nhau |
+| Blank | Trang trắng hoàn toàn |
+| Title Only | Chỉ tiêu đề, không có vùng nội dung |
+| Picture with Caption | Hình ảnh + chú thích |
+
+### 3.3 Sắp xếp và quản lý slide
+- Kéo thả trong Slide Panel để đổi thứ tự
+- Nhấp phải → Duplicate Slide (nhân đôi slide)
+- Nhấp phải → Delete Slide (xóa slide)
+- Nhấp phải → Hide Slide (ẩn slide khi trình chiếu)
+
+### 3.4 Slide Sorter View
+Tab View → Slide Sorter → xem và sắp xếp toàn bộ slide dạng lưới
+
+---
+
+## 4. NHẬP NỘI DUNG VÀO SLIDE
+
+### 4.1 Text Box (Hộp văn bản)
+- Nhấp vào placeholder (vùng "Click to add title/text") để gõ
+- Hoặc: Tab Insert → Text Box → kéo vẽ hộp văn bản
+
+### 4.2 Định dạng văn bản
+- Tất cả phím tắt giống Word: Ctrl+B (đậm), Ctrl+I (nghiêng), Ctrl+U (gạch chân)
+- Thay đổi font, cỡ chữ, màu sắc qua Tab Home → Font
+
+### 4.3 Chèn hình ảnh
+Tab Insert → Pictures → chọn từ máy tính, Stock Images, hoặc Online
+- Sau khi chèn: kéo góc để thay đổi kích thước, xoay bằng mũi tên tròn
+
+### 4.4 Chèn bảng
+Tab Insert → Table → kéo chọn số hàng × cột
+
+### 4.5 Chèn biểu đồ (Chart)
+Tab Insert → Chart → chọn loại biểu đồ → nhập dữ liệu trong Excel nhỏ tự mở ra
+
+### 4.6 Chèn SmartArt
+Tab Insert → SmartArt → chọn loại sơ đồ (quy trình, tổ chức, chu kỳ...)
+
+### 4.7 Chèn Video và Audio
+- Video: Tab Insert → Video → từ file máy tính hoặc YouTube (link)
+- Audio: Tab Insert → Audio → từ file .mp3, .wav
+
+---
+
+## 5. THIẾT KẾ SLIDE CHUYÊN NGHIỆP
+
+### 5.1 Áp dụng Theme (Chủ đề thiết kế)
+- Tab Design → chọn theme từ thư viện (40+ theme có sẵn)
+- Variants: thay đổi bảng màu của theme đang chọn
+- Theme áp dụng đồng loạt cho tất cả slide
+
+### 5.2 Slide Master (Thiết kế tổng thể)
+Tab View → Slide Master:
+- Chỉnh sửa layout áp dụng cho toàn bộ slide cùng loại
+- Thêm logo, số trang vào tất cả slide 1 lần
+- Đổi font, màu background cho toàn bộ bài thuyết trình
+
+### 5.3 Cài đặt nền slide (Background)
+- Tab Design → Format Background
+- Chọn: màu đơn, gradient, hình ảnh, họa tiết
+- Apply to All: áp dụng cho tất cả slide
+
+### 5.4 Kích thước slide
+- Tab Design → Slide Size → Standard (4:3) hoặc Widescreen (16:9)
+- Widescreen 16:9: phù hợp màn hình máy chiếu/TV hiện đại
+
+### 5.5 Nguyên tắc thiết kế slide đẹp
+1. **1 slide 1 ý chính** — không nhồi nhét quá nhiều thông tin
+2. **Tối đa 6-7 dòng text / slide**
+3. **Font chữ lớn** — tối thiểu 24pt cho nội dung, 36-44pt cho tiêu đề
+4. **Màu sắc** — dùng 2-3 màu chính, đảm bảo tương phản cao
+5. **Hình ảnh** — ít nhất 1 ảnh/slide để tăng thu hút
+6. **Khoảng trắng** — đừng lấp đầy toàn bộ slide, để khoảng trống
+
+---
+
+## 6. TRANSITIONS (HIỆU ỨNG CHUYỂN SLIDE)
+
+### 6.1 Thêm Transition
+1. Chọn slide trong Slide Panel
+2. Tab Transitions → chọn hiệu ứng
+
+### 6.2 Các loại Transition phổ biến
+| Nhóm | Tên | Mô tả |
+|---|---|---|
+| Subtle | Fade | Mờ dần vào |
+| Subtle | Push | Đẩy từ một phía |
+| Subtle | Wipe | Quét ngang/dọc |
+| Exciting | Cube | Xoay hộp 3D |
+| Exciting | Page Curl | Lật trang sách |
+| Dynamic | Pan | Lia camera |
+
+### 6.3 Tùy chỉnh Transition
+- Effect Options: thay đổi hướng hiệu ứng
+- Duration: thời gian hiệu ứng (giây)
+- Sound: âm thanh kèm theo (hạn chế dùng)
+- Apply to All: áp dụng 1 hiệu ứng cho tất cả slide
+
+---
+
+## 7. ANIMATIONS (HIỆU ỨNG ĐỘNG)
+
+### 7.1 Animation là gì?
+Animation là hiệu ứng áp dụng cho **đối tượng trong slide** (text, ảnh, shape...) — khác với Transition là giữa 2 slide.
+
+### 7.2 Thêm Animation
+1. Chọn đối tượng (text box, hình ảnh...)
+2. Tab Animations → chọn hiệu ứng
+
+### 7.3 Các loại Animation
+| Loại | Màu | Chức năng |
+|---|---|---|
+| Entrance | Xanh lá | Đối tượng xuất hiện |
+| Emphasis | Vàng | Nhấn mạnh đối tượng đang hiển thị |
+| Exit | Đỏ | Đối tượng biến mất |
+| Motion Path | Xanh dương | Đối tượng di chuyển theo đường |
+
+### 7.4 Entrance phổ biến
+- **Appear**: xuất hiện ngay lập tức
+- **Fade**: xuất hiện mờ dần
+- **Fly In**: bay vào từ bên cạnh
+- **Float In**: nổi lên từ dưới
+- **Zoom**: phóng to từ điểm giữa
+
+### 7.5 Animation Pane
+Tab Animations → Animation Pane:
+- Xem danh sách tất cả animation theo thứ tự
+- Kéo để sắp xếp lại thứ tự
+- Cài đặt: Start (On Click / With Previous / After Previous)
+
+### 7.6 Cài đặt Animation
+- **On Click**: animation chạy khi click chuột
+- **With Previous**: chạy cùng lúc với animation trước
+- **After Previous**: chạy ngay sau animation trước kết thúc
+- **Duration**: thời gian chạy animation
+- **Delay**: độ trễ trước khi animation bắt đầu
+
+---
+
+## 8. TRÌNH CHIẾU (SLIDE SHOW)
+
+### 8.1 Bắt đầu trình chiếu
+- F5: Bắt đầu từ slide đầu tiên
+- Shift+F5: Bắt đầu từ slide hiện tại
+- Tab Slide Show → From Beginning / From Current Slide
+
+### 8.2 Điều hướng khi trình chiếu
+| Phím | Chức năng |
+|---|---|
+| → / Space / Enter | Slide tiếp theo |
+| ← / Backspace | Slide trước |
+| Số + Enter | Đến slide cụ thể (VD: 5 Enter → slide 5) |
+| Esc | Thoát trình chiếu |
+| B | Màn hình đen (Black Screen) |
+| W | Màn hình trắng (White Screen) |
+
+### 8.3 Presenter View (Chế độ presenter)
+Khi cắm máy chiếu/màn hình phụ:
+- Màn hình phụ: hiển thị slide cho khán giả
+- Màn hình của presenter: hiển thị slide + ghi chú + slide tiếp theo + đồng hồ đếm thời gian
+
+Bật: Tab Slide Show → Use Presenter View
+
+### 8.4 Annotations (Ghi chú trong khi trình chiếu)
+- Nhấp phải → Pointer Options → Pen (bút viết) / Highlighter (tô màu)
+- Vẽ/gạch chân lên slide khi trình chiếu
+
+---
+
+## 9. XUẤT FILE POWERPOINT
+
+### 9.1 Các định dạng xuất
+- **.pptx**: PowerPoint (mặc định, có thể chỉnh sửa)
+- **.pdf**: PDF (không chỉnh sửa)
+- **.mp4**: Xuất thành video
+- **.png/.jpg**: Xuất từng slide thành ảnh
+- **.potx**: Template để tái sử dụng design
+
+### 9.2 Xuất thành Video
+File → Export → Create a Video → chọn chất lượng → Create Video
+- Cài đặt thời gian từng slide: "Use Recorded Timings" hoặc tự đặt giây
+
+### 9.3 Cài đặt trình chiếu tự động (Kiosk)
+Tab Slide Show → Set Up Slide Show → Browsed at a kiosk (full screen) → slide tự chạy lặp
+
+---
+
+## 10. MẸO VÀ THỦ THUẬT POWERPOINT
+
+### 10.1 Morph Transition
+Hiệu ứng biến đổi mượt mà giữa 2 slide cùng đối tượng:
+1. Nhân đôi slide → di chuyển/thay đổi đối tượng trong slide 2
+2. Chọn slide 2 → Transitions → Morph
+3. Khi trình chiếu: đối tượng "di chuyển" mượt mà từ vị trí cũ sang mới
+
+### 10.2 Designer (Thiết kế thông minh)
+Tab Home → Designer → PowerPoint gợi ý layout đẹp tự động dựa trên nội dung bạn nhập
+
+### 10.3 Zoom (Link slide)
+Tab Insert → Zoom:
+- Slide Zoom: tạo link từ slide này đến slide khác (thường dùng cho menu)
+- Summary Zoom: tạo trang tổng quan toàn bộ bài thuyết trình
+
+### 10.4 Screen Recording
+Tab Insert → Screen Recording → quay màn hình máy tính và chèn vào slide
+
+---
+
+## 11. PHÍM TẮT POWERPOINT QUAN TRỌNG
+
+| Phím tắt | Chức năng |
+|---|---|
+| Ctrl+M | Thêm slide mới |
+| Ctrl+D | Nhân đôi slide đang chọn |
+| Delete | Xóa slide đang chọn |
+| Ctrl+G | Nhóm đối tượng (Group) |
+| Ctrl+Shift+G | Hủy nhóm (Ungroup) |
+| F5 | Trình chiếu từ đầu |
+| Shift+F5 | Trình chiếu từ slide hiện tại |
+| Esc | Thoát trình chiếu |
+| Ctrl+Z | Hoàn tác |
+| Ctrl+S | Lưu |
+| Tab | Chọn đối tượng tiếp theo trong slide |
+
+---
+
+## 12. CÂU HỎI THƯỜNG GẶP VỀ POWERPOINT
+
+**Q: Làm sao thêm logo vào tất cả slide?**
+A: View → Slide Master → thêm logo vào layout gốc → Close Master View. Logo xuất hiện tự động trên tất cả slide.
+
+**Q: Tại sao animation không hoạt động khi xuất PDF?**
+A: PDF không hỗ trợ animation. Để giữ hiệu ứng, xuất thành video (.mp4) thay vì PDF.
+
+**Q: Cách trình chiếu mà không cần máy tính?**
+A: File → Export → Create a Video → lưu file .mp4 rồi phát trên bất kỳ thiết bị nào.
+
+**Q: Làm sao chạy slide tự động không cần click?**
+A: Tab Transitions → Advance Slide → After: [số giây] → Apply to All. Slide tự chuyển sau số giây đã đặt.
+
+**Q: Cách giảm dung lượng file PowerPoint?**
+A: File → Info → Compress Media (giảm chất lượng video/audio). Hoặc nhấp phải vào ảnh → Compress Pictures → xóa vùng đã cắt.

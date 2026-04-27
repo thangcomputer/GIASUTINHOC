@@ -1,0 +1,355 @@
+# HƯỚNG DẪN MICROSOFT EXCEL - TÀI LIỆU ĐÀO TẠO CHÍNH THỨC
+# Nguồn: https://support.microsoft.com/vi-vn/office/excel-là-gì
+# Phiên bản: Microsoft 365 / Excel 2021/2019/2016
+
+---
+
+## 1. EXCEL LÀ GÌ?
+
+Microsoft Excel là phần mềm bảng tính (spreadsheet) nằm trong bộ Microsoft 365 (trước đây là Microsoft Office). Excel cho phép:
+- Nhập, lưu trữ và tổ chức dữ liệu dạng bảng (hàng và cột)
+- Thực hiện tính toán tự động bằng công thức và hàm
+- Phân tích dữ liệu với PivotTable, Filter, Sort
+- Tạo biểu đồ trực quan (Chart)
+- Tự động hóa công việc bằng Macro/VBA
+
+### Ứng dụng của Excel:
+- Kế toán, tài chính: quản lý thu chi, lập báo cáo
+- Quản lý nhân sự: danh sách nhân viên, bảng lương
+- Phân tích kinh doanh: thống kê doanh số, xu hướng
+- Học tập: bảng điểm, lịch học
+- Cá nhân: quản lý chi tiêu, danh sách mua sắm
+
+---
+
+## 2. GIAO DIỆN EXCEL - CÁC THÀNH PHẦN CHÍNH
+
+### 2.1 Ribbon (Thanh Công cụ)
+Ribbon nằm ở trên cùng, gồm các Tab chính:
+- **File**: Mở, Lưu, In, Xuất file
+- **Home**: Định dạng chữ, ô, căn lề, sao chép, dán
+- **Insert**: Chèn bảng, biểu đồ, hình ảnh, SmartArt
+- **Page Layout**: Cài đặt trang in, lề, hướng giấy
+- **Formulas**: Thư viện hàm, kiểm tra công thức
+- **Data**: Sắp xếp, lọc, nhập dữ liệu từ nguồn ngoài
+- **Review**: Kiểm tra chính tả, bảo vệ trang tính
+- **View**: Chế độ xem, cố định khung (Freeze Panes)
+
+### 2.2 Ô (Cell), Hàng (Row), Cột (Column)
+- **Ô**: Giao điểm của hàng và cột. Địa chỉ ô: cột + hàng (VD: A1, B5, C10)
+- **Hàng**: Được đánh số 1, 2, 3... (chạy ngang)
+- **Cột**: Được đặt tên A, B, C... AA, AB... (chạy dọc)
+- Excel 2016+ có: 1.048.576 hàng × 16.384 cột
+
+### 2.3 Name Box và Formula Bar
+- **Name Box** (bên trái): Hiển thị địa chỉ ô đang chọn (VD: A1)
+- **Formula Bar** (thanh công thức): Hiển thị nội dung/công thức của ô đang chọn
+
+### 2.4 Sheet Tab (Tab trang tính)
+- Mỗi file Excel (Workbook) có thể có nhiều trang tính (Sheet)
+- Mặc định có Sheet1; thêm sheet bằng nút "+" ở cuối
+- Đổi tên sheet: nhấp đúp vào tên Sheet → gõ tên mới
+
+### Hình minh họa giao diện Excel:
+[IMAGE_HINT: Excel interface screenshot showing Ribbon tabs (Home, Insert, Page Layout), Name Box, Formula Bar, and spreadsheet grid with cells A1 labeled]
+Nguồn tham khảo: https://support.microsoft.com/vi-vn/office/excel-là-gì-94b00f50-5896-479c-b0c5-ff74603b35a3
+
+---
+
+## 3. THAO TÁC CƠ BẢN VỚI Ô, HÀNG, CỘT
+
+### 3.1 Chọn ô và vùng dữ liệu
+- Chọn một ô: nhấp chuột vào ô đó
+- Chọn vùng liên tục: nhấp và kéo chuột / Shift + mũi tên
+- Chọn vùng không liên tục: giữ Ctrl và nhấp từng ô
+- Chọn cả hàng: nhấp vào số hàng (1, 2, 3...)
+- Chọn cả cột: nhấp vào tên cột (A, B, C...)
+- Chọn toàn bộ sheet: Ctrl + A
+
+### 3.2 Chèn và xóa hàng/cột
+**Chèn hàng:**
+1. Nhấp phải vào số hàng → Chọn "Insert"
+2. Hoặc: Tab Home → Cells → Insert → Insert Sheet Rows
+
+**Chèn cột:**
+1. Nhấp phải vào tên cột → Chọn "Insert"
+2. Hoặc: Tab Home → Cells → Insert → Insert Sheet Columns
+
+**Xóa hàng/cột:** Nhấp phải → Delete
+
+### 3.3 Ẩn và hiện hàng/cột
+- Chọn hàng/cột → nhấp phải → Hide (Ẩn)
+- Để hiện lại: chọn 2 hàng/cột xung quanh → nhấp phải → Unhide
+
+### 3.4 Phối ô (Merge Cells)
+- Chọn vùng ô cần phối → Tab Home → Merge & Center
+- **Lưu ý**: Khi phối ô, chỉ giữ lại dữ liệu của ô trên cùng bên trái
+- Để hủy phối: chọn ô đã phối → Merge & Center → Unmerge Cells
+
+---
+
+## 4. NHẬP DỮ LIỆU VÀ ĐỊNH DẠNG
+
+### 4.1 Các kiểu dữ liệu trong Excel
+- **Văn bản (Text)**: Chữ, số điện thoại, mã nhân viên → căn trái
+- **Số (Number)**: Số nguyên, số thập phân → căn phải
+- **Ngày/Giờ (Date/Time)**: VD: 01/01/2024, 14:30:00
+- **Công thức (Formula)**: Bắt đầu bằng dấu "="
+
+### 4.2 Định dạng ô
+**Định dạng số:**
+- Số thập phân: Tab Home → Number → nhập số chữ số thập phân
+- Tiền tệ: Chọn ô → Format Cells (Ctrl+1) → Currency → chọn VND hoặc $
+- Phần trăm: Chọn ô → Tab Home → nút "%"
+- Ngày tháng: Format Cells → Date → chọn định dạng
+
+**Định dạng chữ:**
+- In đậm: Ctrl + B
+- In nghiêng: Ctrl + I
+- Gạch chân: Ctrl + U
+- Màu chữ: Tab Home → Font Color (chữ A có màu)
+- Màu nền ô: Tab Home → Fill Color (cái xô sơn)
+
+### 4.3 Định dạng có điều kiện (Conditional Formatting)
+Tự động đổi màu ô dựa trên giá trị:
+1. Chọn vùng dữ liệu
+2. Tab Home → Conditional Formatting → chọn kiểu quy tắc
+3. VD: "Highlight Cell Rules" → "Greater Than" → nhập 100 → chọn màu đỏ
+
+---
+
+## 5. CÔNG THỨC VÀ HÀM EXCEL
+
+### 5.1 Cú pháp công thức cơ bản
+- Mọi công thức bắt đầu bằng dấu "="
+- Các toán tử: + (cộng), - (trừ), * (nhân), / (chia), ^ (lũy thừa)
+- VD: =A1+B1, =A1*5, =(A1+B1)/2
+
+### 5.2 Địa chỉ ô trong công thức
+- **Tương đối** (A1): Thay đổi khi sao chép công thức
+- **Tuyệt đối** ($A$1): Cố định, không thay đổi khi sao chép (nhấn F4)
+- **Hỗn hợp** ($A1 hoặc A$1): Cố định một chiều
+
+### 5.3 Các hàm thống kê cơ bản
+| Hàm | Chức năng | Ví dụ |
+|-----|-----------|-------|
+| SUM | Tính tổng | =SUM(A1:A10) |
+| AVERAGE | Tính trung bình | =AVERAGE(B1:B20) |
+| MAX | Giá trị lớn nhất | =MAX(C1:C50) |
+| MIN | Giá trị nhỏ nhất | =MIN(D1:D30) |
+| COUNT | Đếm số ô có số | =COUNT(A1:A100) |
+| COUNTA | Đếm ô không trống | =COUNTA(A1:A100) |
+| COUNTIF | Đếm có điều kiện | =COUNTIF(A1:A10,">=50") |
+| SUMIF | Tính tổng có điều kiện | =SUMIF(A1:A10,">0",B1:B10) |
+
+### 5.4 Hàm IF (Hàm điều kiện)
+Cú pháp: =IF(điều_kiện, giá_trị_nếu_đúng, giá_trị_nếu_sai)
+
+Ví dụ:
+- =IF(A1>=5,"Đậu","Rớt") → nếu A1 >= 5 thì hiện "Đậu", ngược lại "Rớt"
+- =IF(B1>1000000,"Cao","Thấp")
+- IF lồng nhau: =IF(A1>=8,"Giỏi",IF(A1>=6.5,"Khá",IF(A1>=5,"Trung bình","Yếu")))
+
+### 5.5 Hàm VLOOKUP và XLOOKUP
+**VLOOKUP** - Tìm kiếm theo cột dọc:
+Cú pháp: =VLOOKUP(giá_trị_tìm, bảng_tra_cứu, số_cột, kiểu_tìm)
+- Kiểu tìm: 0 = tìm chính xác, 1 = tìm xấp xỉ
+- VD: =VLOOKUP(A2,$E$1:$G$100,2,0) → tìm A2 trong cột E, lấy giá trị cột F (cột thứ 2)
+
+**XLOOKUP** (Excel 2019+) - Mạnh hơn VLOOKUP:
+Cú pháp: =XLOOKUP(giá_trị_tìm, vùng_tìm, vùng_trả_về)
+- VD: =XLOOKUP(A2,E:E,F:F) → tìm A2 trong cột E, trả về giá trị tương ứng ở cột F
+- Không cần chỉ định số cột, tìm được cả bên trái
+
+### 5.6 Hàm TEXT và xử lý chuỗi
+| Hàm | Chức năng | Ví dụ |
+|-----|-----------|-------|
+| LEFT | Lấy ký tự bên trái | =LEFT("Xin chào",3) → "Xin" |
+| RIGHT | Lấy ký tự bên phải | =RIGHT("Xin chào",4) → "chào" |
+| MID | Lấy ký tự ở giữa | =MID("Xin chào",5,4) → "chào" |
+| LEN | Đếm số ký tự | =LEN("Hello") → 5 |
+| UPPER | Chuyển HOA | =UPPER("hello") → "HELLO" |
+| LOWER | Chuyển thường | =LOWER("HELLO") → "hello" |
+| TRIM | Xóa khoảng trắng thừa | =TRIM(" hello ") → "hello" |
+| CONCATENATE/& | Ghép chuỗi | =A1&" "&B1 hoặc =CONCATENATE(A1," ",B1) |
+
+### 5.7 Hàm ngày tháng
+| Hàm | Chức năng | Ví dụ |
+|-----|-----------|-------|
+| TODAY() | Ngày hiện tại | =TODAY() |
+| NOW() | Ngày và giờ hiện tại | =NOW() |
+| DAY(date) | Lấy ngày | =DAY(A1) |
+| MONTH(date) | Lấy tháng | =MONTH(A1) |
+| YEAR(date) | Lấy năm | =YEAR(A1) |
+| DATEDIF | Chênh lệch 2 ngày | =DATEDIF(A1,B1,"D") → số ngày chênh lệch |
+
+---
+
+## 6. SẮP XẾP VÀ LỌC DỮ LIỆU
+
+### 6.1 Sắp xếp (Sort)
+1. Nhấp vào ô bất kỳ trong vùng dữ liệu
+2. Tab Data → Sort A to Z (tăng dần) hoặc Z to A (giảm dần)
+3. Custom Sort: sắp xếp theo nhiều tiêu chí (nhiều cột)
+
+### 6.2 Lọc (AutoFilter)
+1. Chọn ô trong dữ liệu
+2. Tab Data → Filter → biểu tượng mũi tên xuất hiện ở tiêu đề cột
+3. Nhấp mũi tên → chọn giá trị cần lọc
+4. Lọc theo điều kiện: Number Filters / Text Filters
+
+### 6.3 Lọc nâng cao (Advanced Filter)
+- Lọc dữ liệu với điều kiện phức tạp
+- Có thể lọc ra danh sách không trùng lặp
+- Tab Data → Advanced
+
+---
+
+## 7. PIVOTTABLE - PHÂN TÍCH DỮ LIỆU NÂNG CAO
+
+### 7.1 PivotTable là gì?
+PivotTable là công cụ phân tích dữ liệu tự động giúp:
+- Tóm tắt và nhóm dữ liệu lớn
+- Tính tổng, trung bình, đếm theo nhóm
+- Xoay chiều dữ liệu (pivot) để xem từ góc độ khác
+
+### 7.2 Tạo PivotTable
+Bước 1: Chọn vùng dữ liệu có tiêu đề
+Bước 2: Tab Insert → PivotTable
+Bước 3: Chọn vị trí đặt PivotTable (trang tính mới hoặc trang hiện tại)
+Bước 4: Kéo thả trường (fields) vào:
+- **Rows**: Nhóm theo hàng (VD: Tên sản phẩm)
+- **Columns**: Nhóm theo cột (VD: Tháng)
+- **Values**: Giá trị cần tính (VD: Doanh thu → Sum)
+- **Filters**: Bộ lọc tổng thể
+
+### 7.3 Slicer - Bộ lọc trực quan cho PivotTable
+1. Chọn vào PivotTable
+2. Tab PivotTable Analyze → Insert Slicer
+3. Chọn trường muốn dùng làm bộ lọc
+4. Slicer xuất hiện dưới dạng nút bấm, dễ lọc và chuyên nghiệp
+
+---
+
+## 8. BIỂU ĐỒ (CHART) TRONG EXCEL
+
+### 8.1 Tạo biểu đồ cơ bản
+Bước 1: Chọn vùng dữ liệu gồm cả tiêu đề
+Bước 2: Tab Insert → Charts → chọn loại biểu đồ
+Bước 3: Biểu đồ xuất hiện → điều chỉnh tiêu đề, màu sắc
+
+### 8.2 Các loại biểu đồ phổ biến
+| Loại biểu đồ | Tên tiếng Anh | Dùng khi nào |
+|---|---|---|
+| Cột | Column Chart | So sánh dữ liệu theo nhóm |
+| Đường | Line Chart | Hiển thị xu hướng theo thời gian |
+| Tròn | Pie Chart | Hiển thị tỷ lệ phần trăm |
+| Thanh ngang | Bar Chart | So sánh nhiều mục |
+| Vùng | Area Chart | Xu hướng và tổng tích lũy |
+| Phân tán | Scatter Chart | Quan hệ giữa 2 biến số |
+
+### 8.3 Định dạng biểu đồ
+- Nhấp đúp vào biểu đồ → xuất hiện tab Chart Design và Format
+- Đổi màu sắc: Chart Design → Change Colors
+- Thêm tiêu đề: Chart Design → Add Chart Element → Chart Title
+- Thay đổi kiểu: Chart Design → chọn trong thư viện Chart Styles
+
+---
+
+## 9. QUẢN LÝ FILE EXCEL
+
+### 9.1 Lưu file
+- **Ctrl+S**: Lưu file (định dạng .xlsx)
+- **Ctrl+Shift+S hoặc F12**: Lưu thành tên khác (Save As)
+- Lưu định dạng khác: CSV, PDF, xls (Excel 97-2003)
+
+### 9.2 Chia sẻ và cộng tác
+- Lưu lên OneDrive → Chia sẻ link → nhiều người cùng chỉnh sửa
+- Tab Review → Track Changes: theo dõi thay đổi
+
+### 9.3 Bảo vệ file và trang tính
+- Bảo vệ trang tính (chống sửa ô): Tab Review → Protect Sheet → đặt mật khẩu
+- Bảo vệ file: File → Info → Protect Workbook → Encrypt with Password
+- Khóa ô cụ thể: Format Cells (Ctrl+1) → Protection → Locked/Unlocked
+
+---
+
+## 10. CỐ ĐỊNH KHUNG (FREEZE PANES)
+
+Cố định hàng/cột để khi cuộn vẫn thấy tiêu đề:
+- **Freeze Top Row**: Cố định hàng đầu tiên
+- **Freeze First Column**: Cố định cột đầu tiên
+- **Freeze Panes**: Cố định từ ô đang chọn trở lên và sang trái
+
+Cách dùng: Tab View → Freeze Panes → chọn loại
+Gỡ cố định: Tab View → Freeze Panes → Unfreeze Panes
+
+---
+
+## 11. PHÍM TẮT EXCEL QUAN TRỌNG
+
+| Phím tắt | Chức năng |
+|---|---|
+| Ctrl+C | Sao chép |
+| Ctrl+V | Dán |
+| Ctrl+X | Cắt |
+| Ctrl+Z | Hoàn tác (Undo) |
+| Ctrl+Y | Làm lại (Redo) |
+| Ctrl+F | Tìm kiếm |
+| Ctrl+H | Tìm và thay thế |
+| Ctrl+Home | Về ô A1 |
+| Ctrl+End | Về ô cuối cùng có dữ liệu |
+| Ctrl+Shift+End | Chọn đến ô cuối cùng |
+| Ctrl+1 | Mở hộp thoại Format Cells |
+| F2 | Chỉnh sửa ô đang chọn |
+| F4 | Chuyển đổi địa chỉ Tương đối/Tuyệt đối trong công thức |
+| Alt+= | Tự động SUM vùng trên |
+| Ctrl+T | Tạo bảng (Table) từ dữ liệu |
+| Ctrl+Shift+L | Bật/tắt AutoFilter |
+
+---
+
+## 12. MẸO VÀ THỦ THUẬT EXCEL HỮU ÍCH
+
+### Flash Fill (Ctrl+E)
+Excel tự nhận dạng mẫu và điền tự động:
+- VD: Cột A có "Nguyen Van An", cột B gõ "Nguyen" → Ctrl+E → Excel tự lấy họ cho toàn bộ
+
+### Quick Analysis
+Chọn vùng dữ liệu → nhấp biểu tượng sét xuất hiện góc dưới phải → phân tích nhanh (tổng, biểu đồ, định dạng có điều kiện)
+
+### Tạo danh sách thả xuống (Dropdown)
+1. Chọn ô cần tạo dropdown
+2. Tab Data → Data Validation → Allow: List
+3. Source: nhập các giá trị cách nhau bởi dấu phẩy: Hà Nội,TP.HCM,Đà Nẵng
+
+### Tách dữ liệu thành nhiều cột (Text to Columns)
+- VD: Cột A có "Nguyễn Văn An", muốn tách thành 3 cột riêng
+- Tab Data → Text to Columns → Delimited → chọn dấu phân cách (Space, Comma...)
+
+### Kết hợp dữ liệu từ nhiều ô
+- Dùng toán tử &: =A1&" "&B1&" "&C1
+- Hàm TEXTJOIN (Excel 2019+): =TEXTJOIN(" ",TRUE,A1:C1)
+
+---
+
+## 13. CÂU HỎI THƯỜNG GẶP VỀ EXCEL
+
+**Q: Tại sao công thức hiển thị #VALUE! ?**
+A: Lỗi kiểu dữ liệu. VD: cộng ô chứa chữ với số. Kiểm tra dữ liệu đầu vào.
+
+**Q: Tại sao công thức hiển thị #REF! ?**
+A: Ô tham chiếu bị xóa. Xem lại công thức và vùng dữ liệu.
+
+**Q: Tại sao công thức hiển thị #DIV/0! ?**
+A: Chia cho 0. Dùng =IFERROR(A1/B1, "Lỗi chia 0") để xử lý.
+
+**Q: Tại sao công thức hiển thị #N/A (VLOOKUP)?**
+A: Không tìm thấy giá trị. Kiểm tra: giá trị tìm có tồn tại, kiểu dữ liệu khớp (số vs chữ), tham chiếu đúng.
+
+**Q: Cách cố định hàng tiêu đề khi in?**
+A: Tab Page Layout → Print Titles → Rows to repeat at top → chọn hàng tiêu đề.
+
+**Q: Cách in vừa một trang A4?**
+A: Tab Page Layout → Scale to Fit → Width: 1 page, Height: 1 page.
+Hoặc: File → Print → Scaling → Fit Sheet on One Page.

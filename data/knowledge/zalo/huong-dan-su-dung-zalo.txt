@@ -1,0 +1,298 @@
+# HƯỚNG DẪN SỬ DỤNG ZALO - TÀI LIỆU ĐÀO TẠO ĐẦY ĐỦ
+# Nguồn: https://help.zalo.me/huong-dan/chuyen-muc/
+# Phiên bản: 2026 | Dành cho học viên Thắng Tin Học
+
+---
+
+## 1. ZALO LÀ GÌ?
+
+Zalo là ứng dụng nhắn tin và gọi điện miễn phí của Việt Nam, phát triển bởi công ty VNG. Zalo cho phép:
+- Nhắn tin văn bản, gửi ảnh, video, file miễn phí qua internet
+- Gọi thoại và gọi video miễn phí
+- Tạo nhóm chat, trò chuyện nhóm
+- Đăng nhật ký (trang cá nhân)
+- Sử dụng trên điện thoại (Android/iOS) và máy tính (Zalo PC)
+
+---
+
+## 2. MỚI BẮT ĐẦU VỚI ZALO
+
+### 2.1 Tải Zalo miễn phí
+- **Điện thoại Android**: Vào Google Play Store → tìm "Zalo" → Cài đặt
+- **iPhone (iOS)**: Vào App Store → tìm "Zalo" → Cài đặt
+- **Máy tính Windows/Mac**: Vào https://zalo.me → tải Zalo PC
+
+### 2.2 Đăng ký tài khoản Zalo
+Bước 1: Mở Zalo → chọn "Tạo tài khoản mới"
+Bước 2: Nhập số điện thoại của bạn (bắt buộc phải là số đang hoạt động)
+Bước 3: Nhập mã OTP được gửi về điện thoại
+Bước 4: Đặt mật khẩu (tối thiểu 6 ký tự) và nhập tên hiển thị
+Bước 5: Hoàn tất — tài khoản đã được tạo thành công
+
+Lưu ý: Mỗi số điện thoại chỉ đăng ký được 1 tài khoản Zalo.
+
+### 2.3 Đăng nhập và đăng xuất
+- **Đăng nhập**: Mở Zalo → nhập số điện thoại → nhập mật khẩu → Đăng nhập
+- **Đăng nhập bằng mã QR (Zalo PC)**: Mở Zalo PC → quét mã QR bằng điện thoại
+- **Đăng xuất**: Vào Cài đặt → Tài khoản → Đăng xuất
+
+### 2.4 Những lỗi thường gặp và cách khắc phục
+- **Quên mật khẩu**: Chọn "Quên mật khẩu" → xác minh qua số điện thoại
+- **Không nhận được mã OTP**: Kiểm tra sóng điện thoại, thử lại sau 1 phút
+- **Zalo chạy chậm**: Xóa cache ứng dụng (Cài đặt điện thoại → Ứng dụng → Zalo → Xóa cache)
+- **Không đăng nhập được**: Kiểm tra kết nối internet, thử tắt và mở lại ứng dụng
+
+---
+
+## 3. NHẮN TIN VÀ GỬI FILE TRÊN ZALO
+
+### 3.1 Nhắn tin cơ bản
+- Mở Zalo → chọn biểu tượng tin nhắn → tìm tên bạn bè → gõ tin nhắn → gửi
+- Cho phép gửi: tin nhắn văn bản, ảnh, video, file (Word, Excel, PDF...), sticker, emoji, tin nhắn giọng nói
+
+### 3.2 Gửi ảnh và file
+- Trong khung chat → nhấn biểu tượng hình ảnh để gửi ảnh/video
+- Nhấn biểu tượng file (kẹp giấy) để gửi tài liệu
+- Zalo PC: có thể kéo thả file trực tiếp vào hội thoại
+
+### 3.3 Thu hồi tin nhắn đã gửi
+- Nhấn giữ tin nhắn → chọn "Thu hồi"
+- Tin nhắn có thể thu hồi trong vòng 24 giờ sau khi gửi
+
+### 3.4 Ghim tin nhắn quan trọng
+- Nhấn giữ tin nhắn → chọn "Ghim"
+- Tin nhắn ghim xuất hiện ở đầu hội thoại để dễ tìm lại
+- Nhấn vào tin nhắn ghim để xem toàn bộ nội dung
+
+### 3.5 Ẩn trò chuyện
+- Vuốt trái trên hội thoại (điện thoại) → chọn "Ẩn"
+- Để xem lại: vào Danh sách trò chuyện → kéo xuống → chọn "Trò chuyện ẩn" → nhập mật khẩu
+
+### 3.6 Gửi tin nhắn cho nhiều người cùng lúc
+- Trên Zalo PC: Tạo danh sách phân phối → gửi 1 lần đến nhiều người
+- Vào menu → Tin nhắn hàng loạt → chọn danh sách liên hệ → soạn nội dung → Gửi
+
+### 3.7 My Documents (Tài liệu của tôi)
+- Là nơi lưu trữ file, ảnh quan trọng ngay trong Zalo
+- Vào Zalo → Khám phá → My Documents
+- Dùng để backup file mà không cần chia sẻ cho ai
+
+---
+
+## 4. GỌI ĐIỆN VỚI ZALO
+
+### 4.1 Gọi thoại miễn phí
+- Mở hội thoại với người muốn gọi → nhấn biểu tượng điện thoại
+- Yêu cầu: cả 2 bên phải có kết nối internet
+- Miễn phí hoàn toàn, không tốn tiền cước điện thoại
+
+### 4.2 Gọi video
+- Mở hội thoại → nhấn biểu tượng camera
+- Hỗ trợ gọi video nhóm nhiều người
+
+### 4.3 Chia sẻ màn hình khi gọi (Zalo PC)
+- Trong cuộc gọi trên Zalo PC → nhấn "Chia sẻ màn hình"
+- Rất hữu ích khi hướng dẫn ai đó thao tác máy tính từ xa
+
+### 4.4 Cài nhạc chuông và nhạc chờ
+- **Đổi nhạc chuông**: Cài đặt → Thông báo → Âm thanh cuộc gọi → chọn nhạc chuông
+- **Cài nhạc chờ**: Zalo → Khám phá → Zalo Music → Nhạc chờ Zalo → chọn bài
+
+### 4.5 Khắc phục lỗi gọi điện
+- **Không gọi được**: Kiểm tra kết nối internet; cấp quyền Microphone cho Zalo
+- **Tiếng bị ngắt quãng**: Di chuyển đến nơi có sóng wifi/4G tốt hơn; tắt VPN nếu đang dùng
+- **Không nghe tiếng**: Kiểm tra âm lượng; kiểm tra quyền Microphone đã được cấp chưa
+- **Trên Android không nhận được cuộc gọi đến**: Vào Cài đặt điện thoại → Pin → Ứng dụng → Zalo → tắt giới hạn nền
+
+---
+
+## 5. TRÒ CHUYỆN NHÓM (GROUP CHAT)
+
+### 5.1 Tạo nhóm trên điện thoại
+Bước 1: Vào Zalo → nhấn biểu tượng viết tin mới
+Bước 2: Chọn "Tạo nhóm"
+Bước 3: Chọn các thành viên muốn thêm vào nhóm
+Bước 4: Đặt tên nhóm → nhấn "Tạo nhóm"
+
+### 5.2 Thêm/Mời thành viên vào nhóm
+- Mở nhóm → nhấn biểu tượng thành viên (góc trên phải) → "Thêm thành viên"
+- Tìm theo tên hoặc số điện thoại → chọn → Thêm
+
+### 5.3 Đổi tên và ảnh đại diện nhóm
+- Mở nhóm → nhấn tên nhóm ở trên → "Đổi ảnh nhóm" hoặc "Đổi tên nhóm"
+
+### 5.4 Tắt thông báo nhóm
+- Mở nhóm → nhấn tên nhóm → "Thông báo" → Tắt hoặc chọn thời gian tắt
+- Hữu ích khi nhóm quá ồn ào
+
+### 5.5 Nhắc tên thành viên trong nhóm (@mention)
+- Gõ "@" trong ô nhắn tin → chọn tên người muốn nhắc
+- Người được nhắc sẽ nhận thông báo riêng dù đã tắt thông báo nhóm
+
+### 5.6 Thêm phó nhóm (Trưởng/Phó nhóm)
+- Mở nhóm → Danh sách thành viên → nhấn giữ tên thành viên → "Đặt làm phó nhóm"
+
+### 5.7 Xóa thành viên khỏi nhóm
+- Chỉ trưởng nhóm/phó nhóm mới có quyền
+- Nhấn giữ tên thành viên → "Xóa khỏi nhóm"
+
+### 5.8 Tạo bình chọn (Poll) trong nhóm
+- Trong nhóm → nhấn "+" → chọn "Bình chọn"
+- Nhập câu hỏi và các lựa chọn → Tạo
+- Thành viên nhóm có thể vote và xem kết quả
+
+### 5.9 Rời khỏi nhóm
+- Mở nhóm → nhấn tên nhóm → "Rời nhóm"
+- Nếu bạn là trưởng nhóm: phải chuyển quyền trưởng nhóm trước khi rời
+
+---
+
+## 6. BẢO MẬT VÀ RIÊNG TƯ
+
+### 6.1 Chặn tin nhắn từ người lạ
+- Nhấn vào ảnh đại diện người đó → chọn "Chặn"
+- Người bị chặn sẽ không thể nhắn tin, gọi điện hoặc xem nhật ký của bạn
+
+### 6.2 Quyền riêng tư
+- Vào Cài đặt → Riêng tư → điều chỉnh:
+  - Ai có thể thấy nhật ký của tôi
+  - Ai có thể gửi tin nhắn cho tôi
+  - Ai có thể xem ảnh đại diện của tôi
+
+### 6.3 Bảo mật tài khoản
+- **Đặt mã PIN**: Cài đặt → Tài khoản → Mã khóa ứng dụng
+- **Xác minh 2 bước**: Cài đặt → Tài khoản → Bảo mật → bật xác minh 2 bước
+- **Kiểm tra thiết bị đang đăng nhập**: Cài đặt → Tài khoản → Thiết bị đã đăng nhập
+
+### 6.4 Nhận biết và đề phòng lừa đảo
+- Zalo KHÔNG BAO GIỜ nhắn tin yêu cầu mật khẩu, mã OTP qua tin nhắn
+- Cảnh giác với link lạ trong tin nhắn — không nhấp vào link không rõ nguồn gốc
+- Báo cáo tài khoản giả mạo: nhấn vào ảnh đại diện → "Báo xấu"
+
+### 6.5 Xử lý cảnh báo thiết bị lạ
+Nếu nhận được cảnh báo "Thiết bị lạ yêu cầu mã kích hoạt":
+Bước 1: KHÔNG cung cấp mã kích hoạt cho bất kỳ ai
+Bước 2: Ngay lập tức vào Cài đặt → Thiết bị đã đăng nhập → Đăng xuất khỏi tất cả
+Bước 3: Đổi mật khẩu ngay lập tức
+
+---
+
+## 7. QUẢN LÝ TÀI KHOẢN ZALO
+
+### 7.1 Đổi số điện thoại đăng nhập
+- Vào Cài đặt → Tài khoản → Đổi số điện thoại
+- Nhập số mới → xác minh OTP → hoàn tất
+
+### 7.2 Sao lưu và khôi phục tin nhắn
+- **Sao lưu**: Cài đặt → Nhật ký và Hội thoại → Sao lưu tin nhắn
+- Đặt mật khẩu sao lưu (nhớ kỹ mật khẩu này!)
+- **Khôi phục** khi đổi máy: Đăng nhập lại → hệ thống hỏi khôi phục → nhập mật khẩu sao lưu
+
+### 7.3 Dọn dẹp dung lượng Zalo
+- Cài đặt → Dung lượng → Xóa cache
+- Xóa ảnh/video đã lưu: vào My Documents → xóa file không cần
+
+### 7.4 Bật giao diện tối (Dark Mode)
+- Cài đặt → Giao diện → Chế độ tối → BẬT
+
+### 7.5 Xóa tài khoản Zalo vĩnh viễn
+- Cài đặt → Tài khoản → Xóa tài khoản → Xác nhận
+- Lưu ý: Sau khi xóa, toàn bộ tin nhắn, ảnh, danh bạ trên Zalo sẽ mất vĩnh viễn
+
+---
+
+## 8. NHẬT KÝ ZALO (TRANG CÁ NHÂN)
+
+### 8.1 Đăng bài nhật ký
+- Vào tab "Nhật ký" → nhấn dấu "+" → chọn kiểu đăng (ảnh, văn bản, video)
+- Chọn quyền xem: Chỉ mình tôi / Bạn bè / Tất cả mọi người
+
+### 8.2 Tạo khoảnh khắc (Story)
+- Tương tự Facebook Story — ảnh/video tồn tại 24 giờ
+- Nhấn vào "Khoảnh khắc" trên trang nhật ký → thêm ảnh/video
+
+### 8.3 Phân loại nhật ký
+- Có thể tạo các Album riêng để sắp xếp ảnh theo chủ đề
+
+---
+
+## 9. BẠN BÈ VÀ DANH BẠ
+
+### 9.1 Kết bạn trên Zalo
+Cách 1: Tìm theo số điện thoại — nhấn biểu tượng kính lúp → nhập số điện thoại
+Cách 2: Quét mã QR — vào Cài đặt → mã QR cá nhân → cho người khác quét
+Cách 3: Đồng bộ danh bạ điện thoại — Zalo → Danh bạ → đồng bộ
+
+### 9.2 Đặt tên gợi nhớ
+- Nhấn vào ảnh đại diện bạn bè → "Đặt biệt danh"
+- Biệt danh chỉ bạn thấy, không ảnh hưởng tên hiển thị với người khác
+
+### 9.3 Sử dụng mã QR
+- Vào Cài đặt → mã QR cá nhân → chia sẻ hoặc cho người khác quét để kết bạn nhanh
+- Máy tính: tạo mã QR in ra để dán lên danh thiếp
+
+---
+
+## 10. ZALO PC (PHIÊN BẢN MÁY TÍNH)
+
+### 10.1 Tính năng nổi bật của Zalo PC
+- Nhắn tin, gọi điện/video như trên điện thoại
+- Gửi file dung lượng lớn (lên đến 1GB)
+- Gửi thư mục nguyên (không cần nén zip)
+- Chia sẻ màn hình trong cuộc gọi
+- Giao việc cho đồng nghiệp qua tính năng "Giao Việc"
+- Phân loại trò chuyện theo nhãn (Công việc, Gia đình, Bạn bè...)
+
+### 10.2 Đăng nhập Zalo PC
+Cách 1: Quét mã QR bằng điện thoại (nhanh nhất)
+Cách 2: Đăng nhập bằng số điện thoại + mật khẩu
+
+### 10.3 Phân loại trò chuyện (Labels)
+- Nhấn chuột phải vào hội thoại → "Thêm nhãn"
+- Tạo nhãn: Công việc, Gia đình, Học tập... để dễ tìm kiếm
+
+### 10.4 Giao việc trên Zalo PC
+- Trong hội thoại nhóm → nhấn biểu tượng "Giao Việc"
+- Nhập mô tả việc cần làm → giao cho thành viên → đặt deadline
+- Rất hữu ích cho công việc nhóm và quản lý dự án
+
+### 10.5 Zavi - Họp trực tuyến
+- Zalo PC → Zavi → Tạo phòng họp
+- Chia sẻ link phòng họp → mọi người tham gia không cần tài khoản Zalo
+
+### 10.6 Xử lý lỗi Zalo PC đầy ổ cứng
+- Zalo PC lưu cache tại: C:\Users\[TênMáy]\AppData\Roaming\Zalo
+- Xóa các file trong thư mục "Cache" để giải phóng dung lượng
+- Hoặc vào Zalo PC → Cài đặt → Quản lý bộ nhớ → Dọn dẹp
+
+---
+
+## 11. CÁC PHÍM TẮT ZALO PC HỮU ÍCH
+
+| Phím tắt | Chức năng |
+| --- | --- |
+| Ctrl + F | Tìm kiếm tin nhắn |
+| Ctrl + Enter | Xuống dòng (không gửi) |
+| Enter | Gửi tin nhắn |
+| Ctrl + Shift + M | Tắt/bật tiếng (trong cuộc gọi) |
+| Ctrl + Shift + V | Bật/tắt camera (trong cuộc gọi) |
+| Esc | Đóng cửa sổ hiện tại |
+
+---
+
+## 12. CÂU HỎI THƯỜNG GẶP VỀ ZALO
+
+**Q: Vì sao mất tin nhắn cũ sau khi đổi máy?**
+A: Tin nhắn Zalo lưu trên thiết bị. Cần bật sao lưu trước khi đổi máy, sau đó khôi phục bằng mật khẩu sao lưu.
+
+**Q: Kết bạn xong sao không nhắn tin được?**
+A: Người kia chưa chấp nhận kết bạn, hoặc họ đã hạn chế nhận tin từ người lạ. Có thể thử gửi lời mời kết bạn.
+
+**Q: Vì sao không gọi được Zalo?**
+A: Kiểm tra: (1) Kết nối internet ổn không? (2) Đã cấp quyền Microphone chưa? (3) Cả 2 bên đều là bạn bè chưa?
+
+**Q: Tài khoản bị vô hiệu hóa phải làm gì?**
+A: Liên hệ Zalo qua https://help.zalo.me → Liên hệ hỗ trợ → Cung cấp thông tin tài khoản để khôi phục.
+
+**Q: Zalo có mã hóa tin nhắn không?**
+A: Có tính năng mã hóa đầu cuối (E2E) ở dạng thử nghiệm. Vào hội thoại → Cài đặt hội thoại → Bật mã hóa đầu cuối.

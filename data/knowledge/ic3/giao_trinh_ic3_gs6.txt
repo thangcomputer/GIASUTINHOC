@@ -1,0 +1,169 @@
+IC3 GS6 - GIÁO TRÌNH LUYỆN THI CHỨNG CHỈ TIN HỌC QUỐC TẾ
+
+TỔNG QUAN VỀ IC3 GS6
+
+IC3 (Internet and Computing Core Certification) là chứng chỉ tin học quốc tế được Certiport cấp, công nhận toàn cầu.
+IC3 GS6 gồm 3 modul:
+- Computing Fundamentals (Kiến thức máy tính cơ bản)
+- Key Applications (Ứng dụng văn phòng chính)
+- Living Online (Kỹ năng trực tuyến)
+
+Thời gian thi: 50 phút mỗi modul
+Số câu hỏi: 45 câu mỗi modul (trắc nghiệm + thực hành mô phỏng)
+Điểm đậu: 700/1000 trở lên
+
+---
+
+MODULE 1: COMPUTING FUNDAMENTALS
+
+CÁC LOẠI MÁY TÍNH
+
+Desktop Computer: Máy tính bàn - mạnh, ổn định, giá rẻ, không di động được
+Laptop/Notebook: Máy tính xách tay - tiện lợi, pin có hạn, giá cao hơn
+Tablet: Máy tính bảng - nhẹ, cảm ứng, giới hạn tính năng
+Smartphone: Điện thoại thông minh - luôn bên người, màn hình nhỏ
+Server: Máy chủ - xử lý mạnh, phục vụ nhiều người cùng lúc
+
+CẤU HÌNH MÁY TÍNH
+
+CPU (Central Processing Unit - Bộ xử lý trung tâm):
+- Là "bộ não" của máy tính
+- Xử lý mọi tính toán và lệnh
+- Đo bằng GHz (càng cao càng nhanh)
+- Ví dụ: Intel Core i5, AMD Ryzen 5
+
+RAM (Random Access Memory - Bộ nhớ truy cập ngẫu nhiên):
+- Như "bàn làm việc" - nơi để mọi thứ đang dùng
+- RAM lớn = mở nhiều chương trình cùng lúc không bị chậm
+- Đo bằng GB: 8GB (cơ bản), 16GB (tốt), 32GB (chuyên nghiệp)
+- Dữ liệu trong RAM bị mất khi tắt máy
+
+Storage (Lưu trữ):
+- HDD (Hard Disk Drive): Đĩa cứng cơ học, rẻ, chậm hơn
+- SSD (Solid State Drive): Ổ đĩa thể rắn, nhanh hơn 5-10 lần HDD, bền hơn
+- Đo bằng GB hoặc TB
+
+GPU (Graphics Processing Unit): Xử lý đồ họa và hình ảnh
+Motherboard (Bo mạch chủ): Kết nối tất cả linh kiện lại với nhau
+Power Supply (Nguồn điện): Cung cấp điện cho toàn bộ hệ thống
+
+HỆ ĐIỀU HÀNH (OPERATING SYSTEM)
+
+Windows: Phổ biến nhất, dễ dùng, hỗ trợ nhiều phần mềm
+macOS: Của Apple, ổn định, đắt tiền, ít virus
+Linux: Miễn phí, bảo mật cao, cần kỹ thuật hơn
+Android/iOS: Cho thiết bị di động
+
+Chức năng của hệ điều hành:
+- Quản lý phần cứng (hardware)
+- Chạy các ứng dụng
+- Quản lý file và thư mục
+- Cung cấp giao diện cho người dùng
+
+FILE VÀ THƯ MỤC (FILES AND FOLDERS)
+
+Đường dẫn file (File Path): C:\Users\TenNguoiDung\Documents\BaoCao.docx
+Extension (Phần đuôi file): .docx (Word), .xlsx (Excel), .pdf, .jpg, .mp4, .exe
+Thư mục gốc: C:\ (Windows), / (Linux/Mac)
+
+Thao tác cơ bản:
+- Copy (Sao chép): Ctrl+C
+- Cut (Cắt): Ctrl+X  
+- Paste (Dán): Ctrl+V
+- Delete (Xóa): Delete key hoặc right-click > Delete
+- Rename (Đổi tên): F2 hoặc right-click > Rename
+
+---
+
+MODULE 2: KEY APPLICATIONS
+
+MICROSOFT WORD (xem file giao_trinh_word_co_ban.txt)
+MICROSOFT EXCEL (xem file giao_trinh_excel_co_ban.txt)
+
+MICROSOFT POWERPOINT
+
+Tạo bài thuyết trình chuyên nghiệp:
+- Mỗi slide là một trang trình bày
+- Layout: Chọn bố cục slide phù hợp
+- Theme: Chủ đề màu sắc thống nhất
+- Transition: Hiệu ứng chuyển slide (không nên dùng quá nhiều)
+- Animation: Hiệu ứng cho đối tượng trong slide
+
+Quy tắc 6x6: Tối đa 6 điểm nội dung mỗi slide, tối đa 6 từ mỗi điểm
+Font chữ tối thiểu: 24pt để dễ đọc từ xa
+
+---
+
+MODULE 3: LIVING ONLINE
+
+INTERNET VÀ WEB CƠ BẢN
+
+Internet là mạng máy tính toàn cầu kết nối hàng tỷ thiết bị với nhau.
+World Wide Web (WWW) là hệ thống các trang web trên Internet - chỉ là một phần của Internet.
+
+Trình duyệt (Browser): Chrome, Firefox, Edge, Safari
+URL (Uniform Resource Locator): Địa chỉ trang web. Ví dụ: https://google.com
+HTTP vs HTTPS: HTTPS an toàn hơn (có khóa bảo mật SSL)
+DNS: Hệ thống chuyển tên miền (google.com) thành địa chỉ IP (142.250.196.78)
+
+EMAIL
+
+Cấu trúc email: ten@tenmien.com (ví dụ: thang@giasuai.com)
+CC (Carbon Copy): Gửi bản sao cho người khác - tất cả đều thấy
+BCC (Blind Carbon Copy): Gửi bản sao ẩn - người nhận khác không biết
+Attachment: File đính kèm
+Reply: Trả lời người gửi
+Reply All: Trả lời tất cả
+Forward: Chuyển tiếp email
+
+AN TOÀN TRỰC TUYẾN (ONLINE SAFETY)
+
+Phishing: Giả mạo website/email để lừa lấy thông tin cá nhân
+- Dấu hiệu: URL lạ, lỗi chính tả, yêu cầu thông tin ngay lập tức
+- Cách tránh: Không click link lạ, kiểm tra URL trước khi nhập thông tin
+
+Malware (Phần mềm độc hại):
+- Virus: Xâm nhập và lây lan qua file
+- Trojan: Giả dạng phần mềm hữu ích
+- Ransomware: Mã hóa file và đòi tiền chuộc
+- Spyware: Theo dõi hoạt động người dùng
+
+Bảo vệ máy tính:
+- Cài phần mềm diệt virus (Antivirus)
+- Cập nhật hệ điều hành thường xuyên
+- Không tải phần mềm từ nguồn không tin cậy
+- Dùng mật khẩu mạnh (ít nhất 8 ký tự, chữ hoa+thường+số+ký tự đặc biệt)
+- Bật tường lửa (Firewall)
+
+MẬT KHẨU MẠNH
+Ví dụ mật khẩu mạnh: Th@ng2024! (chữ hoa, thường, số, ký tự đặc biệt)
+Ví dụ mật khẩu yếu: 123456, password, tênmình (dễ đoán)
+Nên dùng Password Manager để quản lý mật khẩu
+
+BẢN QUYỀN VÀ SỞ HỮU TRÍ TUỆ
+Copyright (©): Quyền của tác giả đối với tác phẩm
+Public Domain: Tác phẩm không còn bản quyền, dùng tự do
+Creative Commons: Tác giả cho phép dùng với điều kiện nhất định
+Freeware: Phần mềm miễn phí nhưng không mở mã nguồn
+Open Source: Phần mềm mở mã nguồn, tự do sử dụng và chỉnh sửa
+
+---
+
+CÁC LOẠI KẾT NỐI MẠNG
+
+WiFi: Kết nối không dây, tiện lợi nhưng có thể chậm hơn cáp
+Ethernet: Kết nối có dây, ổn định và nhanh hơn
+Bluetooth: Kết nối thiết bị gần (tai nghe, chuột, bàn phím)
+4G/5G: Mạng di động
+
+VPN (Virtual Private Network): Tạo kết nối an toàn qua mạng công cộng, ẩn địa chỉ IP
+
+CLOUD COMPUTING
+
+Lưu trữ đám mây: Google Drive, OneDrive, Dropbox
+Ưu điểm: Truy cập từ mọi nơi, sao lưu tự động, chia sẻ dễ dàng
+Nhược điểm: Cần internet, lo ngại bảo mật dữ liệu
+
+SaaS (Software as a Service): Dùng phần mềm qua internet (Google Docs, Gmail)
+IaaS (Infrastructure as a Service): Thuê cơ hạ tầng (máy chủ, lưu trữ)
+PaaS (Platform as a Service): Thuê nền tảng để phát triển ứng dụng
