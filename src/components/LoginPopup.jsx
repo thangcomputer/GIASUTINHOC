@@ -21,9 +21,10 @@ export default function LoginPopup() {
       const user = JSON.parse(localStorage.getItem('giasu_user') || '{}')
       if (!token || !user._id) return
 
-      // Tránh hiện lại trong cùng một session trình duyệt
+      // Tránh hiện lại trong 24 giờ
       const shownKey = `${STORAGE_KEY}_${user._id}`
-      if (sessionStorage.getItem(shownKey)) return
+      const lastShown = localStorage.getItem(shownKey)
+      if (lastShown && Date.now() - parseInt(lastShown) < 86400000) return
 
       // ── 1. Kiểm tra nhiệm vụ 4 ngày ──────────────────────────────────────
       const histRes = await fetch(`/api/quizzes/history/${user._id}`)
@@ -38,7 +39,7 @@ export default function LoginPopup() {
           const now = new Date()
           if (now >= nextDate) {
             // Đủ 4 ngày → hiện popup nhiệm vụ
-            sessionStorage.setItem(shownKey, '1')
+            localStorage.setItem(shownKey, Date.now().toString())
             setMode('mission')
             setVisible(true)
             setTimeout(() => setAnimated(true), 50)
@@ -49,7 +50,7 @@ export default function LoginPopup() {
           }
         } else {
           // Chưa làm nhiệm vụ lần nào → cũng hiện popup nhiệm vụ
-          sessionStorage.setItem(shownKey, '1')
+          localStorage.setItem(shownKey, Date.now().toString())
           setMode('mission')
           setVisible(true)
           setTimeout(() => setAnimated(true), 50)
@@ -61,7 +62,7 @@ export default function LoginPopup() {
       const popRes = await fetch('/api/popups/active')
       const popData = await popRes.json()
       if (popData.success && popData.data) {
-        sessionStorage.setItem(shownKey, '1')
+        localStorage.setItem(shownKey, Date.now().toString())
         setAdminPopup(popData.data)
         setMode('admin')
         setVisible(true)
