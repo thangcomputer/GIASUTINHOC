@@ -7,6 +7,8 @@ import { Trophy, Target, BookOpen, RotateCcw, ArrowRight, ShieldCheck, FileQuest
 import './QuizPage.css'
 import confetti from 'canvas-confetti'
 import VirtualExamRoom from '../components/VirtualExamRoom'
+import { studentJsonAuthHeaders } from '../lib/authFetch'
+import { promptInsufficientCredits, isInsufficientCreditsStatus } from '../lib/insufficientCredits.js'
 
 export default function QuizPage() {
   const [searchParams] = useSearchParams()
@@ -82,7 +84,7 @@ export default function QuizPage() {
     try {
       const res = await fetch('/api/ai/generate-quiz', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: studentJsonAuthHeaders(),
         body: JSON.stringify({ 
           topic: selectedTopic === 'Chọn khóa học' ? 'Tin học cơ bản' : selectedTopic, 
           numQuestions,
@@ -91,6 +93,10 @@ export default function QuizPage() {
         })
       })
       const data = await res.json()
+      if (isInsufficientCreditsStatus(res.status)) {
+        await promptInsufficientCredits(data.message)
+        return
+      }
       if (data.success && data.data && data.data.length > 0) {
         setQuestions(data.data)
         setCurrentIdx(0)

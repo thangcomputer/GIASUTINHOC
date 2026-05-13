@@ -1,5 +1,6 @@
 import express from 'express';
 import Popup from '../models/Popup.js';
+import { requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ router.get('/active', async (req, res) => {
 });
 
 // ── Admin: lấy tất cả popup ──
-router.get('/', async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   try {
     const popups = await Popup.find().sort({ priority: -1, createdAt: -1 });
     res.json({ success: true, data: popups });
@@ -24,7 +25,7 @@ router.get('/', async (req, res) => {
 });
 
 // ── Admin: tạo popup mới ──
-router.post('/', async (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
   try {
     const popup = await Popup.create(req.body);
     res.json({ success: true, data: popup });
@@ -34,7 +35,7 @@ router.post('/', async (req, res) => {
 });
 
 // ── Admin: cập nhật popup ──
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const popup = await Popup.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!popup) return res.status(404).json({ success: false, message: 'Không tìm thấy popup' });
@@ -45,7 +46,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // ── Admin: bật/tắt popup ──
-router.patch('/:id/toggle', async (req, res) => {
+router.patch('/:id/toggle', requireAdmin, async (req, res) => {
   try {
     const popup = await Popup.findById(req.params.id);
     if (!popup) return res.status(404).json({ success: false, message: 'Không tìm thấy popup' });
@@ -58,7 +59,7 @@ router.patch('/:id/toggle', async (req, res) => {
 });
 
 // ── Admin: xóa popup ──
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     await Popup.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: 'Đã xóa popup' });

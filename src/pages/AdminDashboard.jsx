@@ -5,21 +5,25 @@ import {
   Users, TrendingUp, ShieldCheck, LogOut, BarChart2,
   CreditCard, Settings, Search, RefreshCw, Plus, ChevronLeft,
   ChevronRight, KeyRound, Building2, BookOpen, Save, Eye, EyeOff, LayoutTemplate,
-  Coins, MessageSquare, Bot, User as UserIcon, Database, Upload, FileText, CheckCircle, Trash2, Cpu, Edit, ArrowLeft, FileQuestion, Bell, ToggleLeft, ToggleRight, Image
+  Coins, MessageSquare, Bot, User as UserIcon, Database, Upload, FileText, CheckCircle, Trash2, Cpu, Edit, ArrowLeft, FileQuestion, Bell, ToggleLeft, ToggleRight, Image, X
 } from 'lucide-react'
 import './AdminDashboard.css'
 import AdminCourseForm from '../components/AdminCourseForm'
 import AdminQuizForm from '../components/AdminQuizForm'
 import AdminExamTab from '../components/AdminExamTab'
+import { adminJsonAuthHeaders, adminAuthHeaders } from '../lib/authFetch'
 
 // ─── Guard: chỉ admin mới vào được ─────────────
 function useAdminGuard() {
   const navigate = useNavigate()
   const [admin, setAdmin] = useState(null)
   useEffect(() => {
-    const raw = localStorage.getItem('admin_token')
-    if (!raw) { navigate('/admin'); return }
-    const user = JSON.parse(raw)
+    const token = localStorage.getItem('admin_token')
+    if (!token || !token.includes('.')) { navigate('/admin'); return }
+    const rawUser = localStorage.getItem('admin_user')
+    if (!rawUser) { navigate('/admin'); return }
+    let user
+    try { user = JSON.parse(rawUser) } catch { navigate('/admin'); return }
     if (user.role !== 'admin' && user.role !== 'staff') { navigate('/admin'); return }
     setAdmin(user)
   }, [navigate])
@@ -81,7 +85,7 @@ export default function AdminDashboard() {
     try {
       const res = await fetch('/api/users/add', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminJsonAuthHeaders(),
         body: JSON.stringify(newUser)
       });
       const data = await res.json();
@@ -122,14 +126,14 @@ export default function AdminDashboard() {
     col2Title: 'Liên Kết Nhanh',
     col2Links: '/\tTrang Chủ\n/lessons\tKhoá Học\n/chat\tChat AI\n/quiz\tThi Trắc Nghiệm',
     col3Title: 'Liên Hệ',
-    col3Lines: '📍 TP. Hồ Chí Minh\n📞 0909 000 000\n📧 info@giasuai.com\n🕐 Thứ 2 - Thứ 7: 8h-20h',
+    col3Lines: '📍 TP. Hồ Chí Minh\n📞 0909 000 000\n📧 info@giasutinhoc24h.com\n🕐 Thứ 2 - Thứ 7: 8h-20h',
     copyright: '© 2025 Gia Sư AI. Tất cả quyền được bảo lưu.',
   })
   const [footerSaved, setFooterSaved] = useState(false)
 
   // Server Settings state
   const [appSettings, setAppSettings] = useState({
-    geminiKey: '', openaiKey: '',
+    geminiKey: '', openaiKey: '', tavilyApiKey: '',
     coinPackages: [],
     aiCost: {}
   })
@@ -139,11 +143,15 @@ export default function AdminDashboard() {
   const [advisorContent, setAdvisorContent] = useState('')
   const [advisorSaved, setAdvisorSaved] = useState(false)
 
-  const logout = () => { localStorage.removeItem('admin_token'); navigate('/admin') }
+  const logout = () => {
+    localStorage.removeItem('admin_token')
+    localStorage.removeItem('admin_user')
+    navigate('/admin')
+  }
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/settings')
+      const res = await fetch('/api/settings', { headers: adminAuthHeaders() })
       const d = await res.json()
       if (d.success && d.data) {
          setAppSettings(d.data)
@@ -160,7 +168,7 @@ export default function AdminDashboard() {
 
   const fetchKnowledge = async () => {
     try {
-      const res = await fetch('/api/knowledge');
+      const res = await fetch('/api/knowledge', { headers: adminAuthHeaders() });
       const d = await res.json();
       if (d.success) {
         setKnowledgeData(d.data);
@@ -179,7 +187,29 @@ export default function AdminDashboard() {
   const [cmsView, setCmsView] = useState(() => localStorage.getItem('admin_cms_view') || 'overview'); // overview, courses, quizzes, courseForm, quizForm
   const [editingCourse, setEditingCourse] = useState(null);
   const [editingQuiz, setEditingQuiz] = useState(null);
-  
+  const [courseAnalyticsOpen, setCourseAnalyticsOpen] = useState(false);
+  const [courseAnalyticsData, setCourseAnalyticsData] = useState(null);
+  const [courseAnalyticsLoading, setCourseAnalyticsLoading] = useState(false);
+
+  const openCourseAnalytics = async (courseId) => {
+    setCourseAnalyticsOpen(true);
+    setCourseAnalyticsData(null);
+    setCourseAnalyticsLoading(true);
+    try {
+      const res = await fetch(`/api/courses/${encodeURIComponent(courseId)}/analytics`, { headers: adminAuthHeaders() });
+      const d = await res.json();
+      if (d.success) setCourseAnalyticsData(d.data);
+      else {
+        Swal.fire('Lỗi', d.message || 'Không tải thống kê', 'error');
+        setCourseAnalyticsOpen(false);
+      }
+    } catch {
+      Swal.fire('Lỗi', 'Không kết nối được máy chủ', 'error');
+      setCourseAnalyticsOpen(false);
+    }
+    setCourseAnalyticsLoading(false);
+  };
+
   // Popup management state
   const [popups, setPopups] = useState([])
   const [popupLoading, setPopupLoading] = useState(false)
@@ -196,10 +226,10 @@ export default function AdminDashboard() {
   }, [cmsView]);
   
   const fetchCourses = async () => {
-    try { const res = await fetch('/api/courses'); const d = await res.json(); if(d.success) setCourses(d.data); } catch {}
+    try { const res = await fetch('/api/courses', { headers: adminAuthHeaders() }); const d = await res.json(); if(d.success) setCourses(d.data); } catch {}
   }
   const fetchQuizzes = async () => {
-    try { const res = await fetch('/api/quizzes'); const d = await res.json(); if(d.success) setQuizzes(d.data); } catch {}
+    try { const res = await fetch('/api/quizzes', { headers: adminAuthHeaders() }); const d = await res.json(); if(d.success) setQuizzes(d.data); } catch {}
   }
   
   useEffect(() => {
@@ -210,7 +240,7 @@ export default function AdminDashboard() {
     const confirmInfo = await Swal.fire({title: 'Xóa bài học?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Đồng ý', cancelButtonText: 'Hủy'});
     if (!confirmInfo.isConfirmed) return;
     try {
-      await fetch(`/api/courses/${id}`, { method: 'DELETE' });
+      await fetch(`/api/courses/${id}`, { method: 'DELETE', headers: adminAuthHeaders() });
       fetchCourses();
       Swal.fire('Thành công', 'Đã xóa khóa học', 'success');
     } catch {}
@@ -220,7 +250,7 @@ export default function AdminDashboard() {
     const confirmInfo = await Swal.fire({title: 'Xóa câu hỏi?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Đồng ý', cancelButtonText: 'Hủy'});
     if (!confirmInfo.isConfirmed) return;
     try {
-      await fetch(`/api/quizzes/${id}`, { method: 'DELETE' });
+      await fetch(`/api/quizzes/${id}`, { method: 'DELETE', headers: adminAuthHeaders() });
       fetchQuizzes();
       Swal.fire('Thành công', 'Đã xóa câu hỏi', 'success');
     } catch {}
@@ -234,7 +264,7 @@ export default function AdminDashboard() {
     for(let i = 0; i < files.length; i++) { formData.append('files', files[i]); }
 
     try {
-      const res = await fetch('/api/knowledge/upload', { method: 'POST', body: formData });
+      const res = await fetch('/api/knowledge/upload', { method: 'POST', headers: adminAuthHeaders(), body: formData });
       const d = await res.json();
       if(d.success) { Swal.fire(d.message); fetchKnowledge(); } else Swal.fire('Lỗi: ' + d.message);
     } catch { Swal.fire('Lỗi tải file'); }
@@ -246,7 +276,7 @@ export default function AdminDashboard() {
     if (!confirm.isConfirmed) return;
     try {
       const res = await fetch('/api/knowledge/delete', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: adminJsonAuthHeaders(),
         body: JSON.stringify({ topic, file })
       });
       const d = await res.json();
@@ -257,7 +287,7 @@ export default function AdminDashboard() {
   const handleBuildKnowledge = async () => {
     setBuildLoading(true);
     try {
-      const res = await fetch('/api/knowledge/build', { method: 'POST' });
+      const res = await fetch('/api/knowledge/build', { method: 'POST', headers: adminAuthHeaders() });
       const d = await res.json();
       if(d.success) { 
         Swal.fire(d.message); 
@@ -268,21 +298,21 @@ export default function AdminDashboard() {
   }
 
   const fetchStats = async () => {
-    const r = await fetch('/api/users/stats/overview')
+    const r = await fetch('/api/users/stats/overview', { headers: adminAuthHeaders() })
     const d = await r.json()
     if (d.success) setStats(d.data)
   }
 
   const fetchUsers = async (pg = 1, q = '') => {
     setLoading(true)
-    const r = await fetch(`/api/users?page=${pg}&limit=10&search=${encodeURIComponent(q)}`)
+    const r = await fetch(`/api/users?page=${pg}&limit=10&search=${encodeURIComponent(q)}`, { headers: adminAuthHeaders() })
     const d = await r.json()
     if (d.success) { setUsers(d.data); setTotalUsers(d.total) }
     setLoading(false)
   }
 
   const fetchTx = async () => {
-    const r = await fetch('/api/billing/transactions?limit=40')
+    const r = await fetch('/api/billing/transactions?limit=40', { headers: adminAuthHeaders() })
     const d = await r.json()
     if (d.success) setTxList(d.data)
   }
@@ -292,7 +322,7 @@ export default function AdminDashboard() {
     const url = studentId
       ? `/api/chat-history/student/${studentId}?limit=40`
       : '/api/chat-history?limit=40'
-    const r = await fetch(url)
+    const r = await fetch(url, { headers: adminAuthHeaders() })
     const d = await r.json()
     if (d.success) { setChatHistory(d.data); setChatTotal(d.total) }
     setChatLoading(false)
@@ -303,7 +333,7 @@ export default function AdminDashboard() {
   const fetchPopups = async () => {
     setPopupLoading(true)
     try {
-      const r = await fetch('/api/popups')
+      const r = await fetch('/api/popups', { headers: adminAuthHeaders() })
       const d = await r.json()
       if (d.success) setPopups(d.data)
     } catch {}
@@ -315,7 +345,7 @@ export default function AdminDashboard() {
     try {
       const url = editingPopup ? `/api/popups/${editingPopup._id}` : '/api/popups'
       const method = editingPopup ? 'PUT' : 'POST'
-      const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(popupForm) })
+      const r = await fetch(url, { method, headers: adminJsonAuthHeaders(), body: JSON.stringify(popupForm) })
       const d = await r.json()
       if (d.success) {
         Swal.fire({ icon: 'success', title: editingPopup ? 'Đã cập nhật popup!' : 'Đã tạo popup mới!', timer: 1500, showConfirmButton: false })
@@ -328,7 +358,7 @@ export default function AdminDashboard() {
 
   const handleTogglePopup = async (id) => {
     try {
-      const r = await fetch(`/api/popups/${id}/toggle`, { method: 'PATCH' })
+      const r = await fetch(`/api/popups/${id}/toggle`, { method: 'PATCH', headers: adminAuthHeaders() })
       const d = await r.json()
       if (d.success) fetchPopups()
     } catch {}
@@ -337,7 +367,7 @@ export default function AdminDashboard() {
   const handleDeletePopup = async (id) => {
     const c = await Swal.fire({ title: 'Xóa popup?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Xóa', cancelButtonText: 'Hủy' })
     if (!c.isConfirmed) return
-    await fetch(`/api/popups/${id}`, { method: 'DELETE' })
+    await fetch(`/api/popups/${id}`, { method: 'DELETE', headers: adminAuthHeaders() })
     fetchPopups()
   }
 
@@ -359,7 +389,7 @@ export default function AdminDashboard() {
     if (!adjustDelta || isNaN(adjustDelta)) return Swal.fire('Nhập số xu cần điều chỉnh')
     const r = await fetch(`/api/users/${adjustTarget._id}/coins/adjust`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: adminJsonAuthHeaders(),
       body: JSON.stringify({ delta: Number(adjustDelta), reason: adjustReason })
     })
     const d = await r.json()
@@ -377,7 +407,7 @@ export default function AdminDashboard() {
     try {
       const r = await fetch(`/api/users/${resetTarget._id}/reset-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminJsonAuthHeaders(),
         body: JSON.stringify({ newPassword })
       })
       const d = await r.json()
@@ -404,7 +434,7 @@ export default function AdminDashboard() {
     try {
       const r = await fetch('/api/settings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminJsonAuthHeaders(),
         body: JSON.stringify(appSettings)
       })
       const d = await r.json()
@@ -420,7 +450,7 @@ export default function AdminDashboard() {
     try {
       const r = await fetch('/api/settings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminJsonAuthHeaders(),
         body: JSON.stringify({ advisorContent })
       })
       const d = await r.json()
@@ -603,7 +633,7 @@ export default function AdminDashboard() {
                             <Coins size={15} />
                           </button>
                           <button className="action-btn deposit" title="Nạp 30 xu nhanh" onClick={async () => {
-                            const r = await fetch('/api/billing/deposit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ studentId: u._id, planId: 'starter' }) })
+                            const r = await fetch('/api/billing/deposit', { method:'POST', headers: adminJsonAuthHeaders(), body: JSON.stringify({ studentId: u._id, planId: 'starter' }) })
                             const d = await r.json()
                             if (d.success) { Swal.fire(`✅ Nạp ${d.added} xu cho ${u.name}`); fetchUsers(page, search); fetchStats() }
                           }}>
@@ -752,7 +782,7 @@ export default function AdminDashboard() {
               {/* Danh sách Chủ đề */}
               <div className="topic-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                  <div className="glass-card settings-card">
-                   <p style={{color: '#94a3b8', fontSize: '0.95rem', margin: 0}}>Tải lên các tài liệu PDF, DOCX, TXT để nhúng vào bộ nhớ của Gia Sư AI. Sau khi tải lên, hãy nhấn <strong>Biên Tập Tự Động (Build)</strong> để AI chắt lọc và học lại kiến thức nhé.</p>
+                   <p style={{color: '#94a3b8', fontSize: '0.95rem', margin: 0, lineHeight: 1.65}}>Tải lên PDF, DOCX, TXT vào đúng <strong>chủ đề</strong>. Nhấn <strong>Biên Tập RAG</strong> để tạo chỉ mục: hệ thống dùng <strong>embedding Gemini</strong> (cần key trong Cấu hình + file <code>.env</code>) kết hợp <strong>từ khóa</strong> để tìm đoạn giống trợ lý đọc sách. Sau mỗi lần thêm/sửa file, <strong>build lại</strong> và restart server nếu cần.</p>
                  </div>
                  {knowledgeData.length === 0 ? (
                    <div style={{ padding: '30px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '14px', border: '1px dashed #64748b' }}>
@@ -804,6 +834,7 @@ export default function AdminDashboard() {
                         <option value="excel">Microsoft Excel</option>
                         <option value="powerpoint">Microsoft PowerPoint</option>
                         <option value="ic3">Chứng chỉ IC3</option>
+                        <option value="mos">Chứng chỉ MOS</option>
                         <option value="networking">Mạng Máy Tính (Networking)</option>
                         <option value="python">Lập trình Python</option>
                         <option value="c">Lập trình C/C++</option>
@@ -908,7 +939,7 @@ export default function AdminDashboard() {
                     onClick={async () => {
                       try {
                         const m = await import('../data/lessons.js');
-                        const res = await fetch('/api/courses/seed', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ lessonsArray: m.LESSONS }) });
+                        const res = await fetch('/api/courses/seed', { method: 'POST', headers: adminJsonAuthHeaders(), body: JSON.stringify({ lessonsArray: m.LESSONS }) });
                         const d = await res.json();
                         if(d.success) { fetchCourses(); Swal.fire('Thành công', d.message, 'success'); }
                       } catch (e) { Swal.fire('Lỗi', e.message || String(e), 'error'); }
@@ -922,7 +953,7 @@ export default function AdminDashboard() {
                     onClick={async () => {
                       try {
                         const m = await import('../data/quizData.js');
-                        const res = await fetch('/api/quizzes/seed', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ questionsArray: m.QUIZ_QUESTIONS }) });
+                        const res = await fetch('/api/quizzes/seed', { method: 'POST', headers: adminJsonAuthHeaders(), body: JSON.stringify({ questionsArray: m.QUIZ_QUESTIONS }) });
                         const d = await res.json();
                         if(d.success) { fetchQuizzes(); Swal.fire('Thành công', d.message, 'success'); }
                       } catch (e) { Swal.fire('Lỗi', e.message || String(e), 'error'); }
@@ -962,9 +993,10 @@ export default function AdminDashboard() {
                          <td>{c.duration}</td>
                          <td><span style={{ fontWeight: 'bold' }}>{c.steps?.length || 0}</span> Bài chia nhỏ</td>
                          <td>
-                           <div style={{display:'flex', gap:'8px'}}>
-                             <button className="btn-outline" style={{padding:'6px 10px', borderRadius: '8px'}} onClick={() => { setEditingCourse(c); setCmsView('courseForm'); }}><Edit size={16}/></button>
-                             <button className="btn-outline" style={{padding:'6px 10px', borderRadius: '8px', color:'#ef4444', borderColor:'rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.05)'}} onClick={()=>handleDeleteCourse(c.id)}><Trash2 size={16}/></button>
+                           <div style={{display:'flex', gap:'8px', flexWrap: 'wrap'}}>
+                             <button type="button" title="Thống kê học viên" className="btn-outline" style={{padding:'6px 10px', borderRadius: '8px', color:'#38bdf8', borderColor:'rgba(56,189,248,0.35)'}} onClick={() => openCourseAnalytics(c.id)}><BarChart2 size={16}/></button>
+                             <button type="button" className="btn-outline" style={{padding:'6px 10px', borderRadius: '8px'}} onClick={() => { setEditingCourse(c); setCmsView('courseForm'); }}><Edit size={16}/></button>
+                             <button type="button" className="btn-outline" style={{padding:'6px 10px', borderRadius: '8px', color:'#ef4444', borderColor:'rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.05)'}} onClick={()=>handleDeleteCourse(c.id)}><Trash2 size={16}/></button>
                            </div>
                          </td>
                        </tr>
@@ -1027,6 +1059,54 @@ export default function AdminDashboard() {
                 onCancel={() => setCmsView('quizzes')}
               />
             )}
+
+            {courseAnalyticsOpen && (
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="course-analytics-title"
+                style={{ position: 'fixed', inset: 0, zIndex: 25000, background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '24px', overflowY: 'auto' }}
+                onClick={() => setCourseAnalyticsOpen(false)}
+                onKeyDown={(e) => { if (e.key === 'Escape') setCourseAnalyticsOpen(false); }}
+              >
+                <div className="glass-card animate-fade-in-up" style={{ width: '100%', maxWidth: '720px', marginTop: '48px', marginBottom: '48px', padding: '28px', border: '1px solid rgba(99,102,241,0.2)' }} onClick={e => e.stopPropagation()}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '20px' }}>
+                    <div>
+                      <h3 id="course-analytics-title" style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '10px' }}><BarChart2 size={22} color="#38bdf8" /> Thống kê khóa học</h3>
+                      <p style={{ margin: '8px 0 0', color: '#94a3b8', fontSize: '0.88rem' }}>{courseAnalyticsData?.title || '…'} · mã <code style={{ color: '#a5b4fc' }}>{courseAnalyticsData?.courseId}</code></p>
+                    </div>
+                    <button type="button" onClick={() => setCourseAnalyticsOpen(false)} aria-label="Đóng" style={{ flexShrink: 0, width: '40px', height: '40px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} /></button>
+                  </div>
+                  {courseAnalyticsLoading && <p style={{ color: '#94a3b8' }}>Đang tải dữ liệu…</p>}
+                  {!courseAnalyticsLoading && courseAnalyticsData && (
+                    <>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
+                        <div style={{ padding: '14px', borderRadius: '12px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}><div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Có tiến độ</div><div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#e2e8f0' }}>{courseAnalyticsData.enrolled}</div></div>
+                        <div style={{ padding: '14px', borderRadius: '12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}><div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Hoàn thành</div><div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#34d399' }}>{courseAnalyticsData.completed}</div></div>
+                        <div style={{ padding: '14px', borderRadius: '12px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}><div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Số module</div><div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fbbf24' }}>{courseAnalyticsData.totalSteps}</div></div>
+                      </div>
+                      <p style={{ fontSize: '0.82rem', color: '#64748b', lineHeight: 1.55, margin: '0 0 16px' }}>Độ sâu xem trung bình (giây) theo từng module, tính trên học viên đã phát video ít nhất một lần. Dùng để phát hiện module nhiều người bỏ dở.</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        {(() => {
+                          const maxS = Math.max(...(courseAnalyticsData.steps || []).map(s => s.avgMaxWatchSeconds || 0), 1);
+                          return (courseAnalyticsData.steps || []).map((row) => (
+                            <div key={row.stepIndex}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.82rem' }}>
+                                <span style={{ color: '#cbd5e1', fontWeight: 600 }}>{row.stepIndex + 1}. {row.title}</span>
+                                <span style={{ color: '#94a3b8' }}>TB {row.avgMaxWatchSeconds}s · {row.learnersWithProgress} HV</span>
+                              </div>
+                              <div style={{ height: '8px', borderRadius: '6px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                                <div style={{ width: `${Math.min(100, Math.round((row.avgMaxWatchSeconds / maxS) * 100))}%`, height: '100%', background: 'linear-gradient(90deg, #6366f1, #38bdf8)', borderRadius: '6px', transition: 'width 0.4s ease' }} />
+                              </div>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1060,7 +1140,7 @@ export default function AdminDashboard() {
                   className="settings-input"
                   rows={18}
                   style={{ resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.7, fontSize: '0.9rem' }}
-                  placeholder={`Vi du:\n\n--- KHOA MOS WORD & EXCEL ---\nDoi tuong: Hoc sinh, sinh vien, nguoi di lam can chung chi quoc te.\nThoi luong: 2-3 thang (hoc 1 kem 1 truc tiep hoac tu xa).\nHoc phi: 3.500.000d (tron goi).\nNoI dung: Word co ban den nang cao, Excel ham, bieu do, Pivot Table.\nChung chi: MOS (Microsoft Office Specialist) - Quoc te.\n\n--- KHOA IC3 ---\nDoi tuong: Nguoi can chung chi tin hoc co ban quoc te.\nThoi luong: 1-2 thang.\nHoc phi: 2.500.000d.\nNoi dung: Computing Fundamentals, Key Applications, Living Online.\nChung chi: IC3 - Certiport - Quoc te.\n\nLien he: 0909.000.000 / info@thangtinhoc.com`}
+                  placeholder={`Vi du:\n\n--- KHOA MOS WORD & EXCEL ---\nDoi tuong: Hoc sinh, sinh vien, nguoi di lam can chung chi quoc te.\nThoi luong: 2-3 thang (hoc 1 kem 1 truc tiep hoac tu xa).\nHoc phi: 3.500.000d (tron goi).\nNoI dung: Word co ban den nang cao, Excel ham, bieu do, Pivot Table.\nChung chi: MOS (Microsoft Office Specialist) - Quoc te.\n\n--- KHOA IC3 ---\nDoi tuong: Nguoi can chung chi tin hoc co ban quoc te.\nThoi luong: 1-2 thang.\nHoc phi: 2.500.000d.\nNoi dung: Computing Fundamentals, Key Applications, Living Online.\nChung chi: IC3 - Certiport - Quoc te.\n\nLien he: 0909.000.000 / info@giasutinhoc24h.com`}
                   value={advisorContent}
                   onChange={e => setAdvisorContent(e.target.value)}
                 />
@@ -1220,7 +1300,7 @@ export default function AdminDashboard() {
                   <BookOpen size={22} color="#10b981" />
                   <div>
                     <h3>Cấu Hình API Keys (Trí Tuệ Nhân Tạo)</h3>
-                    <p>Cập nhật khóa API cho Google Gemini và OpenAI để hệ thống AI hoạt động</p>
+                    <p>Gemini / OpenAI cho chat; Tavily (tuỳ chọn) để bổ sung tìm kiếm web khi kho giáo trình nội bộ chưa đủ.</p>
                   </div>
                 </div>
 
@@ -1243,6 +1323,16 @@ export default function AdminDashboard() {
                       value={appSettings.openaiKey || ''} 
                       onChange={e => setAppSettings({ ...appSettings, openaiKey: e.target.value })} 
                       placeholder="sk-..." 
+                    />
+                  </div>
+                  <div className="settings-field" style={{ gridColumn: '1 / -1' }}>
+                    <label>Tavily API Key (tìm kiếm web — tạo tại tavily.com)</label>
+                    <input
+                      className="settings-input"
+                      type="password"
+                      value={appSettings.tavilyApiKey || ''}
+                      onChange={e => setAppSettings({ ...appSettings, tavilyApiKey: e.target.value })}
+                      placeholder="tvly-... (để trống nếu không dùng web)"
                     />
                   </div>
                 </div>

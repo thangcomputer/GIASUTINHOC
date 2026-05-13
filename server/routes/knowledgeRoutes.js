@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
 import { reloadKnowledge } from './aiRoutes.js';
+import { requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -32,7 +33,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Lấy danh sách file và topic
-router.get('/', (req, res) => {
+router.get('/', requireAdmin, (req, res) => {
   try {
     let topics = [];
     if (fs.existsSync(KNOWLEDGE_DIR)) {
@@ -59,7 +60,7 @@ router.get('/', (req, res) => {
 });
 
 // Upload
-router.post('/upload', upload.array('files'), (req, res) => {
+router.post('/upload', requireAdmin, upload.array('files'), (req, res) => {
   try {
     res.json({ success: true, message: `Đã tải lên ${req.files?.length || 0} file thành công!` });
   } catch (err) {
@@ -68,7 +69,7 @@ router.post('/upload', upload.array('files'), (req, res) => {
 });
 
 // Xóa file
-router.post('/delete', (req, res) => {
+router.post('/delete', requireAdmin, (req, res) => {
   const { topic, file } = req.body;
   if (!topic || !file) return res.status(400).json({ success: false, message: 'Thiếu thông tin' });
   const cleanTopic = topic.replace(/[^a-zA-Z0-9_\- ]/g, '').trim();
@@ -86,7 +87,7 @@ router.post('/delete', (req, res) => {
 });
 
 // Build lại kho tri thức
-router.post('/build', (req, res) => {
+router.post('/build', requireAdmin, (req, res) => {
   const scriptPath = path.join(__dirname, '..', '..', 'scripts', 'build_knowledge.cjs');
   exec(`node "${scriptPath}"`, (error, stdout, stderr) => {
     if (error) {

@@ -1,6 +1,6 @@
 import Swal from 'sweetalert2';
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useCredits } from '../context/CreditContext'
 import {
@@ -8,6 +8,8 @@ import {
   Zap, Coins, Copy, ArrowLeft, Sparkles, Star
 } from 'lucide-react'
 import './DepositPage.css'
+import { studentJsonAuthHeaders } from '../lib/authFetch'
+import { fetchJsonIfOk } from '../lib/parseApiResponse.js'
 
 const BANK_INFO = {
   bank: 'ACB',
@@ -27,8 +29,10 @@ export default function DepositPage() {
 
   // Lấy cài đặt Server
   useEffect(() => {
-    fetch('/api/settings').then(r => r.json()).then(d => {
-      if (d.success && d.data?.coinPackages) {
+    fetch('/api/settings/public')
+      .then((r) => fetchJsonIfOk(r))
+      .then((d) => {
+      if (d?.success && d.data?.coinPackages) {
          setPackages(d.data.coinPackages.map((p, i) => ({
             id: p.id || String(i),
             priceText: p.price,
@@ -47,6 +51,7 @@ export default function DepositPage() {
          })))
       }
     })
+      .catch(() => {})
   }, [])
 
   const handleSelect = (pkg) => {
@@ -72,7 +77,7 @@ export default function DepositPage() {
         // Gọi API nạp tiền thực tế
         const res = await fetch('/api/billing/deposit', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: studentJsonAuthHeaders(),
           body: JSON.stringify({
              studentId: userInfo.id,
              planId: selected.id,
@@ -119,7 +124,8 @@ export default function DepositPage() {
           </span>
           <h1 className="gradient-text">Nạp Xu Gia Sư AI</h1>
           <p style={{ color: '#94a3b8', maxWidth: '540px', margin: '12px auto' }}>
-            Chọn gói Xu phù hợp, chuyển khoản theo thông tin bên dưới và xác nhận để sử dụng ngay.
+            Chọn gói Xu phù hợp, chuyển khoản theo thông tin bên dưới và xác nhận để sử dụng ngay.{' '}
+            <Link to="/credits" style={{ color: '#818cf8', fontWeight: 600 }}>Xem xu dùng cho tính năng nào</Link>.
           </p>
 
           <div style={{

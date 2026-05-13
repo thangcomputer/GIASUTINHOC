@@ -4,11 +4,14 @@ import { Link, useLocation } from 'react-router-dom'
 import { useCredits } from '../context/CreditContext'
 import './Navbar.css'
 
-import { Home, BookOpen, Target, User, Gem, Sparkles, MonitorPlay, ChevronUp, LayoutDashboard } from 'lucide-react'
+import { Home, BookOpen, Target, User, Gem, Sparkles, MonitorPlay, ChevronUp, LayoutDashboard, Wallet, Compass } from 'lucide-react'
+import { LOW_CREDIT_WARN_THRESHOLD } from '../lib/creditsPolicy'
 
 const navLinks = [
   { path: '/', label: 'Trang Chủ', icon: Home },
+  { path: '/start', label: 'Người mới', icon: Compass },
   { path: '/lessons', label: 'Bài Học', icon: BookOpen },
+  { path: '/credits', label: 'Xu & Gói', icon: Wallet },
   { path: '/chat', label: 'Hỏi Đáp AI', icon: Sparkles },
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, authOnly: true },
 ]
@@ -21,24 +24,40 @@ export default function Navbar() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userName, setUserName] = useState('')
+  const [isAdminSession, setIsAdminSession] = useState(false)
 
-  useEffect(() => {
+  const refreshSession = () => {
     const token = localStorage.getItem('auth_token')
     const userInfoStr = localStorage.getItem('giasu_user')
+    setIsAdminSession(!!localStorage.getItem('admin_token'))
     if (token && userInfoStr) {
       try {
         const user = JSON.parse(userInfoStr)
         setIsLoggedIn(true)
         setUserName(user.name)
-      } catch(e){}
+      } catch (e) {
+        setIsLoggedIn(false)
+      }
+    } else {
+      setIsLoggedIn(false)
     }
+  }
 
+  useEffect(() => {
+    refreshSession()
+  }, [location.pathname])
+
+  useEffect(() => {
     const checkScrollTop = () => {
       if (window.scrollY > 300) setShowScroll(true)
       else setShowScroll(false)
     }
     window.addEventListener('scroll', checkScrollTop)
-    return () => window.removeEventListener('scroll', checkScrollTop)
+    window.addEventListener('storage', refreshSession)
+    return () => {
+      window.removeEventListener('scroll', checkScrollTop)
+      window.removeEventListener('storage', refreshSession)
+    }
   }, [])
 
   const handleLogout = async () => {
@@ -58,10 +77,10 @@ export default function Navbar() {
         <div className="navbar-container">
           <Link to="/" className="navbar-brand">
             <div className="brand-icon" style={{ width: '48px', height: '48px', borderRadius: '12px', overflow: 'hidden', background: 'transparent', flexShrink: 0 }}>
-              <img src="/logo_cartoon.png" alt="Thắng Tin Học AI" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+              <img src="/logo_cartoon.png" alt="Gia Sư Tin Học AI" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
             </div>
             <div className="brand-text">
-              <span className="brand-name">Thắng Tin Học</span>
+              <span className="brand-name">Gia Sư Tin Học</span>
               <span className="brand-sub">AI Gia Sư Thông Minh</span>
             </div>
           </Link>
@@ -83,7 +102,7 @@ export default function Navbar() {
               <>
                 <Link 
                   to="/deposit" 
-                  className="credit-badge-nav"
+                  className={`credit-badge-nav${credits === 0 ? ' credit-badge-nav--empty' : ''}`}
                   onClick={() => setMenuOpen(false)}
                   style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
@@ -120,6 +139,29 @@ export default function Navbar() {
             <span className={`ham-line ${menuOpen ? 'open' : ''}`}></span>
           </button>
         </div>
+
+        {isLoggedIn && !isAdminSession && credits <= LOW_CREDIT_WARN_THRESHOLD && (
+          <div
+            className={`navbar-credit-warn${credits === 0 ? ' navbar-credit-warn--empty' : ''}`}
+            role="status"
+          >
+            {credits === 0 ? (
+              <>
+                <span>Bạn đã hết xu. Các tính năng AI tạm khóa cho đến khi bạn nạp thêm.</span>
+                <Link to="/deposit" className="navbar-credit-warn-cta">Nạp xu ngay</Link>
+                <Link to="/credits" className="navbar-credit-warn-link">Bảng giá</Link>
+              </>
+            ) : (
+              <>
+                <span>
+                  Số dư còn <strong>{credits} xu</strong> — sắp không đủ cho vài lượt AI. Nạp thêm để học liền mạch.
+                </span>
+                <Link to="/deposit" className="navbar-credit-warn-cta">Nạp xu</Link>
+                <Link to="/credits" className="navbar-credit-warn-link">Chi tiết</Link>
+              </>
+            )}
+          </div>
+        )}
       </nav>
 
       {/* Floating Scroll To Top Button */}

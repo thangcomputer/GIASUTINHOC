@@ -4,6 +4,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { Lock, HelpCircle, ArrowRight, Loader2, Eye, EyeOff, User, AtSign } from 'lucide-react'
 import { useGoogleLogin } from '@react-oauth/google';
+import { WELCOME_COINS } from '../lib/creditsPolicy';
+import { parseJsonResponse } from '../lib/parseApiResponse.js';
+
+const POST_LOGIN_REDIRECT_KEY = 'giasu_post_login_redirect'
 
 export default function AuthPage() {
   const [searchParams] = useSearchParams()
@@ -46,10 +50,17 @@ export default function AuthPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         })
-        const data = await res.json()
+        const data = await parseJsonResponse(res)
         if (data.success) {
+          try { sessionStorage.setItem(POST_LOGIN_REDIRECT_KEY, '/start') } catch {}
           setMode('login'); setPassword(''); setPasswordConfirm(''); setErrorMsg('')
-          Swal.fire({ icon: 'success', title: 'Đăng ký thành công!', text: 'Mời bạn đăng nhập.', timer: 2000, showConfirmButton: false })
+          Swal.fire({
+            icon: 'success',
+            title: 'Đăng ký thành công!',
+            html: `Bạn được tặng <b>${WELCOME_COINS} xu</b> chào mừng. Sau khi đăng nhập, bạn sẽ vào <b>Lộ trình người mới</b>.`,
+            timer: 3200,
+            showConfirmButton: false,
+          })
         } else throw new Error(data.message)
 
       } else {
@@ -59,10 +70,10 @@ export default function AuthPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         })
-        const data = await res.json()
+        const data = await parseJsonResponse(res)
         if (data.success) {
           const user = data.data
-          localStorage.setItem('auth_token', 'temp_token_' + user._id)
+          if (data.token) localStorage.setItem('auth_token', data.token)
           localStorage.setItem('user_info', JSON.stringify({ id: user._id, name: user.name, identifier: user.email || user.phone, credits: user.coins }))
           localStorage.setItem('giasu_user', JSON.stringify(user))
           window.location.replace(redirectTo)
@@ -84,13 +95,21 @@ export default function AuthPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ credential: tokenResponse.credential || tokenResponse.access_token || tokenResponse.id_token })
         })
-        const data = await res.json()
+        const data = await parseJsonResponse(res)
         if (data.success) {
           const user = data.data
-          localStorage.setItem('auth_token', 'google_sso_' + user._id)
+          if (data.token) localStorage.setItem('auth_token', data.token)
           localStorage.setItem('user_info', JSON.stringify({ id: user._id, name: user.name, identifier: user.email, credits: user.coins }))
           localStorage.setItem('giasu_user', JSON.stringify(user))
-          window.location.replace(redirectTo)
+          let next = redirectTo
+          try {
+            const saved = sessionStorage.getItem(POST_LOGIN_REDIRECT_KEY)
+            if (saved) {
+              next = saved
+              sessionStorage.removeItem(POST_LOGIN_REDIRECT_KEY)
+            }
+          } catch {}
+          window.location.replace(next)
         } else throw new Error(data.message)
       } catch (err) {
         setErrorMsg(err.message)
@@ -129,7 +148,7 @@ export default function AuthPage() {
                   <span style={{ fontSize: '1.5rem' }}>🎓</span>
                 </div>
                 <div>
-                  <div style={{ color: 'white', fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.02em' }}>Thắng Tin Học</div>
+                  <div style={{ color: 'white', fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.02em' }}>Gia Sư Tin Học</div>
                   <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem' }}>Trung Tâm Đào Tạo</div>
                 </div>
               </div>
@@ -144,6 +163,7 @@ export default function AuthPage() {
 
               {/* Feature pills */}
               {[
+                { icon: '🪙', text: `${WELCOME_COINS} xu miễn phí — trải nghiệm AI & đề tập` },
                 { icon: '⚡', text: 'AI Gia Sư riêng 24/7' },
                 { icon: '🏆', text: 'Chứng chỉ được công nhận' },
                 { icon: '📱', text: 'Học mọi lúc, mọi nơi' },
@@ -156,7 +176,7 @@ export default function AuthPage() {
             </div>
 
             <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', position: 'relative' }}>
-              © 2025 Thắng Tin Học. Bảo mật SSL 256-bit.
+              © {new Date().getFullYear()} Gia Sư Tin Học. Bảo mật SSL 256-bit.
             </div>
           </div>
 
@@ -175,7 +195,9 @@ export default function AuthPage() {
               {mode === 'login' ? 'Chào mừng trở lại! 👋' : 'Tạo tài khoản mới'}
             </h3>
             <p style={{ color: '#64748b', fontSize: '0.875rem', margin: '0 0 28px' }}>
-              {mode === 'login' ? 'Đăng nhập để tiếp tục hành trình học của bạn' : 'Điền thông tin để bắt đầu học ngay hôm nay'}
+              {mode === 'login'
+                ? 'Đăng nhập để tiếp tục hành trình học của bạn'
+                : `Tạo tài khoản để nhận ${WELCOME_COINS} xu chào mừng và học thử các tính năng AI.`}
             </p>
 
             {errorMsg && (

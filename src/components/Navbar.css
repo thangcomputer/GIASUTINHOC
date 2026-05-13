@@ -50,7 +50,7 @@
 }
 
 .brand-name {
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-main, 'Be Vietnam Pro', system-ui, sans-serif);
   font-weight: 800;
   font-size: 1.25rem;
   background: linear-gradient(135deg, #818cf8, #8b5cf6);
@@ -195,5 +195,64 @@
 .credit-badge-nav:hover {
   background: rgba(245, 158, 11, 0.25);
   transform: translateY(-2px);
+}
+
+.credit-badge-nav--empty {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #fecaca !important;
+  border-color: rgba(248, 113, 113, 0.45) !important;
+}
+
+.navbar-credit-warn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 16px;
+  padding: 10px 20px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  text-align: center;
+  border-top: 1px solid rgba(245, 158, 11, 0.25);
+  background: rgba(120, 53, 15, 0.45);
+  color: #fde68a;
+}
+
+.navbar-credit-warn--empty {
+  border-top-color: rgba(248, 113, 113, 0.35);
+  background: rgba(127, 29, 29, 0.55);
+  color: #fecaca;
+}
+
+.navbar-credit-warn strong {
+  color: #fff;
+  font-weight: 800;
+}
+
+.navbar-credit-warn-cta {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.78rem;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+}
+
+.navbar-credit-warn-cta:hover {
+  filter: brightness(1.08);
+}
+
+.navbar-credit-warn-link {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85) !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.navbar-credit-warn-link:hover {
+  color: #fff !important;
 }
 

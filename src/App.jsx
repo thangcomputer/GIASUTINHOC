@@ -26,6 +26,9 @@ const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard'))
 const AdminHomepageConfig = lazy(() => import('./pages/AdminHomepageConfig'))
+const CertificateVerifyPage = lazy(() => import('./pages/CertificateVerifyPage'))
+const CreditsGuidePage = lazy(() => import('./pages/CreditsGuidePage'))
+const StartHerePage = lazy(() => import('./pages/StartHerePage'))
 
 // ── Loading fallback ──
 const PageLoader = () => (
@@ -85,6 +88,9 @@ export default function App() {
           <Route path="/exam/:id" element={<ExamPage />} />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/register" element={<AuthPage />} />
+          <Route path="/cert/:certificateId" element={<CertificateVerifyPage />} />
+          <Route path="/credits" element={<CreditsGuidePage />} />
+          <Route path="/start" element={<StartHerePage />} />
 
           {/* Protected routes — yêu cầu đăng nhập */}
           <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />

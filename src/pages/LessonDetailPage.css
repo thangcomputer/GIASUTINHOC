@@ -318,3 +318,80 @@
     gap: 16px;
   }
 }
+
+/* ── Professional lesson UX: skeleton, TOC drawer, checkpoint ── */
+@keyframes lesson-skel-pulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.9; }
+}
+
+.lesson-skeleton {
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(99,102,241,0.08), rgba(148,163,184,0.12), rgba(99,102,241,0.08));
+  background-size: 200% 100%;
+  animation: lesson-skel-pulse 1.4s ease-in-out infinite;
+}
+
+.lesson-skeleton--hero { height: 52px; max-width: 480px; }
+.lesson-skeleton--sidebar { width: 260px; height: 280px; flex-shrink: 0; }
+.lesson-skeleton--video { width: 100%; padding-top: 56.25%; position: relative; }
+.lesson-skeleton--video::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: inherit;
+}
+.lesson-skeleton--line { height: 14px; border-radius: 8px; max-width: 100%; }
+.lesson-skeleton--line.short { max-width: 55%; }
+
+.lesson-toc-backdrop {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .lesson-toc-toggle {
+    display: inline-flex !important;
+    align-items: center;
+  }
+
+  .lesson-detail-main-wrap {
+    flex-direction: column;
+  }
+
+  .lesson-detail-toc {
+    position: fixed !important;
+    left: 0;
+    top: 64px;
+    bottom: 0;
+    width: min(300px, 90vw) !important;
+    max-height: none !important;
+    transform: translateX(-102%);
+    transition: transform 0.28s ease;
+    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.45);
+    background: rgba(10, 10, 26, 0.98);
+  }
+
+  .lesson-detail-toc--open {
+    transform: translateX(0);
+  }
+
+  .lesson-toc-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .lesson-detail-toc {
+    z-index: 45;
+  }
+}
+
+.lesson-checkpoint-overlay:focus {
+  outline: none;
+}

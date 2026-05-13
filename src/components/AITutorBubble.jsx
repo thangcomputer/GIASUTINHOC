@@ -111,7 +111,7 @@ export default function AITutorBubble() {
     if (open && messages.length === 0) {
       setMessages([{
         role: 'ai',
-        text: 'Chào bạn, tôi là **Trợ lý Tư vấn** của trung tâm **Thắng Tin Học**. Tôi có thể giúp bạn tìm hiểu về các khóa học, lộ trình phù hợp và thông tin đào tạo. Hãy chọn câu hỏi bên dưới hoặc đặt câu hỏi trực tiếp.'
+        text: 'Chào bạn, tôi là **Trợ lý Tư vấn** của trung tâm **Gia Sư Tin Học**. Tôi có thể giúp bạn tìm hiểu về các khóa học, lộ trình phù hợp và thông tin đào tạo. Hãy chọn câu hỏi bên dưới hoặc đặt câu hỏi trực tiếp.'
       }])
     }
   }, [open])

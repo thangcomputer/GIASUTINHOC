@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   background: #0d0d1a;
-  font-family: 'Google Sans', 'Be Vietnam Pro', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 .chat-layout {
@@ -297,6 +297,13 @@
   flex-direction: row-reverse;
 }
 
+.message-wrapper.user > div:first-of-type {
+  flex: 1;
+  min-width: 0;
+  max-width: min(92%, 560px);
+  align-items: flex-end;
+}
+
 @keyframes msgSlideIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -331,12 +338,14 @@
   color: #e2e8f0 !important;
   font-size: 0.91rem;
   line-height: 1.7;
-  max-width: 70% !important;
-  width: fit-content !important;
+  max-width: 100% !important;
+  width: auto !important;
+  min-width: 4rem;
   word-break: break-word !important;
   white-space: pre-wrap !important;
   box-shadow: none !important;
   align-self: flex-end;
+  box-sizing: border-box;
 }
 
 .chat-bubble-ai {
@@ -360,6 +369,11 @@
 
 /* Markdown inside AI bubble */
 
+.chat-bubble-ai .markdown-body {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .chat-bubble-ai .markdown-body h1 { font-size: 1.3rem; margin: 16px 0 8px; color: #f1f5f9; font-weight: 800; }
 .chat-bubble-ai .markdown-body h2 { font-size: 1.1rem; margin: 14px 0 6px; color: #e2e8f0; font-weight: 700; }
 .chat-bubble-ai .markdown-body h3 { font-size: 0.98rem; margin: 12px 0 5px; color: #cbd5e1; font-weight: 700; }
@@ -399,18 +413,34 @@
 }
 .chat-bubble-ai .markdown-body a { color: #818cf8; text-decoration: underline dotted; }
 .chat-bubble-ai .markdown-body table {
-  width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem;
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 0.88rem;
+  table-layout: auto;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 .chat-bubble-ai .markdown-body th,
 .chat-bubble-ai .markdown-body td {
-  padding: 8px 12px;
-  border: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 12px;
+  border: 1px solid #334155;
   text-align: left;
+  vertical-align: top;
+  white-space: normal;
+  word-break: break-word;
+  min-width: 5rem;
+  color: #f1f5f9;
 }
 .chat-bubble-ai .markdown-body th {
-  background: rgba(99,102,241,0.08);
-  color: #e2e8f0;
+  background: #1e293b;
+  color: #38bdf8;
   font-weight: 600;
+  text-align: left;
 }
 
 /* ─── MSG IMAGE ─────────────────────────────────────────── */
@@ -446,6 +476,38 @@
 @keyframes typDot {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
   30%            { transform: translateY(-8px); opacity: 1; }
+}
+
+.stream-thinking-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  padding: 4px 0;
+}
+.stream-thinking-label {
+  font-weight: 600;
+  color: #c7d2fe;
+}
+.streaming-plain {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: #e2e8f0;
+}
+.stream-cursor {
+  display: inline-block;
+  color: #818cf8;
+  animation: streamBlink 1s step-end infinite;
+  margin-left: 1px;
+  font-weight: 300;
+}
+@keyframes streamBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 /* ─── INLINE IMAGE BTN ──────────────────────────────────── */
@@ -876,44 +938,23 @@
 
 
 
-/* ─── EXCEL-LIKE DATA GRID FOR MARKDOWN TABLES ─── */
-.chat-bubble-ai .markdown-body table /* excel-like */ {
-  background: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-.chat-bubble-ai .markdown-body th {
-  background: #1e293b !important;
-  color: #38bdf8 !important;
-  border: 1px solid #334155 !important;
-  text-align: center !important;
-}
-.chat-bubble-ai .markdown-body tr td:first-child {
-  background: #1e293b;
-  color: #fca5a5;
-  font-weight: 800;
-  text-align: center;
-  border-right: 2px solid #334155;
-  width: 40px;
-}
-.chat-bubble-ai .markdown-body td {
-  border: 1px solid #334155;
-  color: #f1f5f9;
-}
 .chat-bubble-ai .markdown-body tr:hover td {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.03);
 }
-
 
 /* ─── COPY TABLE BUTTON ─── */
 .copyable-table-wrapper {
   position: relative;
   margin: 16px 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
+  max-width: 100%;
 }
 .copyable-table-wrapper table {
   margin: 0 !important;
+  min-width: min(100%, max-content);
 }
 .copyable-table-wrapper:hover .copy-table-btn {
   opacity: 1;

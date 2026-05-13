@@ -2,11 +2,12 @@ import express from 'express';
 import FinalExam from '../models/FinalExam.js';
 import CourseProgress from '../models/CourseProgress.js';
 import CourseExam from '../models/CourseExam.js';
+import { requireAdmin, requireAuth, allowSelfOrAdmin, forceOwnStudentFields } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Lấy danh sách tất cả các bài thi (CMS)
-router.get('/', async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   try {
     const exams = await FinalExam.find({}).populate('studentId', 'name email').sort({ createdAt: -1 });
     res.json({ success: true, data: exams });
@@ -16,7 +17,7 @@ router.get('/', async (req, res) => {
 });
 
 // Cấp quyền thi lại (CMS)
-router.post('/allow-retake', async (req, res) => {
+router.post('/allow-retake', requireAdmin, async (req, res) => {
   try {
     const { examId } = req.body;
     const exam = await FinalExam.findById(examId);
@@ -32,7 +33,7 @@ router.post('/allow-retake', async (req, res) => {
 });
 
 // Chấm điểm bài thi (CMS)
-router.post('/grade', async (req, res) => {
+router.post('/grade', requireAdmin, async (req, res) => {
   try {
     const { examId, isPassed, teacherFeedback, essayScore } = req.body;
     const exam = await FinalExam.findById(examId);
@@ -55,9 +56,9 @@ router.post('/grade', async (req, res) => {
   }
 });
 
-// GET exam configuration per course (CMS & Student)
+// GET exam configuration per course (CMS)
 // LƯU Ý: Tuyến này phải đặt TRƯỚC /:studentId/:courseId để không bị trùng lặp params
-router.get('/course/:courseId', async (req, res) => {
+router.get('/course/:courseId', requireAdmin, async (req, res) => {
   try {
     const examConfig = await CourseExam.findOne({ courseId: req.params.courseId });
     res.json({ success: true, data: examConfig });
@@ -67,7 +68,7 @@ router.get('/course/:courseId', async (req, res) => {
 });
 
 // UPDATE exam config for course (CMS)
-router.post('/course/:courseId', async (req, res) => {
+router.post('/course/:courseId', requireAdmin, async (req, res) => {
   try {
     const { questions, quizPassScore, essayQuestionTitle, essayQuestion, allowFileUpload } = req.body;
     let examConfig = await CourseExam.findOne({ courseId: req.params.courseId });
@@ -89,7 +90,7 @@ router.post('/course/:courseId', async (req, res) => {
 });
 
 // Nộp bài thi
-router.post('/submit', async (req, res) => {
+router.post('/submit', requireAuth, forceOwnStudentFields(['studentId']), async (req, res) => {
   try {
     const { studentId, courseId, quizScore, essayAnswer, essayFileUrl, essayFileName, isFailedFast } = req.body;
     
@@ -129,7 +130,7 @@ router.post('/submit', async (req, res) => {
 
 // GET exam state cho học viên
 // LƯU Ý: Phải để cuối vì params quá chung chung sẽ bắt nhầm các route cố định (như /submit, /course...) nếu để trên.
-router.get('/:studentId/:courseId', async (req, res) => {
+router.get('/:studentId/:courseId', requireAuth, allowSelfOrAdmin('studentId'), async (req, res) => {
   try {
     const exam = await FinalExam.findOne({ 
       studentId: req.params.studentId, 

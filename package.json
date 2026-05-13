@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start:backend": "node server/server.js",
+    "dev:check": "node scripts/dev-preflight.cjs",
     "dev:all": "concurrently \"npm run dev\" \"npm run start:backend\"",
+    "migrate:welcome100": "node scripts/migrate-welcome-100.cjs",
     "deploy": "node scripts/deploy_vps.cjs",
     "sync": "git add . && git commit -m \"auto-sync\" && git push origin main && node scripts/vps_pull.cjs"
   },
@@ -29,6 +31,7 @@
     "framer-motion": "^12.38.0",
     "google-auth-library": "^10.6.2",
     "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.8.0",
     "marked": "^18.0.0",
     "mongoose": "^9.4.1",

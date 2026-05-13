@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import { ArrowLeft, Save, Plus, Trash2, GripVertical, ChevronDown, ChevronRight, Clock } from 'lucide-react';
+import { adminJsonAuthHeaders, adminAuthHeaders } from '../lib/authFetch';
 
 export default function AdminCourseForm({ initialData, onSave, onCancel }) {
   const [formData, setFormData] = useState({
@@ -28,15 +29,32 @@ export default function AdminCourseForm({ initialData, onSave, onCancel }) {
           // Migrate: cấu trúc cũ (từng question/options/correctIndex trực tiếp trên checkpoint)
           checkpoints = checkpoints.map(cp => {
             if (cp.question && !cp.questions) {
-              return { timeInSeconds: cp.timeInSeconds, questions: [{ question: cp.question, options: cp.options || [], correctIndex: cp.correctIndex ?? 0 }] };
+              return { timeInSeconds: cp.timeInSeconds, questions: [{ question: cp.question, options: cp.options || [], correctIndex: cp.correctIndex ?? 0, type: 'mcq', acceptableAnswers: [], hint: '', explanation: '' }] };
             }
-            return { timeInSeconds: cp.timeInSeconds || '', questions: Array.isArray(cp.questions) ? cp.questions : [] };
+            return {
+              timeInSeconds: cp.timeInSeconds || '',
+              questions: Array.isArray(cp.questions)
+                ? cp.questions.map(q => ({
+                    ...q,
+                    type: q.type || (q.options?.length >= 2 ? 'mcq' : 'text'),
+                    acceptableAnswers: Array.isArray(q.acceptableAnswers) ? q.acceptableAnswers : (typeof q.acceptableAnswers === 'string' ? q.acceptableAnswers.split(',').map(s => s.trim()).filter(Boolean) : []),
+                    hint: q.hint || '',
+                    explanation: q.explanation || '',
+                  }))
+                : [],
+            };
           });
           // Migrate: cấu trúc rất cũ (quizTime trực tiếp trên step)
           if (checkpoints.length === 0 && s.quizTime) {
-            checkpoints = [{ timeInSeconds: s.quizTime, questions: [{ question: s.quizQuestion || '', options: Array.isArray(s.quizOptions) ? s.quizOptions : [], correctIndex: s.quizCorrectIndex ?? 0 }] }];
+            checkpoints = [{ timeInSeconds: s.quizTime, questions: [{ question: s.quizQuestion || '', options: Array.isArray(s.quizOptions) ? s.quizOptions : [], correctIndex: s.quizCorrectIndex ?? 0, type: 'mcq', acceptableAnswers: [], hint: '', explanation: '' }] }];
           }
-          return { title: s.title || '', content: s.content || '', videoUrl: s.videoUrl || '', tip: s.tip || '', exercise: s.exercise || '', quizCheckpoints: checkpoints };
+          return {
+            title: s.title || '', content: s.content || '', videoUrl: s.videoUrl || '', tip: s.tip || '', exercise: s.exercise || '', quizCheckpoints: checkpoints,
+            learningObjectives: Array.isArray(s.learningObjectives) ? s.learningObjectives : [],
+            summaryBullets: Array.isArray(s.summaryBullets) ? s.summaryBullets : [],
+            chapters: Array.isArray(s.chapters) ? s.chapters.map(ch => ({ title: ch.title || '', timeInSeconds: Number(ch.timeInSeconds) || 0 })) : [],
+            transcript: s.transcript || '',
+          };
         })
       };
       setFormData(normalizedData);
@@ -62,7 +80,7 @@ export default function AdminCourseForm({ initialData, onSave, onCancel }) {
   const addStep = () => {
     setFormData(prev => ({
       ...prev,
-      steps: [...prev.steps, { title: 'Bài mới', content: '', videoUrl: '', tip: '', exercise: '', quizCheckpoints: [] }]
+      steps: [...prev.steps, { title: 'Bài mới', content: '', videoUrl: '', tip: '', exercise: '', quizCheckpoints: [], learningObjectives: [], summaryBullets: [], chapters: [], transcript: '' }]
     }));
   };
   
@@ -76,7 +94,7 @@ export default function AdminCourseForm({ initialData, onSave, onCancel }) {
   const addCheckpoint = (stepIdx) => {
     const newSteps = [...formData.steps];
     if (!newSteps[stepIdx].quizCheckpoints) newSteps[stepIdx].quizCheckpoints = [];
-    newSteps[stepIdx].quizCheckpoints.push({ timeInSeconds: '', questions: [{ question: '', options: [], correctIndex: 0 }] });
+    newSteps[stepIdx].quizCheckpoints.push({ timeInSeconds: '', questions: [{ question: '', options: [], correctIndex: 0, type: 'mcq', acceptableAnswers: [], hint: '', explanation: '' }] });
     setFormData(prev => ({ ...prev, steps: newSteps }));
     const newIdx = newSteps[stepIdx].quizCheckpoints.length - 1;
     setExpandedCheckpoints(prev => ({ ...prev, [`${stepIdx}-${newIdx}`]: true }));
@@ -98,7 +116,7 @@ export default function AdminCourseForm({ initialData, onSave, onCancel }) {
   const addQuestion = (stepIdx, cpIdx) => {
     const newSteps = [...formData.steps];
     if (!newSteps[stepIdx].quizCheckpoints[cpIdx].questions) newSteps[stepIdx].quizCheckpoints[cpIdx].questions = [];
-    newSteps[stepIdx].quizCheckpoints[cpIdx].questions.push({ question: '', options: [], correctIndex: 0 });
+    newSteps[stepIdx].quizCheckpoints[cpIdx].questions.push({ question: '', options: [], correctIndex: 0, type: 'mcq', acceptableAnswers: [], hint: '', explanation: '' });
     setFormData(prev => ({ ...prev, steps: newSteps }));
   };
 
@@ -124,6 +142,24 @@ export default function AdminCourseForm({ initialData, onSave, onCancel }) {
     setFormData(prev => ({ ...prev, steps: newSteps }));
   };
 
+  const addChapter = (stepIdx) => {
+    const newSteps = [...formData.steps];
+    if (!newSteps[stepIdx].chapters) newSteps[stepIdx].chapters = [];
+    newSteps[stepIdx].chapters.push({ title: '', timeInSeconds: 0 });
+    setFormData(prev => ({ ...prev, steps: newSteps }));
+  };
+  const removeChapter = (stepIdx, chIdx) => {
+    const newSteps = [...formData.steps];
+    newSteps[stepIdx].chapters.splice(chIdx, 1);
+    setFormData(prev => ({ ...prev, steps: newSteps }));
+  };
+  const handleChapterChange = (stepIdx, chIdx, field, value) => {
+    const newSteps = [...formData.steps];
+    if (!newSteps[stepIdx].chapters) newSteps[stepIdx].chapters = [];
+    newSteps[stepIdx].chapters[chIdx][field] = value;
+    setFormData(prev => ({ ...prev, steps: newSteps }));
+  };
+
   // ─── Gửi Data ───
   const handleSubmit = async () => {
     if (!formData.id || !formData.title || !formData.category) {
@@ -134,7 +170,7 @@ export default function AdminCourseForm({ initialData, onSave, onCancel }) {
       const isEdit = !!initialData?._id;
       const res = await fetch(`/api/courses${isEdit ? `/${initialData.id}` : ''}`, {
         method: isEdit ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminJsonAuthHeaders(),
         body: JSON.stringify(formData)
       });
       const d = await res.json();
@@ -212,7 +248,24 @@ export default function AdminCourseForm({ initialData, onSave, onCancel }) {
                 <button onClick={() => removeStep(idx)} style={{ padding: '5px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '7px', color: '#ef4444', cursor: 'pointer', display: 'flex' }}><Trash2 size={13} /></button>
               </div>
               <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div><label style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px', display: 'block' }}>🎬 Video</label><div style={{ display: 'flex', gap: '8px' }}><input className="settings-input" style={{ flex: 1, fontSize: '0.85rem' }} placeholder="Link YouTube / MP4..." value={step.videoUrl || ''} onChange={e => handleStepChange(idx, 'videoUrl', e.target.value)} /><label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: '0 12px', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 600, color: '#c4b5fd', background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.3)', whiteSpace: 'nowrap' }}>📁 Tải lên<input type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => { const file = e.target.files[0]; if (!file) return; Swal.fire({ title: 'Đang tải...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); const fd = new FormData(); fd.append('video', file); try { const res = await fetch('/api/courses/upload-video', { method: 'POST', body: fd }); const d = await res.json(); if (d.success) { handleStepChange(idx, 'videoUrl', d.url); Swal.fire('OK', 'Đã tải!', 'success'); } else Swal.fire('Lỗi', d.message, 'error'); } catch { Swal.fire('Lỗi', 'Mất kết nối', 'error'); } }} /></label></div></div>
+                <div><label style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px', display: 'block' }}>🎬 Video</label><div style={{ display: 'flex', gap: '8px' }}><input className="settings-input" style={{ flex: 1, fontSize: '0.85rem' }} placeholder="Link YouTube / MP4..." value={step.videoUrl || ''} onChange={e => handleStepChange(idx, 'videoUrl', e.target.value)} /><label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: '0 12px', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 600, color: '#c4b5fd', background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.3)', whiteSpace: 'nowrap' }}>📁 Tải lên<input type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => { const file = e.target.files[0]; if (!file) return; Swal.fire({ title: 'Đang tải...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); const fd = new FormData(); fd.append('video', file); try { const res = await fetch('/api/courses/upload-video', { method: 'POST', headers: adminAuthHeaders(), body: fd }); const d = await res.json(); if (d.success) { handleStepChange(idx, 'videoUrl', d.url); Swal.fire('OK', 'Đã tải!', 'success'); } else Swal.fire('Lỗi', d.message, 'error'); } catch { Swal.fire('Lỗi', 'Mất kết nối', 'error'); } }} /></label></div></div>
+
+                <div style={{ padding: '12px', background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.12)', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#a5b4fc' }}>🎯 Trải nghiệm học (mục tiêu, chương, phụ đề)</span>
+                  <div><label style={{ fontSize: '0.65rem', color: '#94a3b8' }}>Mục tiêu sau module (mỗi dòng một mục tiêu)</label><textarea className="settings-input" style={{ minHeight: '72px', fontSize: '0.83rem', marginTop: '4px' }} placeholder="Ví dụ: Nhận biết phím Enter trên bàn phím" value={(step.learningObjectives || []).join('\n')} onChange={e => handleStepChange(idx, 'learningObjectives', e.target.value.split('\n').map(l => l.trim()).filter(Boolean))} /></div>
+                  <div><label style={{ fontSize: '0.65rem', color: '#94a3b8' }}>Tóm tắt cuối module (mỗi dòng một ý)</label><textarea className="settings-input" style={{ minHeight: '64px', fontSize: '0.83rem', marginTop: '4px' }} placeholder="3 bullet ôn nhanh..." value={(step.summaryBullets || []).join('\n')} onChange={e => handleStepChange(idx, 'summaryBullets', e.target.value.split('\n').map(l => l.trim()).filter(Boolean))} /></div>
+                  <div><label style={{ fontSize: '0.65rem', color: '#94a3b8' }}>Transcript / phụ đề (plain text, học viên có thể tìm trong bài)</label><textarea className="settings-input" style={{ minHeight: '100px', fontSize: '0.8rem', marginTop: '4px', fontFamily: 'inherit' }} placeholder="Dán lời thoại hoặc ghi chú..." value={step.transcript || ''} onChange={e => handleStepChange(idx, 'transcript', e.target.value)} /></div>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}><label style={{ fontSize: '0.65rem', color: '#94a3b8' }}>Mốc chương trong video (nhảy thời gian)</label><button type="button" onClick={() => addChapter(idx)} style={{ padding: '4px 10px', fontSize: '0.72rem', borderRadius: '8px', border: '1px dashed rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.08)', color: '#a5b4fc', cursor: 'pointer' }}><Plus size={12} /> Thêm mốc</button></div>
+                    {(step.chapters || []).map((ch, chIdx) => (
+                      <div key={chIdx} style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'center' }}>
+                        <input className="settings-input" style={{ flex: 1, fontSize: '0.82rem' }} placeholder="Tên chương" value={ch.title || ''} onChange={e => handleChapterChange(idx, chIdx, 'title', e.target.value)} />
+                        <input className="settings-input" type="number" style={{ width: '88px', fontSize: '0.82rem' }} placeholder="Giây" value={ch.timeInSeconds ?? ''} onChange={e => handleChapterChange(idx, chIdx, 'timeInSeconds', e.target.value === '' ? 0 : Number(e.target.value))} />
+                        <button type="button" onClick={() => removeChapter(idx, chIdx)} style={{ padding: '6px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '8px', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={14} /></button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
                 {/* Quiz */}
                 <div style={{ padding: '12px', background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: '10px' }}>
@@ -235,12 +288,32 @@ export default function AdminCourseForm({ initialData, onSave, onCancel }) {
                         </div>
                         {isExp && (<div style={{ padding: '8px 10px 12px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           <div style={{ maxWidth: '140px' }}><label style={{ fontSize: '0.68rem', color: '#94a3b8' }}>Giây dừng</label><input className="settings-input" type="number" style={{ fontSize: '0.85rem' }} placeholder="30" value={cp.timeInSeconds || ''} onChange={e => handleCheckpointTimeChange(idx, cpIdx, e.target.value ? Number(e.target.value) : '')} /></div>
-                          {(cp.questions || []).map((q, qIdx) => (<div key={qIdx} style={{ padding: '8px', background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.1)', borderRadius: '7px' }}>
+                          {(cp.questions || []).map((q, qIdx) => {
+                            const qt = q.type || 'mcq';
+                            return (<div key={qIdx} style={{ padding: '8px', background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.1)', borderRadius: '7px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}><span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#a5b4fc' }}>Câu {qIdx + 1}</span><button type="button" onClick={() => removeQuestion(idx, cpIdx, qIdx)} style={{ padding: '1px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', opacity: 0.5 }}><Trash2 size={10} /></button></div>
+                            <div style={{ marginBottom: '6px' }}>
+                              <label style={{ fontSize: '0.65rem', color: '#94a3b8', display: 'block', marginBottom: '3px' }}>Dạng câu</label>
+                              <select className="settings-input" style={{ fontSize: '0.8rem', padding: '6px 8px' }} value={qt} onChange={e => handleQuestionChange(idx, cpIdx, qIdx, 'type', e.target.value)}>
+                                <option value="mcq">Trắc nghiệm</option>
+                                <option value="text">Nhập đáp án (Enter, từ khóa…)</option>
+                                <option value="order">Kéo thả thứ tự</option>
+                              </select>
+                            </div>
                             <input className="settings-input" style={{ marginBottom: '4px', fontSize: '0.83rem' }} placeholder="Câu hỏi..." value={q.question || ''} onChange={e => handleQuestionChange(idx, cpIdx, qIdx, 'question', e.target.value)} />
-                            <input className="settings-input" style={{ marginBottom: '4px', fontSize: '0.83rem' }} placeholder="A, B, C, D (phẩy)" value={Array.isArray(q.options) ? q.options.join(', ') : ''} onChange={e => handleQuestionChange(idx, cpIdx, qIdx, 'options', e.target.value.split(',').map(s => s.trim()))} />
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><label style={{ fontSize: '0.68rem', color: '#94a3b8' }}>Đáp án:</label><input className="settings-input" type="number" style={{ width: '45px', fontSize: '0.83rem', padding: '3px 6px' }} value={q.correctIndex ?? 0} onChange={e => handleQuestionChange(idx, cpIdx, qIdx, 'correctIndex', Number(e.target.value))} /></div>
-                          </div>))}
+                            {qt === 'text' && (
+                              <input className="settings-input" style={{ marginBottom: '4px', fontSize: '0.83rem' }} placeholder="Đáp án đúng (nhiều từ, cách nhau bởi phẩy)" value={Array.isArray(q.acceptableAnswers) ? q.acceptableAnswers.join(', ') : ''} onChange={e => handleQuestionChange(idx, cpIdx, qIdx, 'acceptableAnswers', e.target.value.split(',').map(s => s.trim()).filter(Boolean))} />
+                            )}
+                            {(qt === 'mcq' || qt === 'order') && (
+                            <input className="settings-input" style={{ marginBottom: '4px', fontSize: '0.83rem' }} placeholder={qt === 'order' ? 'Các bước / dòng (phẩy) — thứ tự đúng = thứ tự bạn nhập' : 'A, B, C, D (phẩy)'} value={Array.isArray(q.options) ? q.options.join(', ') : ''} onChange={e => handleQuestionChange(idx, cpIdx, qIdx, 'options', e.target.value.split(',').map(s => s.trim()))} />
+                            )}
+                            {qt === 'mcq' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}><label style={{ fontSize: '0.68rem', color: '#94a3b8' }}>Đáp án đúng (index):</label><input className="settings-input" type="number" style={{ width: '45px', fontSize: '0.83rem', padding: '3px 6px' }} value={q.correctIndex ?? 0} onChange={e => handleQuestionChange(idx, cpIdx, qIdx, 'correctIndex', Number(e.target.value))} /></div>
+                            )}
+                            <input className="settings-input" style={{ fontSize: '0.8rem', marginBottom: '6px' }} placeholder="Gợi ý sau lần sai thứ nhất (tuỳ chọn)" value={q.hint || ''} onChange={e => handleQuestionChange(idx, cpIdx, qIdx, 'hint', e.target.value)} />
+                            <textarea className="settings-input" style={{ fontSize: '0.78rem', minHeight: '56px', resize: 'vertical' }} placeholder="Giải thích ngắn sau lần sai đầu (tại sao đáp án đúng)" value={q.explanation || ''} onChange={e => handleQuestionChange(idx, cpIdx, qIdx, 'explanation', e.target.value)} />
+                          </div>);
+                          })}
                           <button type="button" onClick={() => addQuestion(idx, cpIdx)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px', padding: '5px', background: 'rgba(99,102,241,0.05)', border: '1px dashed rgba(99,102,241,0.2)', borderRadius: '7px', color: '#818cf8', fontWeight: 600, fontSize: '0.72rem', cursor: 'pointer' }}><Plus size={11} /> Thêm câu hỏi</button>
                         </div>)}
                       </div>);

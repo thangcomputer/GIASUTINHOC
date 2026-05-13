@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import { ArrowLeft, Save } from 'lucide-react';
+import { adminJsonAuthHeaders } from '../lib/authFetch';
 
 export default function AdminQuizForm({ initialData, onSave, onCancel }) {
   const [formData, setFormData] = useState({
@@ -36,7 +37,7 @@ export default function AdminQuizForm({ initialData, onSave, onCancel }) {
       const isEdit = !!initialData?._id;
       const res = await fetch(`/api/quizzes${isEdit ? `/${initialData._id}` : ''}`, {
         method: isEdit ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminJsonAuthHeaders(),
         body: JSON.stringify(formData)
       });
       const d = await res.json();

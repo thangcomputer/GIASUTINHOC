@@ -1,9 +1,13 @@
 import express from 'express';
 import Lesson from '../models/Lesson.js';
 import Student from '../models/Student.js';
+import CourseProgress from '../models/CourseProgress.js';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import { requireAdmin, requireAuth, forceOwnStudentFields } from '../middleware/auth.js';
+
+/* global process */
 
 const router = express.Router();
 
@@ -22,7 +26,7 @@ const storage = multer.diskStorage({
 });
 const uploadVideo = multer({ storage });
 
-router.post('/upload-video', uploadVideo.single('video'), (req, res) => {
+router.post('/upload-video', requireAdmin, uploadVideo.single('video'), (req, res) => {
   try {
     if (!req.file) throw new Error('Không có file hoặc file không hợp lệ');
     const fileUrl = `/uploads/videos/${req.file.filename}`;
@@ -33,7 +37,7 @@ router.post('/upload-video', uploadVideo.single('video'), (req, res) => {
 });
 
 // Mở khóa khóa học
-router.post('/unlock', async (req, res) => {
+router.post('/unlock', requireAuth, forceOwnStudentFields(['userId']), async (req, res) => {
   try {
     const { userId, courseId, cost } = req.body;
     if (!userId || !courseId) return res.status(400).json({ success: false, message: 'Thiếu thông tin' });
@@ -74,8 +78,51 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Thống kê học tập theo khóa (admin): đăng ký, hoàn thành, mốc xem TB theo module
+router.get('/:id/analytics', requireAdmin, async (req, res) => {
+  try {
+    const lesson = await Lesson.findOne({ id: req.params.id });
+    if (!lesson) return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
+
+    const progresses = await CourseProgress.find({ courseId: req.params.id }).lean();
+    const n = lesson.steps?.length || 0;
+    const enrolled = progresses.length;
+    const completed = progresses.filter(p => p.isCompleted).length;
+
+    const stepStats = Array.from({ length: n }, (_, stepIndex) => {
+      const peaks = progresses.map(p => {
+        const w = (p.watchPeaks || []).find(x => x.stepIndex === stepIndex);
+        return w?.seconds ?? 0;
+      });
+      const withData = peaks.filter(s => s > 0);
+      const sum = withData.reduce((a, b) => a + b, 0);
+      const avgMaxWatchSeconds = withData.length ? Math.round(sum / withData.length) : 0;
+      return {
+        stepIndex,
+        title: lesson.steps[stepIndex]?.title || `Module ${stepIndex + 1}`,
+        learnersWithProgress: withData.length,
+        avgMaxWatchSeconds,
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        courseId: lesson.id,
+        title: lesson.title,
+        enrolled,
+        completed,
+        totalSteps: n,
+        steps: stepStats,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Thêm một khóa học mới
-router.post('/', async (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
   try {
     const newLesson = new Lesson(req.body);
     await newLesson.save();
@@ -86,7 +133,7 @@ router.post('/', async (req, res) => {
 });
 
 // Cập nhật khóa học
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const updated = await Lesson.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
     if (!updated) return res.status(404).json({ success: false, message: 'Không tìm thấy bài học' });
@@ -97,7 +144,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Xóa khóa học
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     const deleted = await Lesson.findOneAndDelete({ id: req.params.id });
     if (!deleted) return res.status(404).json({ success: false, message: 'Không tìm thấy bài học' });
@@ -108,7 +155,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Chức năng đặc biệt: Đồng bộ dữ liệu gốc (Seed)
-router.post('/seed', async (req, res) => {
+router.post('/seed', requireAdmin, async (req, res) => {
   try {
     // Nhận mảng dữ liệu tĩnh từ Client (hoặc Backend auto đọc file)
     const { lessonsArray } = req.body;

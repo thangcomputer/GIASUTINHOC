@@ -2,6 +2,8 @@ import express from 'express';
 import fs from 'fs';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { requireAdmin } from '../middleware/auth.js';
+import { WELCOME_COINS, LOW_CREDIT_WARN_THRESHOLD } from '../constants/credits.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -9,16 +11,15 @@ const __dirname = dirname(__filename);
 
 const SETTINGS_FILE = path.join(__dirname, '..', 'config', 'settings.json');
 
-// Đảm bảo thư mục tồn tại
 if (!fs.existsSync(path.dirname(SETTINGS_FILE))) {
   fs.mkdirSync(path.dirname(SETTINGS_FILE), { recursive: true });
 }
 
-// Hàm đọc settings
 export const getSettings = () => {
-  let settings = { 
-    geminiKey: '', 
+  let settings = {
+    geminiKey: '',
     openaiKey: '',
+    tavilyApiKey: '',
     coinPackages: [
       { id: '1', label: 'Gói Khởi Động', price: '50.000₫',  coins: 50,  bonus: '0%',   color: '#3b82f6', priceMs: 50000  },
       { id: '2', label: 'Gói Tiêu Chuẩn', price: '100.000₫', coins: 110, bonus: '+10%', color: '#6366f1', priceMs: 100000 },
@@ -31,8 +32,8 @@ export const getSettings = () => {
   };
   try {
     if (fs.existsSync(SETTINGS_FILE)) {
-       const userSettings = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
-       settings = { ...settings, ...userSettings };
+      const userSettings = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
+      settings = { ...settings, ...userSettings };
     }
   } catch (e) {
     console.error('Lỗi đọc settings:', e.message);
@@ -40,13 +41,36 @@ export const getSettings = () => {
   return settings;
 };
 
-// GET /api/settings
-router.get('/', (req, res) => {
+/** Không lộ API key ra client */
+export function toPublicSettings(full) {
+  const { geminiKey, openaiKey, tavilyApiKey, ...rest } = full;
+  return {
+    ...rest,
+    hasGeminiKey: !!(geminiKey && String(geminiKey).trim()),
+    hasOpenaiKey: !!(openaiKey && String(openaiKey).trim()),
+    hasTavilyKey: !!(tavilyApiKey && String(tavilyApiKey).trim()),
+  };
+}
+
+// GET /api/settings/public — gói nạp, giá AI (ẩn key)
+router.get('/public', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      ...toPublicSettings(getSettings()),
+      welcomeBonusCoins: WELCOME_COINS,
+      lowCreditWarnThreshold: LOW_CREDIT_WARN_THRESHOLD,
+    },
+  });
+});
+
+// GET /api/settings — đầy đủ (chỉ admin)
+router.get('/', requireAdmin, (req, res) => {
   res.json({ success: true, data: getSettings() });
 });
 
-// POST /api/settings
-router.post('/', (req, res) => {
+// POST /api/settings — lưu (chỉ admin)
+router.post('/', requireAdmin, (req, res) => {
   try {
     const current = getSettings();
     const newSettings = { ...current, ...req.body };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { Save, AlertCircle, LayoutTemplate, Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { adminJsonAuthHeaders } from '../lib/authFetch';
 
 const ANIMATIONS = [
   'none',
@@ -37,7 +38,7 @@ export default function AdminHomepageConfig() {
     try {
       const res = await fetch('/api/homepage', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminJsonAuthHeaders(),
         body: JSON.stringify(config)
       });
       const data = await res.json();

@@ -1,5 +1,6 @@
 import express from 'express';
 import HomepageConfig from '../models/HomepageConfig.js';
+import { requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -177,7 +178,7 @@ router.get('/', async (req, res) => {
 });
 
 // Cập nhật cấu hình
-router.put('/', async (req, res) => {
+router.put('/', requireAdmin, async (req, res) => {
   try {
     let config = await HomepageConfig.findOne();
     if (!config) {

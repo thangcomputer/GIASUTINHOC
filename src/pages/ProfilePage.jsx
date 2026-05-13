@@ -12,6 +12,8 @@ import { io } from 'socket.io-client'
 import './ProfilePage.css'
 import './ProfileHistory.css'
 import './ProfileEdit.css'
+import { studentJsonAuthHeaders, studentAuthHeaders } from '../lib/authFetch'
+import { getApiBaseUrl } from '../lib/apiBase'
 
 export default function ProfilePage() {
   const { credits, setCredits } = useCredits()
@@ -69,7 +71,7 @@ export default function ProfilePage() {
     try {
       const r = await fetch(`/api/users/${userData._id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: studentJsonAuthHeaders(),
         body: JSON.stringify({ name: editForm.name.trim(), phone: editForm.phone, avatar: avatarPreview })
       })
       const d = await r.json()
@@ -100,20 +102,10 @@ export default function ProfilePage() {
     if (pwForm.newPw !== pwForm.confirm) { setPwMsg('❌ Xác nhận mật khẩu không khớp'); return }
     setPwSaving(true); setPwMsg('')
     try {
-      // 1. Verify mật khẩu hiện tại qua API login
-      const check = await fetch('/api/auth/login', {
+      const r = await fetch(`/api/users/${userData._id}/change-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: userData.email, password: pwForm.current })
-      })
-      const cd = await check.json()
-      if (!cd.success) { setPwMsg('❌ Mật khẩu hiện tại không đúng'); setPwSaving(false); return }
-
-      // 2. Reset password
-      const r = await fetch(`/api/users/${userData._id}/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newPassword: pwForm.newPw })
+        headers: studentJsonAuthHeaders(),
+        body: JSON.stringify({ currentPassword: pwForm.current, newPassword: pwForm.newPw })
       })
       const d = await r.json()
       if (d.success) {
@@ -129,7 +121,7 @@ export default function ProfilePage() {
     if (!userData._id) return
     setTxLoading(true)
     try {
-      const r = await fetch(`/api/users/${userData._id}/transactions?limit=30`)
+      const r = await fetch(`/api/users/${userData._id}/transactions?limit=30`, { headers: studentAuthHeaders() })
       const d = await r.json()
       if (d.success) setTransactions(d.data)
     } catch {}
@@ -141,7 +133,7 @@ export default function ProfilePage() {
     if (!userData._id) return
     setQuizLoading(true)
     try {
-      const r = await fetch(`/api/quizzes/history/${userData._id}`)
+      const r = await fetch(`/api/quizzes/history/${userData._id}`, { headers: studentAuthHeaders() })
       const d = await r.json()
       if (d.success) setQuizzes(d.data)
     } catch {}
@@ -153,7 +145,7 @@ export default function ProfilePage() {
     const fetchRealData = async () => {
       try {
         const uId = JSON.parse(localStorage.getItem('giasu_user'))._id;
-        const res = await fetch(`/api/users/${uId}`);
+        const res = await fetch(`/api/users/${uId}`, { headers: studentAuthHeaders() });
         const data = await res.json();
         if (data.success) {
           const newUserData = { ...userData, ...data.data };
@@ -166,7 +158,7 @@ export default function ProfilePage() {
     fetchRealData();
 
     // Socket.io for realtime coin updates
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const API_URL = getApiBaseUrl();
     const socket = io(API_URL);
 
     socket.on('coin_update', (payload) => {

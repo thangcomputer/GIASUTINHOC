@@ -4,7 +4,7 @@ import { ShieldCheck, Eye, EyeOff, Lock, Mail, LogIn } from 'lucide-react'
 import './AdminLoginPage.css'
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('admin@giasuai.com')
+  const [email, setEmail] = useState('admin@giasutinhoc24h.com')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
@@ -24,8 +24,10 @@ export default function AdminLoginPage() {
       const data = await res.json()
       if (!data.success) { setError(data.message); return }
       if (data.data.role !== 'admin' && data.data.role !== 'staff') { setError('Tài khoản không có quyền Admin/Nhân Viên'); return }
-      
-      localStorage.setItem('admin_token', JSON.stringify(data.data))
+      if (!data.token) { setError('Server chưa trả về token. Hãy đăng nhập lại.'); return }
+
+      localStorage.setItem('admin_token', data.token)
+      localStorage.setItem('admin_user', JSON.stringify(data.data))
       navigate('/admin/dashboard')
     } catch {
       setError('Không thể kết nối đến Server')
@@ -63,7 +65,7 @@ export default function AdminLoginPage() {
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="admin@giasuai.com"
+            placeholder="admin@giasutinhoc24h.com"
             required
           />
         </div>

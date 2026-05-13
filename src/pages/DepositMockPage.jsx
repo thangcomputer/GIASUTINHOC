@@ -4,8 +4,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CheckCircle, CreditCard, ShieldCheck, ArrowLeft, Loader2, Key } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import confetti from 'canvas-confetti'
+import { getApiBaseUrl } from '../lib/apiBase'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = getApiBaseUrl()
 
 export default function DepositMockPage() {
   const [searchParams] = useSearchParams()

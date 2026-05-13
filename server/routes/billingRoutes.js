@@ -4,21 +4,29 @@ import Student from '../models/Student.js';
 import Transaction from '../models/Transaction.js';
 import { recordTransaction } from './userRoutes.js';
 import { getSettings } from './settingsRoutes.js';
+import { optionalAuth, requireAdmin } from '../middleware/auth.js';
+
+/* global process */
 
 const router = express.Router();
 
-// ─────────────────────────────────────────────
-// GET /api/billing/plans        → Lấy bảng giá gói nạp xu
-// ─────────────────────────────────────────────
+const WEBHOOK_SECRET = process.env.BILLING_WEBHOOK_SECRET || '';
+const ALLOW_CLIENT_DEPOSIT = process.env.ALLOW_CLIENT_DEPOSIT !== 'false';
+
+function billingSecretOk(req) {
+  if (!WEBHOOK_SECRET) return false;
+  const h = req.headers['x-billing-secret'];
+  return h === WEBHOOK_SECRET;
+}
+
 router.get('/plans', (req, res) => {
   const pkgs = getSettings().coinPackages || [];
   res.json({ success: true, data: pkgs });
 });
 
-// ─────────────────────────────────────────────
-// POST /api/billing/deposit     → Nạp xu (Admin xác nhận hoặc Webhook)
-// ─────────────────────────────────────────────
-router.post('/deposit', async (req, res) => {
+// POST /api/billing/deposit
+// - Admin JWT, hoặc header x-billing-secret đúng WEBHOOK_SECRET, hoặc (ALLOW_CLIENT_DEPOSIT và học viên nạp cho chính mình)
+router.post('/deposit', optionalAuth, async (req, res) => {
   try {
     const { studentId, planId, amountVND, amountCoins, paymentMethod, paymentRef, note } = req.body;
 
@@ -26,12 +34,25 @@ router.post('/deposit', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Thiếu dữ liệu nạp xu' });
     }
 
+    const adminOk = req.user && (req.user.role === 'admin' || req.user.role === 'staff');
+    const webhookOk = billingSecretOk(req);
+    const selfOk = ALLOW_CLIENT_DEPOSIT && req.user &&
+      String(req.user.id) === String(studentId) &&
+      req.user.role !== 'admin' && req.user.role !== 'staff';
+
+    if (!adminOk && !webhookOk && !selfOk) {
+      return res.status(403).json({
+        success: false,
+        message: 'Không được phép thực hiện nạp xu qua API này. Liên hệ quản trị hoặc cấu hình webhook.',
+      });
+    }
+
     let coinsToAdd = amountCoins || 0;
     let paidAmount = amountVND || 0;
     let planLabel  = note || 'Nạp tự động / thủ công';
 
     const pkgs = getSettings().coinPackages || [];
-    
+
     if (planId) {
       const plan = pkgs.find(p => p.id === String(planId));
       if (plan) {
@@ -40,13 +61,11 @@ router.post('/deposit', async (req, res) => {
         planLabel  = plan.label;
       }
     } else if (amountVND && !amountCoins) {
-      // Quy đổi tự do
       const base  = Math.floor(paidAmount / 1000);
       const bPct  = paidAmount >= 200000 ? 0.15 : paidAmount >= 100000 ? 0.10 : 0;
       coinsToAdd  = Math.floor(base * (1 + bPct));
     }
 
-    // Tìm và cập nhật học viên
     if (!mongoose.Types.ObjectId.isValid(studentId)) {
       return res.status(400).json({ success: false, message: 'studentId không hợp lệ' });
     }
@@ -80,17 +99,15 @@ router.post('/deposit', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// POST /api/billing/webhook/payment  → Webhook cũ (giữ tương thích)
-// ─────────────────────────────────────────────
-router.post('/webhook/payment', async (req, res) => {
+router.post('/webhook/payment', optionalAuth, async (req, res) => {
   try {
+    if (!billingSecretOk(req) && !(req.user && (req.user.role === 'admin' || req.user.role === 'staff'))) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
     const { studentId, amountPaid } = req.body;
     if (!studentId || !amountPaid)
       return res.status(400).json({ success: false, message: 'Thiếu dữ liệu' });
 
-    // Forward sang /deposit
-    req.body.amountVND = amountPaid;
     const base  = Math.floor(amountPaid / 1000);
     const bPct  = amountPaid >= 200000 ? 0.15 : amountPaid >= 100000 ? 0.10 : 0;
     const coins = Math.floor(base * (1 + bPct));
@@ -115,10 +132,7 @@ router.post('/webhook/payment', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/billing/transactions  → Tất cả giao dịch (Admin, paginated)
-// ─────────────────────────────────────────────
-router.get('/transactions', async (req, res) => {
+router.get('/transactions', requireAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 30, type, studentId } = req.query;
     const query = {};
@@ -137,10 +151,7 @@ router.get('/transactions', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/billing/stats         → Thống kê doanh thu & xu
-// ─────────────────────────────────────────────
-router.get('/stats', async (req, res) => {
+router.get('/stats', requireAdmin, async (req, res) => {
   try {
     const [revenueAgg, spendAgg, txCountByType, latestTx] = await Promise.all([
       Transaction.aggregate([

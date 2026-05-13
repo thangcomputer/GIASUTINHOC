@@ -70,9 +70,7 @@ export default function ActivityNotification() {
   const [visible, setVisible] = useState(false)
   const [timeAgo, setTimeAgo] = useState('vừa xong')
   const location = useLocation()
-
-  // Ẩn notification nếu đang ở trang Admin
-  if (location.pathname.startsWith('/admin')) return null;
+  const isAdminRoute = location.pathname.startsWith('/admin')
 
   const showNext = useCallback(() => {
     // Ẩn popup cũ trước
@@ -91,13 +89,16 @@ export default function ActivityNotification() {
   }, [])
 
   useEffect(() => {
+    if (isAdminRoute) return undefined
     // Lần đầu xuất hiện sau 3 giây
     const initial = setTimeout(showNext, 3000)
     // Sau đó mỗi 10 giây
     const interval = setInterval(showNext, 10000)
     return () => { clearTimeout(initial); clearInterval(interval) }
-  }, [showNext])
+  }, [showNext, isAdminRoute])
 
+  // Ẩn notification nếu đang ở trang Admin (sau hooks — tuân thủ Rules of Hooks)
+  if (isAdminRoute) return null
   if (!current) return null
 
   const Icon = current.icon

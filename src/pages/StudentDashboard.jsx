@@ -8,6 +8,8 @@ import {
   ClipboardList, Target, TrendingUp, Zap, ChevronRight,
   Award, FileCheck2, BarChart2, Clock, User, Medal, Crown, Flame
 } from 'lucide-react'
+import { studentAuthHeaders } from '../lib/authFetch'
+import { getApiBaseUrl } from '../lib/apiBase'
 
 export default function StudentDashboard() {
   const { credits, setCredits } = useCredits()
@@ -35,7 +37,7 @@ export default function StudentDashboard() {
     const fetchUser = async () => {
       try {
         const uid = JSON.parse(localStorage.getItem('giasu_user'))._id
-        const res = await fetch(`/api/users/${uid}`)
+        const res = await fetch(`/api/users/${uid}`, { headers: studentAuthHeaders() })
         const d = await res.json()
         if (d.success) {
           const merged = { ...userData, ...d.data }
@@ -47,7 +49,7 @@ export default function StudentDashboard() {
     }
     fetchUser()
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+    const API_URL = getApiBaseUrl()
     const socket = io(API_URL)
     socket.on('coin_update', (payload) => {
       const uid = JSON.parse(localStorage.getItem('giasu_user'))?._id
@@ -68,7 +70,7 @@ export default function StudentDashboard() {
       if (!userData._id) return
       setQuizLoading(true)
       try {
-        const r = await fetch(`/api/quizzes/history/${userData._id}`)
+        const r = await fetch(`/api/quizzes/history/${userData._id}`, { headers: studentAuthHeaders() })
         const d = await r.json()
         if (d.success) setQuizzes(d.data)
       } catch {}

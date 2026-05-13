@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { studentAuthHeaders } from '../lib/authFetch';
+import { fetchJsonIfOk } from '../lib/parseApiResponse.js';
 
 const CreditContext = createContext();
 
@@ -26,9 +28,9 @@ export function CreditProvider({ children }) {
       try {
         const u = JSON.parse(localStorage.getItem('giasu_user'));
         if (!u?._id) return;
-        const res = await fetch(`/api/users/${u._id}`);
-        const d = await res.json();
-        if (d.success && typeof d.data?.coins === 'number') {
+        const res = await fetch(`/api/users/${u._id}`, { headers: studentAuthHeaders() });
+        const d = await fetchJsonIfOk(res);
+        if (d?.success && typeof d.data?.coins === 'number') {
           setCredits(d.data.coins);
           
           // Update localstorage so other tabs sync up too

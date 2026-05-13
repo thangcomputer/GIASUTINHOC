@@ -25,10 +25,10 @@ function CertificateModal({ cert, courseTitle, studentName, onClose }) {
     win.document.write(\`
       <html><head>
         <title>Chứng Chỉ - \${studentName}</title>
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&display=swap" rel="stylesheet">
         <style>
           * { margin:0; padding:0; box-sizing:border-box; }
-          body { font-family: 'Inter', sans-serif; background: #fff; }
+          body { font-family: 'Be Vietnam Pro', system-ui, sans-serif; background: #fff; }
           .cert { width:900px; height:620px; position:relative; padding:50px 60px; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); color: white; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
           .border-frame { position:absolute; inset:16px; border:2px solid rgba(245,158,11,0.4); border-radius:20px; pointer-events:none; }
           .tl { position:absolute; width:30px; height:30px; border-style:solid; top:24px; left:24px; border-width:3px 0 0 3px; border-color:#f59e0b; border-radius:6px 0 0 0; }
@@ -59,9 +59,9 @@ function CertificateModal({ cert, courseTitle, studentName, onClose }) {
             <div className="tr" style={{ position:'absolute', width:'30px', height:'30px', borderStyle:'solid', top:'24px', right:'24px', borderTopWidth:'3px', borderRightWidth:'3px', borderTopColor:'#f59e0b', borderRightColor:'#f59e0b', borderBottomWidth:0, borderLeftWidth:0 }} />
             <div className="bl" style={{ position:'absolute', width:'30px', height:'30px', borderStyle:'solid', bottom:'24px', left:'24px', borderBottomWidth:'3px', borderLeftWidth:'3px', borderBottomColor:'#f59e0b', borderLeftColor:'#f59e0b', borderTopWidth:0, borderRightWidth:0 }} />
             <div className="br" style={{ position:'absolute', width:'30px', height:'30px', borderStyle:'solid', bottom:'24px', right:'24px', borderBottomWidth:'3px', borderRightWidth:'3px', borderBottomColor:'#f59e0b', borderRightColor:'#f59e0b', borderTopWidth:0, borderLeftWidth:0 }} />
-            <div style={{ fontSize:'12px', letterSpacing:'0.2em', color:'#f59e0b', textTransform:'uppercase', marginBottom:'6px', fontWeight:700 }}>THẮNG TIN HỌC</div>
+            <div style={{ fontSize:'12px', letterSpacing:'0.2em', color:'#f59e0b', textTransform:'uppercase', marginBottom:'6px', fontWeight:700 }}>GIA SƯ TIN HỌC</div>
             <div style={{ fontSize:'11px', color:'#64748b', marginBottom:'20px', letterSpacing:'0.1em' }}>TRUNG TÂM ĐÀO TẠO TIN HỌC ỨNG DỤNG</div>
-            <div style={{ fontSize:'38px', fontFamily:'Georgia, serif', fontWeight:700, background:'linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', marginBottom:'4px', lineHeight:1 }}>Chứng Chỉ Hoàn Thành</div>
+            <div style={{ fontSize:'38px', fontFamily:"'Be Vietnam Pro', system-ui, sans-serif", fontWeight:800, background:'linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', marginBottom:'4px', lineHeight:1 }}>Chứng Chỉ Hoàn Thành</div>
             <div style={{ fontSize:'11px', color:'#94a3b8', letterSpacing:'0.15em', textTransform:'uppercase', marginBottom:'24px' }}>Certificate of Completion</div>
             <div style={{ fontSize:'12px', color:'#94a3b8', marginBottom:'8px' }}>Chứng nhận học viên</div>
             <div style={{ fontSize:'34px', fontWeight:900, color:'white', marginBottom:'12px', letterSpacing:'0.02em' }}>{studentName}</div>

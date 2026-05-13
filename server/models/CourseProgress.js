@@ -17,6 +17,12 @@ const courseProgressSchema = new mongoose.Schema({
 
   // Chứng chỉ
   certificateId:  { type: String, default: '' },       // mã duy nhất cho chứng chỉ
+
+  /** Theo dõi mốc xem xa nhất từng module (phục vụ thống kê drop-off) */
+  watchPeaks: [{
+    stepIndex: { type: Number, required: true },
+    seconds:   { type: Number, default: 0 }
+  }],
 }, { timestamps: true });
 
 // Unique: mỗi học viên chỉ có 1 record progress cho 1 khóa học

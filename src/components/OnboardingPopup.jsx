@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BookOpen, Target, Clock, ChevronRight, X, Sparkles, Check } from 'lucide-react'
+import { studentJsonAuthHeaders } from '../lib/authFetch'
 
 const STEPS = [
   {
@@ -63,8 +64,8 @@ export default function OnboardingPopup({ onComplete }) {
         const user = JSON.parse(localStorage.getItem('giasu_user') || '{}')
         if (user._id) {
           const res = await fetch(`/api/users/${user._id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'PUT',
+            headers: studentJsonAuthHeaders(),
             body: JSON.stringify({
               currentLevel: answers.currentLevel,
               learningGoals: answers.learningGoals,

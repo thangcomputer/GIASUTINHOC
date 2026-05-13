@@ -4,6 +4,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { PlusCircle, Trash, FileText, CheckCircle, Clock, XCircle, Search, Download, Settings, Edit3, Save } from 'lucide-react';
 import { LESSONS } from '../data/lessons';
+import { adminJsonAuthHeaders, adminAuthHeaders } from '../lib/authFetch';
 
 export default function AdminExamTab() {
   const [activeTab, setActiveTab] = useState('grading'); // grading | config
@@ -18,7 +19,7 @@ export default function AdminExamTab() {
   const fetchExams = async () => {
     setLoading(true);
     try {
-       const r = await fetch('/api/exams');
+       const r = await fetch('/api/exams', { headers: adminAuthHeaders() });
        const d = await r.json();
        if (d.success) setExams(d.data);
     } catch(e) {}
@@ -32,7 +33,7 @@ export default function AdminExamTab() {
   useEffect(() => {
     if (activeTab === 'config' && selectedCourseId) {
        setLoadingConfig(true);
-       fetch('/api/exams/course/' + selectedCourseId)
+       fetch('/api/exams/course/' + selectedCourseId, { headers: adminAuthHeaders() })
          .then(r => r.json())
          .then(d => {
             if (d.success && d.data) {
@@ -55,7 +56,7 @@ export default function AdminExamTab() {
     try {
       const res = await fetch('/api/exams/course/' + selectedCourseId, {
          method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
+         headers: adminJsonAuthHeaders(),
          body: JSON.stringify(courseConfig)
       });
       const d = await res.json();
@@ -97,7 +98,7 @@ export default function AdminExamTab() {
        try {
          const res = await fetch('/api/exams/grade', {
            method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
+           headers: adminJsonAuthHeaders(),
            body: JSON.stringify({
              examId,
              essayScore: formValues.score,
@@ -130,7 +131,7 @@ export default function AdminExamTab() {
       try {
         const res = await fetch('/api/exams/allow-retake', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: adminJsonAuthHeaders(),
           body: JSON.stringify({ examId })
         });
         const d = await res.json();

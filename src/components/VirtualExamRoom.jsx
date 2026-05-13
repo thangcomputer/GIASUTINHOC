@@ -4,6 +4,8 @@ import Swal from 'sweetalert2';
 import { Send, Clock, BookOpen, AlertCircle, Shield, ChevronLeft, ChevronRight, CheckCircle2, Circle, Lightbulb, MessageCircle, Loader2 } from 'lucide-react';
 import { marked } from 'marked';
 import confetti from 'canvas-confetti';
+import { studentJsonAuthHeaders } from '../lib/authFetch';
+import { promptInsufficientCredits, isInsufficientCreditsStatus } from '../lib/insufficientCredits.js';
 
 export default function VirtualExamRoom({ questions, timeLimit = 1800, onComplete, studentName = 'Học viên', topicName }) {
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -44,7 +46,7 @@ export default function VirtualExamRoom({ questions, timeLimit = 1800, onComplet
       const user = JSON.parse(localStorage.getItem('giasu_user') || '{}');
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: studentJsonAuthHeaders(),
         body: JSON.stringify({ 
           message: contextualMessage,
           history: prevMsgs,
@@ -59,7 +61,11 @@ export default function VirtualExamRoom({ questions, timeLimit = 1800, onComplet
          setInlineChatMsgs(prev => ({ ...prev, [idx]: [...newMsgsForUI, { role: 'ai', content: aiText }] }));
          window.dispatchEvent(new CustomEvent('coins_updated'));
       } else {
-         Swal.fire('Lỗi tổng đài', data.message, 'error');
+         if (isInsufficientCreditsStatus(res.status)) {
+           await promptInsufficientCredits(data.message);
+         } else {
+           Swal.fire('Lỗi tổng đài', data.message, 'error');
+         }
          setInlineChatMsgs(prev => ({ ...prev, [idx]: prevMsgs })); // revert user msg
       }
     } catch(err) {
@@ -144,7 +150,7 @@ export default function VirtualExamRoom({ questions, timeLimit = 1800, onComplet
       if (!studentId) throw new Error('Chưa đăng nhập');
       const response = await fetch('/api/quizzes/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: studentJsonAuthHeaders(),
         body: JSON.stringify({ studentId, topic: topicName || questions[0]?.category || 'Tổng hợp', score: score, totalQuestions: questions.length, wrongAnswers }),
       });
       const data = await response.json();

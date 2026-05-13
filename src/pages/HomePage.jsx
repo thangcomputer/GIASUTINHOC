@@ -8,6 +8,8 @@ import {
   CheckCircle2, Star, TrendingUp, BarChart3, Cpu, Award, HeartHandshake,
   Play, MessageSquare, Layers, Code2
 } from 'lucide-react'
+import { WELCOME_COINS } from '../lib/creditsPolicy'
+import { fetchJsonIfOk } from '../lib/parseApiResponse.js'
 
 /* ─── DATA ─── */
 const STATS = [
@@ -71,15 +73,21 @@ export default function HomePage() {
   const statsRef = useRef(null)
 
   useEffect(() => {
-    fetch('/api/homepage').then(r => r.json()).then(d => { if (d.success && d.data) setConfig(d.data) }).catch(() => {})
+    fetch('/api/homepage')
+      .then((r) => fetchJsonIfOk(r))
+      .then((d) => { if (d?.success && d.data) setConfig(d.data) })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
-    fetch('/api/courses').then(r => r.json()).then(d => {
-      if (d.success && d.data?.length > 0) {
-        setLoadedCourses(d.data.slice(0, 3).map(c => ({ icon: '📚', color: c.color || '#6366f1', title: c.title, label: c.level || 'Sơ cấp', steps: c.steps?.length || 0, duration: c.duration || 'N/A', link: `/lessons/${c.id}`, tags: c.tags || [] })))
-      }
-    }).catch(() => {})
+    fetch('/api/courses')
+      .then((r) => fetchJsonIfOk(r))
+      .then((d) => {
+        if (d?.success && d.data?.length > 0) {
+          setLoadedCourses(d.data.slice(0, 3).map(c => ({ icon: '📚', color: c.color || '#6366f1', title: c.title, label: c.level || 'Sơ cấp', steps: c.steps?.length || 0, duration: c.duration || 'N/A', link: `/lessons/${c.id}`, tags: c.tags || [] })))
+        }
+      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -102,10 +110,10 @@ export default function HomePage() {
   return (
     <div style={{ minHeight: '100vh', background: '#060912', color: 'white', overflowX: 'hidden' }}>
       <Helmet>
-        <title>Thắng Tin Học — Học Máy Vi Tính, Tin Học Văn Phòng, Gia Sư Tin Học Online</title>
-        <meta name="description" content="Thắng Tin Học — Gia sư tin học 1 kèm 1 kết hợp AI. Học máy vi tính cơ bản, tin học văn phòng Word, Excel, PowerPoint. Luyện thi MOS/IC3. Hỗ trợ 24/7. Cam kết đầu ra cho học viên tại TP.HCM và toàn quốc." />
-        <meta name="keywords" content="học máy vi tính, tin học văn phòng, gia sư tin học, dạy tin học, học excel cơ bản, học word, học powerpoint, luyện thi MOS, luyện thi IC3, gia sư tin học TPHCM, học tin học online, học máy tính cho người lớn tuổi, học tin học trẻ em, trung tâm tin học, AI gia sư, thắng tin học" />
-        <link rel="canonical" href="https://giasuai.vn/" />
+        <title>Gia Sư Tin Học — Học Máy Vi Tính, Tin Học Văn Phòng &amp; AI Online</title>
+        <meta name="description" content="Gia Sư Tin Học — Gia sư tin học 1 kèm 1 kết hợp AI. Học máy vi tính cơ bản, tin học văn phòng Word, Excel, PowerPoint. Luyện thi MOS/IC3. Hỗ trợ 24/7. Cam kết đầu ra cho học viên tại TP.HCM và toàn quốc." />
+        <meta name="keywords" content="học máy vi tính, tin học văn phòng, gia sư tin học, dạy tin học, học excel cơ bản, học word, học powerpoint, luyện thi MOS, luyện thi IC3, gia sư tin học TPHCM, học tin học online, học máy tính cho người lớn tuổi, học tin học trẻ em, trung tâm tin học, AI gia sư, gia sư tin học" />
+        <link rel="canonical" href="https://giasutinhoc24h.com/" />
       </Helmet>
       <Navbar />
 
@@ -124,7 +132,7 @@ export default function HomePage() {
           {/* LEFT */}
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 18px', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '30px', color: '#a5b4fc', fontSize: '0.82rem', fontWeight: 700, marginBottom: '28px', letterSpacing: '0.05em' }}>
-              <Sparkles size={14} /> NỀN TẢNG HỌC TIN HỌC AI HÀNG ĐẦU
+              <Sparkles size={14} /> TẶNG {WELCOME_COINS} XU CHÀO MỪNG · HỌC THỬ AI
             </div>
 
             <h1 style={{ fontSize: 'clamp(2.8rem, 5vw, 4.2rem)', fontWeight: 900, lineHeight: 1.1, margin: '0 0 24px', letterSpacing: '-0.03em' }}>
@@ -140,7 +148,7 @@ export default function HomePage() {
             </p>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '40px' }}>
-              {['✅ AI 24/7', '✅ Chứng chỉ MOS', '✅ Cam kết đầu ra', '✅ Miễn phí dùng thử'].map(t => (
+              {[`✅ ${WELCOME_COINS} xu miễn phí khi đăng ký`, '✅ AI 24/7', '✅ Chứng chỉ MOS', '✅ Bài học xem không tốn xu'].map(t => (
                 <span key={t} style={{ padding: '7px 16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '30px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>{t}</span>
               ))}
             </div>
@@ -157,6 +165,12 @@ export default function HomePage() {
                 onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
               >
                 <BookOpen size={20} /> Xem Khóa Học <ChevronRight size={18} />
+              </Link>
+              <Link to="/start" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '16px 28px', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: '14px', color: '#6ee7b7', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem', transition: 'all 0.3s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(16,185,129,0.2)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(16,185,129,0.12)'; e.currentTarget.style.transform = 'translateY(0)' }}
+              >
+                <GraduationCap size={20} /> Lộ trình người mới
               </Link>
             </div>
 
@@ -181,7 +195,7 @@ export default function HomePage() {
                   <img src="/logo_cartoon.png" alt="AI Tutor" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>Gia Sư AI — Thắng Tin Học</div>
+                  <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>Gia Sư Tin Học · AI Trợ lý</div>
                   <div style={{ fontSize: '0.72rem', color: '#34d399', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34d399', display: 'inline-block' }} /> Đang hoạt động
                   </div>
@@ -266,7 +280,7 @@ export default function HomePage() {
             </div>
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '32px' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', background: 'rgba(99,102,241,0.25)', borderRadius: '20px', color: '#a5b4fc', fontSize: '0.72rem', fontWeight: 700, marginBottom: '12px', border: '1px solid rgba(99,102,241,0.35)' }}>
-                <Brain size={11} /> AI POWERED — THẮNG TIN HỌC
+                <Brain size={11} /> AI POWERED — GIA SƯ TIN HỌC
               </div>
               <h3 style={{ fontSize: '1.6rem', fontWeight: 900, margin: '0 0 10px', lineHeight: 1.2 }}>Giảng Viên AI<br />Bên Bạn 24/7</h3>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem', margin: '0 0 20px', lineHeight: 1.6 }}>
@@ -512,7 +526,7 @@ export default function HomePage() {
       <section aria-label="Thông tin dịch vụ" style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '40px' }}>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '16px', color: 'rgba(255,255,255,0.8)' }}>
-            Về Thắng Tin Học — Trung Tâm Dạy Tin Học & Gia Sư Máy Vi Tính
+            Về Gia Sư Tin Học — Trung Tâm Dạy Tin Học & Gia Sư Máy Vi Tính
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', color: 'rgba(255,255,255,0.5)', fontSize: '0.88rem', lineHeight: 1.8 }}>
             <div>
@@ -533,7 +547,7 @@ export default function HomePage() {
             </div>
           </div>
           <div style={{ marginTop: '28px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {['Học máy vi tính', 'Tin học văn phòng', 'Gia sư tin học', 'Học Excel', 'Học Word', 'Học PowerPoint', 'Luyện thi MOS', 'Luyện thi IC3', 'AI gia sư', 'Học tin học online', 'Thắng Tin Học', 'Dạy Zalo cơ bản', 'Học máy tính cho người lớn tuổi'].map(tag => (
+            {['Học máy vi tính', 'Tin học văn phòng', 'Gia sư tin học', 'Học Excel', 'Học Word', 'Học PowerPoint', 'Luyện thi MOS', 'Luyện thi IC3', 'AI gia sư', 'Học tin học online', 'Gia Sư Tin Học', 'Dạy Zalo cơ bản', 'Học máy tính cho người lớn tuổi'].map(tag => (
               <span key={tag} style={{ padding: '5px 12px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '20px', color: 'rgba(165,180,252,0.7)', fontSize: '0.78rem' }}>{tag}</span>
             ))}
           </div>
@@ -546,9 +560,9 @@ export default function HomePage() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
               <div style={{ width: '44px', height: '44px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
-                <img src="/logo_cartoon.png" alt="Thắng Tin Học" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src="/logo_cartoon.png" alt="Gia Sư Tin Học" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
-              <span style={{ fontSize: '1.2rem', fontWeight: 900, background: 'linear-gradient(to right, white, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Thắng Tin Học</span>
+              <span style={{ fontSize: '1.2rem', fontWeight: 900, background: 'linear-gradient(to right, white, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Gia Sư Tin Học</span>
             </div>
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', lineHeight: 1.7, maxWidth: '280px' }}>Nền tảng học tin học thông minh kết hợp AI và giáo viên chuyên nghiệp 1 kèm 1.</p>
           </div>
@@ -571,7 +585,7 @@ export default function HomePage() {
           ))}
         </div>
         <div style={{ maxWidth: '1400px', margin: '0 auto', paddingTop: '28px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>
-          <span>© {new Date().getFullYear()} Thắng Tin Học. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} Gia Sư Tin Học. All rights reserved.</span>
           <span>🔒 SSL Secured · Made with ❤️ in Vietnam</span>
         </div>
       </footer>

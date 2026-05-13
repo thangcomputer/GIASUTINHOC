@@ -4,6 +4,7 @@ import { LESSONS } from '../data/lessons';
 import Swal from 'sweetalert2';
 import { CheckCircle, Clock, XCircle, FileText, Timer, UploadCloud, Loader2 } from 'lucide-react';
 import Confetti from 'react-confetti';
+import { studentJsonAuthHeaders, studentAuthHeaders } from '../lib/authFetch';
 
 export default function ExamPage() {
   const { id } = useParams();
@@ -75,7 +76,7 @@ export default function ExamPage() {
         localStorage.removeItem(`giasu_exam_progress_${user?._id}_${id}`);
         fetch('/api/exams/submit', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: studentJsonAuthHeaders(),
           body: JSON.stringify({ studentId: user._id, courseId: id, quizScore: 0, essayAnswer: '', essayFileUrl: '', essayFileName: '', isFailedFast: true })
         }).then(r => r.json()).then(d => {
           if (d.success) setExamState(d.data);
@@ -106,7 +107,7 @@ export default function ExamPage() {
         try {
           const r = await fetch('/api/exams/submit', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: studentJsonAuthHeaders(),
             body: JSON.stringify({ studentId: u._id, courseId: id, quizScore: 0, essayAnswer: 'Học viên bỏ thi / tải lại trang', essayFileUrl: '', essayFileName: '', isFailedFast: true })
           });
           const d = await r.json();
@@ -115,7 +116,7 @@ export default function ExamPage() {
         } catch (e) { console.error(e); }
       } else {
         try {
-          const r = await fetch(`/api/exams/${u._id}/${id}`);
+          const r = await fetch(`/api/exams/${u._id}/${id}`, { headers: studentAuthHeaders() });
           const d = await r.json();
           if (d.success && d.data) {
             setExamState(d.data);
@@ -175,7 +176,7 @@ export default function ExamPage() {
       if (!passed) {
         localStorage.removeItem(`giasu_exam_progress_${user?._id}_${id}`);
         Swal.fire({ title: 'Chưa Đủ Điểm Trắc Nghiệm', html: `Bạn chỉ đạt <b>${newScore}/${questions.length}</b> câu. Bạn đã bị rớt phần Trắc nghiệm.`, icon: 'error', confirmButtonColor: '#ef4444' });
-        fetch('/api/exams/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentId: user._id, courseId: id, quizScore: Math.round((newScore / questions.length) * 10), essayAnswer: '', essayFileUrl: '', essayFileName: '', isFailedFast: true }) })
+        fetch('/api/exams/submit', { method: 'POST', headers: studentJsonAuthHeaders(), body: JSON.stringify({ studentId: user._id, courseId: id, quizScore: Math.round((newScore / questions.length) * 10), essayAnswer: '', essayFileUrl: '', essayFileName: '', isFailedFast: true }) })
           .then(r => r.json())
           .then(d => {
             if (d.success) setExamState(d.data);
@@ -213,7 +214,7 @@ export default function ExamPage() {
       localStorage.removeItem(`giasu_exam_progress_${user?._id}_${id}`);
       const res = await fetch('/api/exams/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: studentJsonAuthHeaders(),
         body: JSON.stringify({ studentId: user._id, courseId: id, quizScore: Math.round((quizScore / questions.length) * 10), essayAnswer, essayFileUrl: fileUrl, essayFileName: fileName, isFailedFast: false })
       });
       const d = await res.json();

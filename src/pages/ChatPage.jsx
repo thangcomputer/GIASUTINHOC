@@ -1,8 +1,9 @@
 import Swal from 'sweetalert2';
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import Navbar from '../components/Navbar'
-import { sendMessageToAI } from '../services/aiService'
+import { sendMessageToAI, sendMessageStreamToAI } from '../services/aiService'
 import { useCredits } from '../context/CreditContext'
 import {
   Send, Mic, Volume2, VolumeX, Trash2, ImagePlus,
@@ -56,8 +57,8 @@ function getWelcomeChips() {
 }
 
 const MODE_OPTIONS = [
-  { value: 'free', label: 'Miễn phí', icon: '⚡' },
-  { value: 'pro',  label: 'AI Pro',   icon: '✦' },
+  { value: 'free', label: 'Tiết kiệm · Pollinations', icon: '⚡' },
+  { value: 'pro',  label: 'Gemini Flash', icon: '✦' },
 ]
 
 /* ─── Custom Mode Dropdown ─────────────────────────────────── */
@@ -72,9 +73,9 @@ function ModeDropdown({ value, onChange, disabled }) {
   }, [])
 
   const options = [
-    { value: 'free',   label: 'Gemini Miễn phí', icon: '⚡', cost: 0 },
-    { value: 'pro',    label: 'Gemini Pro',      icon: '✦', cost: 1 },
-    { value: 'openai', label: 'OpenAI GPT-4o',   icon: '⊕', cost: 2 },
+    { value: 'free',   label: 'Tiết kiệm (Pollinations)', icon: '⚡', cost: 0, hint: '0 Xu · phản hồi qua Pollinations' },
+    { value: 'pro',    label: 'Gemini Flash', icon: '✦', cost: 1, hint: '1 Xu · tự chọn model khả dụng (2.5 / 2.0 / 1.5)' },
+    { value: 'openai', label: 'OpenAI GPT-4o-mini', icon: '⊕', cost: 2, hint: '2 Xu · stream chữ; ảnh đính kèm: gom bản đầy đủ' },
   ]
   const current = options.find(o => o.value === value)
 
@@ -98,6 +99,7 @@ function ModeDropdown({ value, onChange, disabled }) {
               className={`mode-dropdown-item ${opt.value === value ? 'selected' : ''}`}
               onClick={() => { onChange(opt.value); setOpen(false) }}
               type="button"
+              title={opt.hint || ''}
             >
               <span className="mode-dropdown-icon">{opt.icon}</span>
               {opt.label}
@@ -198,7 +200,9 @@ export default function ChatPage() {
   }, [messages, loading])
 
   /* ── ADD COPY BUTTON TO TABLES ── */
+  const anyMessageStreaming = messages.some(m => m.streaming)
   useEffect(() => {
+    if (anyMessageStreaming) return
     const tables = document.querySelectorAll('.markdown-body table');
     tables.forEach(table => {
       // Bỏ qua nếu đã được wrap
@@ -233,7 +237,7 @@ export default function ChatPage() {
 
       wrapper.appendChild(btn);
     });
-  }, [messages]);
+  }, [messages, anyMessageStreaming]);
 
 
   /* ── save helper ── */
@@ -389,7 +393,7 @@ export default function ChatPage() {
       setActiveId(cId)
     }
 
-    if (aiMode === 'pro') deductCredits(cost)
+    if (aiMode !== 'free') deductCredits(cost)
 
     const textLower = userText.toLowerCase();
     const isDrawing = textLower.includes('vẽ') || textLower.includes('tạo ảnh') || textLower.includes('minh hoạ') || textLower.includes('hình');
@@ -397,12 +401,17 @@ export default function ChatPage() {
     else setGeneratingImgId(null);
 
     const userMsg = { id: makeId(), role: 'user', content: userText, image_url: base64Data, ts: Date.now() }
+    const useStream = !(aiMode === 'openai' && base64Data)
+    const aiMsgId = useStream ? makeId() : null
+    const aiPlaceholder = useStream
+      ? { id: aiMsgId, role: 'ai', content: '', streaming: true, image_url: null, ts: Date.now() }
+      : null
 
-    // Add user message
     setConversations(prev => prev.map(c => {
       if (c.id !== cId) return c
       const title = c.messages.length === 0 ? (userText.slice(0, 40) || 'Phân tích ảnh') : c.title
-      return { ...c, title, messages: [...c.messages, userMsg] }
+      const messages = aiPlaceholder ? [...c.messages, userMsg, aiPlaceholder] : [...c.messages, userMsg]
+      return { ...c, title, messages }
     }))
 
     setInput('')
@@ -411,38 +420,84 @@ export default function ChatPage() {
     const currentHistory = conversations.find(c => c.id === cId)?.history || []
 
     try {
-      const reply = await sendMessageToAI(userText, currentHistory, false, aiMode, base64Data)
-      const aiMsg = {
-        id: makeId(),
-        role: 'ai',
-        content: reply.text,
-        image_url: reply.image_url || null,
-        ts: Date.now(),
-      }
-
-      setConversations(prev => prev.map(c => {
-        if (c.id !== cId) return c
-        return {
-          ...c,
-          messages: [...c.messages, aiMsg],
-          history: [...(c.history || []),
-            { role: 'user', content: userText },
-            { role: 'ai',   content: reply.text },
-          ],
+      if (useStream) {
+        await sendMessageStreamToAI(userText, currentHistory, aiMode, base64Data, {
+          onTextChunk: (_chunk, fullText) => {
+            setConversations(prev => prev.map(c => {
+              if (c.id !== cId) return c
+              return {
+                ...c,
+                messages: c.messages.map(m =>
+                  m.id === aiMsgId ? { ...m, content: fullText } : m
+                ),
+              }
+            }))
+          },
+          onDone: ({ fullText, image_url: imgUrl }) => {
+            setConversations(prev => prev.map(c => {
+              if (c.id !== cId) return c
+              return {
+                ...c,
+                messages: c.messages.map(m =>
+                  m.id === aiMsgId
+                    ? { ...m, content: fullText, image_url: imgUrl || null, streaming: false }
+                    : m
+                ),
+                history: [
+                  ...(c.history || []),
+                  { role: 'user', content: userText },
+                  { role: 'ai', content: fullText },
+                ],
+              }
+            }))
+            if (voiceOn) speakText(fullText)
+          },
+        })
+      } else {
+        const reply = await sendMessageToAI(userText, currentHistory, false, aiMode, base64Data)
+        const aiMsg = {
+          id: makeId(),
+          role: 'ai',
+          content: reply.text,
+          image_url: reply.image_url || null,
+          ts: Date.now(),
         }
-      }))
-
-      if (voiceOn) speakText(reply.text)
-
-    } catch (err) {
-      const errMsg = {
-        id: makeId(), role: 'ai',
-        content: `**Lỗi kết nối:** ${err.message || 'Vui lòng thử lại.'}`,
-        ts: Date.now(),
+        setConversations(prev => prev.map(c => {
+          if (c.id !== cId) return c
+          return {
+            ...c,
+            messages: [...c.messages, aiMsg],
+            history: [...(c.history || []),
+              { role: 'user', content: userText },
+              { role: 'ai', content: reply.text },
+            ],
+          }
+        }))
+        if (voiceOn) speakText(reply.text)
       }
-      setConversations(prev => prev.map(c =>
-        c.id === cId ? { ...c, messages: [...c.messages, errMsg] } : c
-      ))
+    } catch (err) {
+      if (useStream && aiMsgId) {
+        setConversations(prev => prev.map(c => {
+          if (c.id !== cId) return c
+          return {
+            ...c,
+            messages: c.messages.map(m =>
+              m.id === aiMsgId
+                ? { ...m, content: `**Lỗi kết nối:** ${err.message || 'Vui lòng thử lại.'}`, streaming: false }
+                : m
+            ),
+          }
+        }))
+      } else {
+        const errMsg = {
+          id: makeId(), role: 'ai',
+          content: `**Lỗi kết nối:** ${err.message || 'Vui lòng thử lại.'}`,
+          ts: Date.now(),
+        }
+        setConversations(prev => prev.map(c =>
+          c.id === cId ? { ...c, messages: [...c.messages, errMsg] } : c
+        ))
+      }
     }
 
     setLoading(false)
@@ -460,7 +515,35 @@ export default function ChatPage() {
   ═════════════════════════════════════════════════════════ */
   return (
     <div className="chat-page">
+      <Helmet>
+        <title>Hỏi đáp AI — Gia Sư Tin Học</title>
+        <meta name="description" content="Trợ lý tin học chuyên nghiệp: Word, Excel, PowerPoint, Windows, MOS/IC3. Trả lời rõ ràng, có cấu trúc." />
+      </Helmet>
       <Navbar />
+
+      {credits === 0 && (
+        <div
+          role="alert"
+          className="chat-zero-xu-banner"
+          style={{
+            margin: '12px 16px 0',
+            padding: '12px 16px',
+            borderRadius: '12px',
+            background: 'rgba(127, 29, 29, 0.35)',
+            border: '1px solid rgba(248, 113, 113, 0.4)',
+            color: '#fecaca',
+            fontSize: '0.88rem',
+            lineHeight: 1.5,
+            maxWidth: '900px',
+          }}
+        >
+          <strong style={{ color: '#fff' }}>Bạn đang có 0 xu.</strong>{' '}
+          Chế độ <strong>tiết kiệm (0 Xu, Pollinations)</strong> vẫn dùng được. Các chế độ trừ xu (Flash, OpenAI, ảnh…) cần{' '}
+          <Link to="/deposit" style={{ color: '#fde68a', fontWeight: 700 }}>nạp xu</Link>
+          {' · '}
+          <Link to="/credits" style={{ color: '#fde68a', fontWeight: 700 }}>bảng giá</Link>.
+        </div>
+      )}
 
       <div className="chat-layout">
 
@@ -538,7 +621,7 @@ export default function ChatPage() {
             <div className="chat-welcome">
               <div>
                 <h1 className="welcome-title">Gặp gỡ Gia Sư AI của bạn</h1>
-                <p className="welcome-subtitle">Chuyên gia đào tạo Tin học 1 kèm 1 — trực tiếp &amp; từ xa</p>
+                <p className="welcome-subtitle">Trợ lý chuyên nghiệp — trả lời rõ ràng, có cấu trúc · Đào tạo tin học 1 kèm 1 (trực tiếp &amp; từ xa)</p>
               </div>
 
               <div className="welcome-input-wrap">
@@ -632,7 +715,19 @@ export default function ChatPage() {
                         /* ── AI bubble layout ── */
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="chat-bubble-ai">
-                            <div className="markdown-body" dangerouslySetInnerHTML={{ __html: marked(msg.content) }} />
+                            {msg.streaming && !msg.content ? (
+                              <div className="stream-thinking-wrap" aria-live="polite">
+                                <span className="stream-thinking-label">Đang soạn câu trả lời</span>
+                                <TypingDots />
+                              </div>
+                            ) : msg.streaming ? (
+                              <div className="streaming-plain" aria-live="polite">
+                                {msg.content}
+                                <span className="stream-cursor" aria-hidden>▍</span>
+                              </div>
+                            ) : (
+                              <div className="markdown-body" dangerouslySetInnerHTML={{ __html: marked(msg.content) }} />
+                            )}
                           </div>
 
 
@@ -659,7 +754,7 @@ export default function ChatPage() {
                   ))}
 
 
-                  {loading && (
+                  {loading && (!messages.length || !messages[messages.length - 1]?.streaming) && (
                     <div className="message-wrapper ai">
                       <div className="msg-avatar ai-msg-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Shield size={16} color="white" />

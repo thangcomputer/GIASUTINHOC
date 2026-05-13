@@ -1,6 +1,6 @@
 # HƯỚNG DẪN SỬ DỤNG ZALO - TÀI LIỆU ĐÀO TẠO ĐẦY ĐỦ
 # Nguồn: https://help.zalo.me/huong-dan/chuyen-muc/
-# Phiên bản: 2026 | Dành cho học viên Thắng Tin Học
+# Phiên bản: 2026 | Dành cho học viên Gia Sư Tin Học
 
 ---
 

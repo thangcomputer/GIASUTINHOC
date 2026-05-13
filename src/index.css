@@ -37,9 +37,9 @@
   --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
   --shadow-button: 0 4px 15px rgba(99, 102, 241, 0.4);
 
-  /* Typography */
-  --font-main: 'Be Vietnam Pro', sans-serif;
-  --font-display: 'Inter', sans-serif;
+  /* Typography — một họ phông Be Vietnam Pro (đọc tiếng Việt tốt, nhất quán UI) */
+  --font-main: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Transitions */
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -76,7 +76,8 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
 }
 
 a {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Zap, Target, X, Bell, ExternalLink, Clock } from 'lucide-react'
+import { studentAuthHeaders } from '../lib/authFetch'
 
 const MISSION_INTERVAL_DAYS = 4
 const STORAGE_KEY = 'login_popup_shown_session'
@@ -27,7 +28,7 @@ export default function LoginPopup() {
       if (lastShown && Date.now() - parseInt(lastShown) < 86400000) return
 
       // ── 1. Kiểm tra nhiệm vụ 4 ngày ──────────────────────────────────────
-      const histRes = await fetch(`/api/quizzes/history/${user._id}`)
+      const histRes = await fetch(`/api/quizzes/history/${user._id}`, { headers: studentAuthHeaders() })
       const histData = await histRes.json()
       if (histData.success) {
         const rewarded = (histData.data || []).filter(q => q.isDailyMissionRewarded)

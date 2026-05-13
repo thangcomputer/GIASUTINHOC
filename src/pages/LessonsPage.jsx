@@ -4,6 +4,8 @@ import Navbar from '../components/Navbar'
 import { LESSONS, CATEGORIES } from '../data/lessons'
 import { BookOpen, Search, Laptop, Globe, Shield, Folder, Clock, List, ArrowRight, MessageSquare, Play, CheckCircle, Trophy } from 'lucide-react'
 import './LessonsPage.css'
+import { studentAuthHeaders } from '../lib/authFetch'
+import { fetchJsonIfOk } from '../lib/parseApiResponse.js'
 
 export default function LessonsPage() {
   const [activeCategory, setActiveCategory] = useState('Tất cả')
@@ -17,25 +19,27 @@ export default function LessonsPage() {
 
   useEffect(() => {
     fetch('/api/courses')
-      .then(res => res.json())
-      .then(d => {
-        if (d.success && d.data?.length > 0) {
+      .then((res) => fetchJsonIfOk(res))
+      .then((d) => {
+        if (d?.success && d.data?.length > 0) {
           setDbLessons(d.data.map(c => ({
             ...c,
             description: c.description || 'Không có mô tả',
             tags: c.tags || [],
             steps: c.steps || []
           })));
+        } else if (d === null) {
+          console.warn('Không tải được /api/courses (backend tắt hoặc 502). Dùng dữ liệu mẫu trong app.')
         }
       })
-      .catch(e => console.log("Lỗi tải data module list:", e));
+      .catch((e) => console.warn('Lỗi mạng khi tải danh sách khóa:', e))
 
     // Fetch progress của học viên
     if (user?._id) {
-      fetch(`/api/progress/${user._id}`)
-        .then(r => r.json())
-        .then(d => {
-          if (d.success && d.data) {
+      fetch(`/api/progress/${user._id}`, { headers: studentAuthHeaders() })
+        .then((r) => fetchJsonIfOk(r))
+        .then((d) => {
+          if (d?.success && d.data) {
             const map = {}
             d.data.forEach(p => { map[p.courseId] = p })
             setProgressMap(map)

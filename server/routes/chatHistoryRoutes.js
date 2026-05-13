@@ -1,13 +1,11 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import ChatHistory from '../models/ChatHistory.js';
+import { requireAdmin, requireAuth, allowSelfOrAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// ─────────────────────────────────────────────
-// GET /api/chat-history              → Tất cả hỏi đáp (Admin, phân trang)
-// ─────────────────────────────────────────────
-router.get('/', async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 30, studentId, role } = req.query;
     const query = {};
@@ -26,11 +24,11 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/chat-history/student/:id  → Lịch sử hỏi đáp 1 học viên
-// ─────────────────────────────────────────────
-router.get('/student/:id', async (req, res) => {
+router.get('/student/:id', requireAuth, allowSelfOrAdmin('id'), async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'ID không hợp lệ' });
+    }
     const { page = 1, limit = 20 } = req.query;
     const query = { studentId: req.params.id };
 
@@ -46,16 +44,13 @@ router.get('/student/:id', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// GET /api/chat-history/stats        → Thống kê hỏi đáp toàn hệ thống
-// ─────────────────────────────────────────────
-router.get('/stats', async (req, res) => {
+router.get('/stats', requireAdmin, async (req, res) => {
   try {
     const [totalMessages, userMessages, todayMessages, topStudents] = await Promise.all([
       ChatHistory.countDocuments(),
       ChatHistory.countDocuments({ role: 'user' }),
       ChatHistory.countDocuments({
-        createdAt: { $gte: new Date(new Date().setHours(0,0,0,0)) }
+        createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
       }),
       ChatHistory.aggregate([
         { $match: { role: 'user' } },

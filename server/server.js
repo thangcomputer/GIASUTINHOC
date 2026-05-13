@@ -9,6 +9,8 @@ import { fileURLToPath } from 'url';
 import http from 'http';
 import { Server } from 'socket.io';
 
+/* global process */
+
 // Routes
 import billingRoutes     from './routes/billingRoutes.js';
 import aiRoutes          from './routes/aiRoutes.js';
@@ -26,9 +28,20 @@ import examRoutes        from './routes/examRoutes.js';
 
 dotenv.config();
 
+// Production: ALLOWED_ORIGINS=https://giasutinhoc24h.com,https://www.giasutinhoc24h.com
+const rawOrigins = process.env.ALLOWED_ORIGINS;
+const corsOrigin = rawOrigins
+  ? rawOrigins.split(',').map((s) => s.trim()).filter(Boolean)
+  : true;
+
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*', methods: ['GET', 'POST'] } });
+const io = new Server(server, {
+  cors: {
+    origin: corsOrigin === true ? '*' : corsOrigin,
+    methods: ['GET', 'POST'],
+  },
+});
 
 // Make io accessible in routes via req.app.get('io')
 app.set('io', io);
@@ -43,9 +56,9 @@ app.use(helmet({
 }));
 app.use(compression()); // Gzip tĩnh tài nguyên (văn bản, CSS, JS)
 
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(cors({ origin: corsOrigin, credentials: true }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // Phục vụ các file tĩnh (Ví dụ: Video Uploads)
 app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads'), {

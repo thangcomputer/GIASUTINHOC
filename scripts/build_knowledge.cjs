@@ -12,16 +12,22 @@ const path     = require('path');
 const mammoth  = require('mammoth');
 const https    = require('https');
 
+try {
+  require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+} catch (_) { /* dotenv optional */ }
+
 const INPUT_DIR   = path.join(__dirname, '..', 'data', 'knowledge');
 const OUTPUT_FILE = path.join(__dirname, '..', 'src', 'data', 'knowledge', 'knowledgeIndex.json');
 
 // Lấy Gemini API key từ .env
 function loadEnvKey() {
+  const fromEnv = (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '').trim();
+  if (fromEnv) return fromEnv;
   try {
     const envPath = path.join(__dirname, '..', '.env');
     const content = fs.readFileSync(envPath, 'utf-8');
     const match = content.match(/(?:GEMINI_API_KEY|VITE_GEMINI_API_KEY)\s*=\s*(.+)/);
-    return match ? match[1].trim() : '';
+    return match ? match[1].trim().replace(/^["']|["']$/g, '') : '';
   } catch { return ''; }
 }
 
@@ -31,6 +37,7 @@ const TOPIC_MAP = {
   powerpoint:  'Microsoft PowerPoint',
   networking:  'Mạng Máy Tính & An Toàn Thông Tin',
   ic3:         'Luyện Thi IC3 GS6',
+  mos:         'Chứng Chỉ MOS (Microsoft Office Specialist)',
   windows:     'Hệ Điều Hành Windows',
   python:      'Lập Trình Python',
   c:           'Lập Trình C/C++',
@@ -69,23 +76,51 @@ function cleanText(raw) {
   return raw.replace(/\r\n/g, '\n').replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
 }
 
-/* ── Chia đoạn ~600 ký tự (overlap 100) ─────────────────── */
-function chunkText(text, maxLen = 600, overlap = 100) {
-  const sentences = text.split(/(?<=[.!?\n])\s+/);
-  const chunks = [];
-  let current = '';
-  for (const s of sentences) {
-    if ((current + s).length > maxLen && current) {
-      chunks.push(current.trim());
-      // Overlap: giữ lại ~overlap ký tự cuối
-      const words = current.split(' ');
-      current = words.slice(-Math.floor(overlap / 6)).join(' ') + ' ' + s;
+/**
+ * Chia đoạn: ưu tiên đoạn văn (\\n\\n), sau đó câu — ngữ cảnh dài hơn giúp embedding/RAG giống trợ lý đọc tài liệu.
+ */
+function chunkText(text, maxLen = 900, overlap = 140) {
+  const paras = text.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+  const units = [];
+  for (const p of paras) {
+    if (p.length <= maxLen) {
+      units.push(p);
+      continue;
+    }
+    const sentences = p.split(/(?<=[.!?\u3002\uFF01\uFF1F\n])\s+/);
+    let current = '';
+    for (const s of sentences) {
+      const part = s.trim();
+      if (!part) continue;
+      if ((current + ' ' + part).length > maxLen && current) {
+        units.push(current.trim());
+        const words = current.split(/\s+/);
+        const keep = Math.max(8, Math.floor(overlap / 5));
+        current = words.slice(-keep).join(' ') + ' ' + part;
+      } else {
+        current += (current ? ' ' : '') + part;
+      }
+    }
+    if (current.trim()) units.push(current.trim());
+  }
+  const merged = [];
+  let buf = '';
+  for (const u of units) {
+    if ((buf + '\n\n' + u).length <= maxLen || !buf) {
+      buf = buf ? `${buf}\n\n${u}` : u;
     } else {
-      current += (current ? ' ' : '') + s;
+      if (buf.length > 40) merged.push(buf);
+      buf = u;
     }
   }
-  if (current.trim()) chunks.push(current.trim());
-  return chunks.filter(c => c.length > 30);
+  if (buf.length > 40) merged.push(buf);
+  return merged.filter(c => c.length > 35);
+}
+
+/** Tiền tố chủ đề + file giúp vector & keyword trùng khớp câu hỏi tốt hơn */
+function enrichChunkForIndex(label, fileName, body) {
+  const head = `[Chủ đề: ${label}] [Tài liệu: ${fileName}]`;
+  return `${head}\n${body.trim()}`;
 }
 
 /* ── Gọi Gemini Embedding API ────────────────────────────── */
@@ -170,13 +205,14 @@ async function main() {
         console.log(`  [READ] ${folder}/${file} — ${chunks.length} đoạn`);
 
         for (let i = 0; i < chunks.length; i++) {
-          const chunkData = { source: file, text: chunks[i], vector: null };
+          const enriched = enrichChunkForIndex(label, file, chunks[i]);
+          const chunkData = { source: file, text: enriched, vector: null };
 
           if (useEmbedding) {
             try {
               // Rate limit: tối đa ~1500 req/phút → 40ms/req
               if (i > 0 && i % 10 === 0) await delay(500);
-              const vector = await getEmbedding(chunks[i], apiKey);
+              const vector = await getEmbedding(enriched, apiKey);
               chunkData.vector = vector;
               if (vector) totalEmbedded++;
               else totalFailed++;
