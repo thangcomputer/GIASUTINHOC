@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { WELCOME_COINS } from '../lib/creditsPolicy'
 import { fetchJsonIfOk } from '../lib/parseApiResponse.js'
+import { HOME_HERO_IMAGES } from '../constants/homeHeroImages.js'
 
 /* ─── DATA ─── */
 const STATS = [
@@ -272,7 +273,7 @@ export default function HomePage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 0.8fr', gap: '18px', alignItems: 'stretch', minHeight: '520px' }}>
           {/* Card 1 — AI Tutor */}
           <div className="img-card" style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', minHeight: '520px', border: '1px solid rgba(99,102,241,0.2)' }}>
-            <img src="/ai_tutor_hero.png" alt="AI Giảng Viên" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+            <img src={HOME_HERO_IMAGES.tutor} alt="Học tập và làm việc nhóm với công nghệ" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} loading="lazy" decoding="async" />
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(6,9,18,0.96) 0%, rgba(6,9,18,0.4) 55%, rgba(6,9,18,0.1) 100%)' }} />
             <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(10,15,30,0.7)', backdropFilter: 'blur(12px)', borderRadius: '30px', border: '1px solid rgba(99,102,241,0.35)' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block', boxShadow: '0 0 8px #10b981' }} />
@@ -295,7 +296,7 @@ export default function HomePage() {
           {/* Middle column */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             <div className="img-card" style={{ position: 'relative', borderRadius: '22px', overflow: 'hidden', flex: 1, minHeight: '240px', border: '1px solid rgba(6,182,212,0.2)' }}>
-              <img src="/ai_chatbot_ui.png" alt="AI Chatbot" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+              <img src={HOME_HERO_IMAGES.chat} alt="Học online trên laptop" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} loading="lazy" decoding="async" />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(4,15,40,0.95) 0%, rgba(4,15,40,0.2) 65%, transparent 100%)' }} />
               <div style={{ position: 'absolute', top: '16px', right: '16px', padding: '6px 12px', background: 'rgba(6,182,212,0.2)', backdropFilter: 'blur(8px)', borderRadius: '20px', border: '1px solid rgba(6,182,212,0.35)' }}>
                 <span style={{ color: '#67e8f9', fontSize: '0.7rem', fontWeight: 700 }}>⚡ AI Chat 24/7</span>
@@ -307,7 +308,7 @@ export default function HomePage() {
             </div>
 
             <div className="img-card" style={{ position: 'relative', borderRadius: '22px', overflow: 'hidden', flex: 1, minHeight: '240px', border: '1px solid rgba(16,185,129,0.2)' }}>
-              <img src="/student_learning.png" alt="Học viên" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+              <img src={HOME_HERO_IMAGES.student} alt="Học viên làm việc hiệu quả" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} loading="lazy" decoding="async" />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(5,25,20,0.95) 0%, rgba(5,25,20,0.2) 65%, transparent 100%)' }} />
               <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'rgba(16,185,129,0.2)', backdropFilter: 'blur(8px)', borderRadius: '20px', border: '1px solid rgba(16,185,129,0.35)' }}>
                 <GraduationCap size={12} color="#34d399" />

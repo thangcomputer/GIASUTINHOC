@@ -34,3 +34,6 @@ server/config/settings.json
 ssh_query.cjs
 .env
 .env.*
+!.env.example
+env.user-secrets.properties
+vps.generated.env

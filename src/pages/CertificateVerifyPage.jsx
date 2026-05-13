@@ -53,7 +53,7 @@ export default function CertificateVerifyPage() {
         background: 'linear-gradient(160deg, #0a0f1e 0%, #1e1b4b 45%, #0f172a 100%)',
         color: '#e2e8f0',
         padding: '32px 20px',
-        fontFamily: 'system-ui, sans-serif',
+        fontFamily: 'var(--font-main, "Be Vietnam Pro", system-ui, sans-serif)',
       }}
     >
       <Helmet>

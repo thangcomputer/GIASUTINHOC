@@ -25,6 +25,7 @@ import homepageRoutes    from './routes/homepageRoutes.js';
 import popupRoutes       from './routes/popupRoutes.js';
 import progressRoutes    from './routes/progressRoutes.js';
 import examRoutes        from './routes/examRoutes.js';
+import paymentWebhookRoutes from './routes/paymentWebhookRoutes.js';
 
 dotenv.config();
 
@@ -83,6 +84,7 @@ app.use('/api/homepage',     homepageRoutes);
 app.use('/api/popups',       popupRoutes);
 app.use('/api/progress',     progressRoutes);
 app.use('/api/exams',        examRoutes);
+app.use('/api/webhooks',     paymentWebhookRoutes);
 
 // ─── MongoDB ──────────────────────────────────
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/giasuai_db';
