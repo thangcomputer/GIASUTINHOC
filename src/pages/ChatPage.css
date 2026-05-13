@@ -1005,3 +1005,45 @@
   opacity: 1;
   visibility: visible;
 }
+
+/* Ngữ cảnh bài học khi mở từ trang lesson */
+.chat-lesson-context-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 20px 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  color: #c7d2fe;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.chat-lesson-context-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-lesson-context-text strong {
+  color: #e0e7ff;
+}
+
+.chat-lesson-context-clear {
+  margin-left: auto;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.5);
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-lesson-context-clear:hover {
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.55);
+}

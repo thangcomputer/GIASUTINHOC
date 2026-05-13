@@ -29,11 +29,34 @@ import paymentWebhookRoutes from './routes/paymentWebhookRoutes.js';
 
 dotenv.config();
 
+/** Origin Vite / preview — luôn gộp khi không phải production để đăng ký/đăng nhập từ localhost không bị CORS chặn. */
+const LOCAL_DEV_ORIGINS = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173',
+];
+
 // Production: ALLOWED_ORIGINS=https://giasutinhoc24h.com,https://www.giasutinhoc24h.com
 const rawOrigins = process.env.ALLOWED_ORIGINS;
-const corsOrigin = rawOrigins
-  ? rawOrigins.split(',').map((s) => s.trim()).filter(Boolean)
-  : true;
+const isProd = process.env.NODE_ENV === 'production';
+const allowLocalCors =
+  !isProd ||
+  String(process.env.CORS_ALLOW_LOCALHOST || '').toLowerCase() === 'true';
+
+let corsOrigin;
+if (!rawOrigins || !String(rawOrigins).trim()) {
+  corsOrigin = true;
+} else {
+  const list = rawOrigins.split(',').map((s) => s.trim()).filter(Boolean);
+  corsOrigin = allowLocalCors ? [...new Set([...list, ...LOCAL_DEV_ORIGINS])] : list;
+}
+
+if (allowLocalCors && Array.isArray(corsOrigin) && rawOrigins?.trim()) {
+  const base = rawOrigins.split(',').map((s) => s.trim()).filter(Boolean);
+  const added = corsOrigin.filter((o) => !base.includes(o));
+  if (added.length) console.log('[CORS] Bổ sung origin dev:', added.join(', '));
+}
 
 const app = express();
 const server = http.createServer(app);

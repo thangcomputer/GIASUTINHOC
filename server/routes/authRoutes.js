@@ -33,21 +33,45 @@ router.get('/me', requireAuth, async (req, res) => {
 router.post('/register', async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
-    if (!name || !email)
-      return res.status(400).json({ success: false, message: 'Thiếu tên hoặc email' });
+    const rawName = name != null ? String(name).trim() : '';
+    const rawPhone = phone != null ? String(phone).trim() : '';
+    const normPhone = rawPhone.replace(/\s/g, '');
+    let finalEmail = email != null ? String(email).toLowerCase().trim() : '';
 
-    const exists = await Student.findOne({ email: email.toLowerCase().trim() });
-    if (exists)
+    if (!rawName) return res.status(400).json({ success: false, message: 'Thiếu tên' });
+
+    if (!finalEmail && normPhone) {
+      const digits = normPhone.replace(/\D/g, '');
+      if (digits.length < 8)
+        return res.status(400).json({ success: false, message: 'Số điện thoại không hợp lệ' });
+      finalEmail = `user_${digits}@phone.giasuai.internal`;
+    }
+
+    if (!finalEmail)
+      return res.status(400).json({ success: false, message: 'Thiếu email hoặc số điện thoại' });
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(finalEmail))
+      return res.status(400).json({ success: false, message: 'Email không hợp lệ' });
+
+    const existsMail = await Student.findOne({ email: finalEmail });
+    if (existsMail)
       return res.status(409).json({ success: false, message: 'Email đã được sử dụng' });
+
+    if (normPhone) {
+      const existsPhone = await Student.findOne({ phone: normPhone });
+      if (existsPhone)
+        return res.status(409).json({ success: false, message: 'Số điện thoại đã được sử dụng' });
+    }
 
     const hash = await bcrypt.hash(password || '', 10);
 
     const db = Student.db.db;
+    const now = new Date();
     const result = await db.collection('students').insertOne({
-      name,
-      email:              email.toLowerCase().trim(),
-      phone:              phone || '',
-      password:           hash,
+      name: rawName,
+      email: finalEmail,
+      phone: normPhone || '',
+      password: hash,
       avatar:             '',
       role:               'student',
       isActive:           true,
@@ -56,13 +80,16 @@ router.post('/register', async (req, res) => {
       totalSpent:         0,
       totalQuizGenerated: 0,
       totalChatMessages:  0,
-      createdAt:          new Date(),
-      updatedAt:          new Date(),
+      sessionSerial:      1,
+      lastActivityAt:     now,
+      lastLogin:          now,
+      createdAt:          now,
+      updatedAt:          now,
     });
 
     await Transaction.create({
       studentId:   result.insertedId,
-      studentName: name,
+      studentName: rawName,
       type:        'bonus',
       coinsDelta:  WELCOME_COINS,
       coinsAfter:  WELCOME_COINS,
@@ -71,7 +98,7 @@ router.post('/register', async (req, res) => {
     });
 
     const created = await db.collection('students').findOne({ _id: result.insertedId });
-    const token = signAccessToken({ sub: result.insertedId.toString(), role: 'student' });
+    const token = signAccessToken({ sub: result.insertedId.toString(), role: 'student', sid: 1 });
     const { password: _p, ...safeUser } = created;
 
     res.status(201).json({
@@ -112,14 +139,19 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Sai mật khẩu' });
     }
 
+    const now = new Date();
     await db.collection('students').updateOne(
       { _id: student._id },
-      { $set: { lastLogin: new Date(), updatedAt: new Date() } }
+      {
+        $inc: { sessionSerial: 1 },
+        $set: { lastLogin: now, lastActivityAt: now, updatedAt: now },
+      }
     );
 
     const fresh = await db.collection('students').findOne({ _id: student._id });
     const role = fresh.role || 'student';
-    const token = signAccessToken({ sub: fresh._id.toString(), role });
+    const sid = Number(fresh.sessionSerial);
+    const token = signAccessToken({ sub: fresh._id.toString(), role, sid });
     const { password: _pw, ...safeUser } = fresh;
     res.json({ success: true, data: safeUser, token });
   } catch (err) {
@@ -158,6 +190,7 @@ router.post('/google', async (req, res) => {
 
     if (!student) {
       const randomPassword = await bcrypt.hash(Math.random().toString(36).slice(-10), 10);
+      const gNow = new Date();
       const result = await db.collection('students').insertOne({
         name:               name || cleanEmail.split('@')[0],
         email:              cleanEmail,
@@ -171,9 +204,11 @@ router.post('/google', async (req, res) => {
         totalSpent:         0,
         totalQuizGenerated: 0,
         totalChatMessages:  0,
-        createdAt:          new Date(),
-        updatedAt:          new Date(),
-        lastLogin:          new Date()
+        sessionSerial:      1,
+        lastActivityAt:     gNow,
+        createdAt:          gNow,
+        updatedAt:          gNow,
+        lastLogin:          gNow,
       });
 
       await Transaction.create({
@@ -189,15 +224,20 @@ router.post('/google', async (req, res) => {
       student = await db.collection('students').findOne({ _id: result.insertedId });
     } else {
       if (student.isActive === false) return res.status(403).json({ success: false, message: 'Tài khoản đã bị khoá' });
+      const gNow2 = new Date();
       await db.collection('students').updateOne(
         { _id: student._id },
-        { $set: { lastLogin: new Date(), updatedAt: new Date() } }
+        {
+          $inc: { sessionSerial: 1 },
+          $set: { lastLogin: gNow2, lastActivityAt: gNow2, updatedAt: gNow2 },
+        }
       );
       student = await db.collection('students').findOne({ _id: student._id });
     }
 
     const role = student.role || 'student';
-    const token = signAccessToken({ sub: student._id.toString(), role });
+    const sid = Number(student.sessionSerial);
+    const token = signAccessToken({ sub: student._id.toString(), role, sid });
     const { password: _pw, ...safeUser } = student;
     res.json({ success: true, data: safeUser, token });
   } catch (err) {

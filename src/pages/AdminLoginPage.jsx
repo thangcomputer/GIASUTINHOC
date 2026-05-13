@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ShieldCheck, Eye, EyeOff, Lock, Mail, LogIn } from 'lucide-react'
 import './AdminLoginPage.css'
 
@@ -8,8 +8,17 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
+  const [sessionBanner, setSessionBanner] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    const msg = location.state?.sessionMessage
+    if (!msg) return
+    setSessionBanner(msg)
+    navigate(location.pathname, { replace: true, state: {} })
+  }, [location.state, location.pathname, navigate])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -54,6 +63,10 @@ export default function AdminLoginPage() {
           <h1>Admin Portal</h1>
           <p>Gia Sư AI · Quản Trị Hệ Thống</p>
         </div>
+
+        {sessionBanner && (
+          <div className="admin-notice-box" role="status">{sessionBanner}</div>
+        )}
 
         {error && (
           <div className="admin-error-box">⚠️ {error}</div>

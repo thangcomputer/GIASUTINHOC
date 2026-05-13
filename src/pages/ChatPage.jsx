@@ -5,6 +5,8 @@ import { Helmet } from 'react-helmet-async'
 import Navbar from '../components/Navbar'
 import { sendMessageToAI, sendMessageStreamToAI } from '../services/aiService'
 import { useCredits } from '../context/CreditContext'
+import { LESSONS } from '../data/lessons'
+import { buildLessonAiContextText } from '../lib/lessonStudyKit'
 import {
   Send, Mic, Volume2, VolumeX, Trash2, ImagePlus,
   Plus, Search, MessageSquare, BookOpen, Target,
@@ -131,6 +133,8 @@ function TypingDots() {
 export default function ChatPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const qpLesson = searchParams.get('lesson')
+  const qpStep = searchParams.get('step')
   const { credits, deductCredits } = useCredits()
 
   /* ── conversations store ── */
@@ -178,6 +182,40 @@ export default function ChatPage() {
       console.warn('Storage limit exceeded, truncating history...')
     }
   }, [conversations])
+
+  useEffect(() => {
+    if (!qpLesson) return
+    let cancelled = false
+    const stepIdx = Math.max(0, parseInt(qpStep || '0', 10) || 0)
+    ;(async () => {
+      let L = null
+      try {
+        const r = await fetch('/api/courses')
+        const d = await r.json()
+        if (d.success && Array.isArray(d.data)) L = d.data.find((l) => l.id === qpLesson)
+      } catch { /* noop */ }
+      if (!L) L = LESSONS.find((l) => l.id === qpLesson)
+      if (!L || !L.steps?.length || cancelled) return
+      const safeStep = Math.min(stepIdx, L.steps.length - 1)
+      const st = L.steps[safeStep]
+      const ctx = buildLessonAiContextText(L, safeStep)
+      const label = `${L.title} — ${st?.title || `Module ${safeStep + 1}`}`
+      const id = makeId()
+      const newConv = {
+        id,
+        title: label.slice(0, 52),
+        createdAt: Date.now(),
+        messages: [],
+        history: [],
+        lessonContext: ctx,
+        lessonContextLabel: label,
+      }
+      setConversations((prev) => [newConv, ...prev])
+      setActiveId(id)
+      navigate('/chat', { replace: true })
+    })()
+    return () => { cancelled = true }
+  }, [qpLesson, qpStep, navigate])
 
   // Không tự động lưu activeId vào localStorage nữa để khi load trang luôn là chat mới
 
@@ -417,11 +455,14 @@ export default function ChatPage() {
     setInput('')
     setLoading(true)
 
-    const currentHistory = conversations.find(c => c.id === cId)?.history || []
+    const convSnap = conversations.find(c => c.id === cId)
+    const currentHistory = convSnap?.history || []
+    const lessonCtx = convSnap?.lessonContext
 
     try {
       if (useStream) {
         await sendMessageStreamToAI(userText, currentHistory, aiMode, base64Data, {
+          lessonContext: lessonCtx,
           onTextChunk: (_chunk, fullText) => {
             setConversations(prev => prev.map(c => {
               if (c.id !== cId) return c
@@ -454,7 +495,7 @@ export default function ChatPage() {
           },
         })
       } else {
-        const reply = await sendMessageToAI(userText, currentHistory, false, aiMode, base64Data)
+        const reply = await sendMessageToAI(userText, currentHistory, false, aiMode, base64Data, { lessonContext: lessonCtx })
         const aiMsg = {
           id: makeId(),
           role: 'ai',
@@ -615,6 +656,28 @@ export default function ChatPage() {
 
         {/* ══ MAIN CONTENT ══════════════════════════════════ */}
         <main className="chat-main">
+          {activeConv?.lessonContextLabel && (
+            <div className="chat-lesson-context-banner" role="status">
+              <BookOpen size={16} aria-hidden />
+              <span className="chat-lesson-context-text">
+                <strong>Ngữ cảnh bài học:</strong> {activeConv.lessonContextLabel}
+              </span>
+              <button
+                type="button"
+                className="chat-lesson-context-clear"
+                onClick={() => {
+                  if (!activeId) return
+                  setConversations((prev) => prev.map((c) =>
+                    c.id === activeId
+                      ? { ...c, lessonContext: undefined, lessonContextLabel: undefined }
+                      : c
+                  ))
+                }}
+              >
+                Xóa ngữ cảnh
+              </button>
+            </div>
+          )}
 
           {isEmptyChat ? (
             /* ── WELCOME SCREEN ── */

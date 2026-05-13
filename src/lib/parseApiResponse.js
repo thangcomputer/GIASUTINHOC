@@ -18,7 +18,7 @@ export async function parseJsonResponse(res) {
   if (!text || !String(text).trim()) {
     if (res.status === 502 || res.status === 503 || res.status === 504) {
       throw new Error(
-        'Máy chủ API tạm không phản hồi (502/503/504). Hãy bật backend (cổng 5000), MongoDB, rồi thử lại.'
+        'Máy chủ API tạm không phản hồi (502/503/504). Hãy bật backend và MongoDB; chạy npm run dev:all hoặc npm run start:backend. Kiểm tra cổng PORT trong .env khớp proxy Vite (mặc định 5000).'
       )
     }
     throw new Error(

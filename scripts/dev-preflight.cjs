@@ -39,11 +39,12 @@ function checkPort(port, host = '127.0.0.1') {
     console.warn('    → Bật mongod / MongoDB service rồi chạy lại backend.')
   }
 
-  const apiUp = await checkPort(5000)
+  const apiPort = Number(process.env.PORT) || 5000
+  const apiUp = await checkPort(apiPort)
   if (apiUp) {
-    console.log('[✓] Cổng 5000 đang mở (có thể đã có backend)')
+    console.log(`[✓] Cổng ${apiPort} đang mở (có thể đã có backend)`)
   } else {
-    console.log('[ ] Cổng 5000 chưa có — chạy: npm run start:backend (hoặc npm run dev:all)')
+    console.log(`[ ] Cổng ${apiPort} chưa có — chạy: npm run start:backend (hoặc npm run dev:all); PORT trong .env phải khớp vite proxy.`)
   }
 
   if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {

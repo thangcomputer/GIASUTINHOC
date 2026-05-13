@@ -395,3 +395,207 @@
 .lesson-checkpoint-overlay:focus {
   outline: none;
 }
+
+/* ── Checklist + flashcard + chat ngữ cảnh (tab Video) ───────────────── */
+.lesson-study-kit {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lesson-study-kit__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.lesson-study-kit__titles {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+
+.lesson-study-kit__title {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.lesson-study-kit__sub {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: #94a3b8;
+}
+
+.lesson-study-kit__chat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(99, 102, 241, 0.45);
+  background: rgba(99, 102, 241, 0.1);
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.lesson-study-kit__chat-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  transform: translateY(-1px);
+}
+
+.lesson-study-checklist {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lesson-study-checklist__label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(51, 65, 85, 0.45);
+  background: rgba(15, 23, 42, 0.35);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.lesson-study-checklist__label:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.lesson-study-checklist__input {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: #6366f1;
+}
+
+.lesson-study-checklist__text {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #e2e8f0;
+}
+
+.lesson-study-checklist__text.is-done {
+  color: #86efac;
+  text-decoration: line-through;
+  text-decoration-color: rgba(134, 239, 172, 0.45);
+}
+
+.lesson-study-kit__progress {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 22px;
+}
+
+.lesson-study-flash {
+  padding-top: 8px;
+  border-top: 1px dashed rgba(51, 65, 85, 0.5);
+}
+
+.lesson-study-flash__head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.lesson-study-flash__card-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lesson-study-flash__flip {
+  width: 100%;
+  text-align: left;
+  border-radius: 14px;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: linear-gradient(165deg, rgba(30, 27, 75, 0.5), rgba(15, 23, 42, 0.75));
+  padding: 18px 18px 16px;
+  cursor: pointer;
+  color: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.lesson-study-flash__flip:hover {
+  border-color: rgba(129, 140, 248, 0.45);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.lesson-study-flash__kicker {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #818cf8;
+  margin-bottom: 10px;
+}
+
+.lesson-study-flash__body {
+  display: block;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #f1f5f9;
+  white-space: pre-wrap;
+}
+
+.lesson-study-flash__hint {
+  display: block;
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.lesson-study-flash__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lesson-study-flash__nav-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(51, 65, 85, 0.55);
+  background: rgba(15, 23, 42, 0.5);
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lesson-study-flash__nav-btn:hover:not(:disabled) {
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #e2e8f0;
+}
+
+.lesson-study-flash__nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.lesson-study-flash__idx {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}

@@ -30,7 +30,11 @@ const stepSchema = new mongoose.Schema({
   learningObjectives: [String],
   summaryBullets: [String],
   chapters: [chapterSchema],
-  transcript: String
+  transcript: String,
+  /** Tuỳ chọn: checklist thực hành sau video (nếu rỗng client suy từ mục tiêu/bullet) */
+  practiceChecklist: [String],
+  /** Tuỳ chọn: flashcard ôn nhanh */
+  flashcards: [{ front: String, back: String }],
 });
 
 const lessonSchema = new mongoose.Schema({

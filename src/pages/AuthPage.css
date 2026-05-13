@@ -247,6 +247,12 @@
   color: #fecaca;
 }
 
+.authPage-alertSession {
+  background: rgba(120, 53, 15, 0.22);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fde68a;
+}
+
 .authPage-form {
   display: flex;
   flex-direction: column;
@@ -456,6 +462,36 @@
 .authPage-google:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.authPage-googleHint {
+  margin: 10px 0 0;
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: #64748b;
+  text-align: center;
+}
+
+.authPage-googleHint code {
+  font-size: 0.65em;
+}
+
+.authPage-googleDisabled {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px dashed rgba(71, 85, 105, 0.65);
+}
+
+.authPage-code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  color: #a5b4fc;
+  word-break: break-all;
 }
 
 .authPage-footNote {

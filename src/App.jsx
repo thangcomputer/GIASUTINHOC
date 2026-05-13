@@ -7,6 +7,7 @@ import OnboardingPopup from './components/OnboardingPopup'
 import AITutorBubble from './components/AITutorBubble'
 import ActivityNotification from './components/ActivityNotification'
 import LoginPopup from './components/LoginPopup'
+import SessionActivityGuard from './components/SessionActivityGuard'
 import './pages/AdminDashboard.css'
 
 // ── Eager load (trang marketing, luôn cần ngay) ──
@@ -75,6 +76,7 @@ export default function App() {
     <HelmetProvider>
     <CreditProvider>
       <BrowserRouter>
+        <SessionActivityGuard />
         <OnboardingGate />
         <AITutorBubble />
         <ActivityNotification />

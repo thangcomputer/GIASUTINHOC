@@ -29,6 +29,10 @@ const StudentSchema = new mongoose.Schema({
 
   // Thông tin đăng nhập
   lastLogin:  { type: Date },
+  /** Tăng mỗi lần đăng nhập thành công — JWT phải khớp để chống nhiều thiết bị */
+  sessionSerial: { type: Number, default: 0 },
+  /** Cập nhật khi có request được coi là hoạt động (bỏ qua vài GET sync định kỳ) */
+  lastActivityAt: { type: Date },
   createdAt:  { type: Date, default: Date.now },
   updatedAt:  { type: Date, default: Date.now },
 }, { timestamps: true });

@@ -1,14 +1,20 @@
 import Swal from 'sweetalert2';
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { marked } from 'marked'
 import Navbar from '../components/Navbar'
 import { LESSONS } from '../data/lessons'
 import { useCredits } from '../context/CreditContext'
 import ReactPlayer from 'react-player';
-import { ArrowLeft, Lock, Play, BookOpen, PenTool, CheckCircle, ChevronRight, ChevronDown, ChevronUp, Trophy, Award, Download, X, Clock, Menu, FileText, ListVideo } from 'lucide-react'
+import { ArrowLeft, Lock, Play, BookOpen, PenTool, CheckCircle, ChevronRight, ChevronDown, ChevronUp, Trophy, Award, Download, X, Clock, Menu, FileText, ListVideo, MessageSquare, ListTodo, Layers } from 'lucide-react'
 import './LessonDetailPage.css'
 import { studentAuthHeaders, studentJsonAuthHeaders } from '../lib/authFetch'
+import {
+  getPracticeChecklist,
+  getFlashcards,
+  loadChecklistState,
+  saveChecklistState,
+} from '../lib/lessonStudyKit'
 
 /* ─── Helpers & Modal ───────────────────────────────────────────── */
 function getYouTubeId(url = '') {
@@ -50,6 +56,122 @@ function escapeForSwalHtml(s) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+/** Checklist thực hành + flashcard ôn nhanh + link chat có ngữ cảnh bài */
+function LessonStudyInline({ lesson, step, stepIndex, accent }) {
+  const items = useMemo(() => getPracticeChecklist(step), [step])
+  const cards = useMemo(() => getFlashcards(step, lesson.title), [step, lesson.title])
+  const [checked, setChecked] = useState(() => loadChecklistState(lesson.id, stepIndex, items.length))
+
+  useEffect(() => {
+    setChecked(loadChecklistState(lesson.id, stepIndex, items.length))
+  }, [lesson.id, stepIndex, items.length])
+
+  const toggle = (i) => {
+    const next = [...checked]
+    while (next.length < items.length) next.push(false)
+    next[i] = !next[i]
+    setChecked(next)
+    saveChecklistState(lesson.id, stepIndex, next)
+  }
+
+  const [cardIdx, setCardIdx] = useState(0)
+  const [showBack, setShowBack] = useState(false)
+
+  useEffect(() => {
+    setShowBack(false)
+    setCardIdx(0)
+  }, [lesson.id, stepIndex])
+
+  const doneCount = checked.filter(Boolean).length
+  const card = cards[cardIdx] || null
+
+  return (
+    <div className="lesson-study-kit">
+      <div className="lesson-study-kit__head">
+        <div className="lesson-study-kit__titles">
+          <ListTodo size={18} style={{ color: accent }} aria-hidden />
+          <div>
+            <h4 className="lesson-study-kit__title">Sau video — checklist thực hành</h4>
+            <p className="lesson-study-kit__sub">Tick từng bước trên máy thật. Kẹt chỗ nào cứ hỏi AI — đã gắn đúng module bạn đang học.</p>
+          </div>
+        </div>
+        <Link
+          className="lesson-study-kit__chat-btn"
+          to={`/chat?lesson=${encodeURIComponent(lesson.id)}&step=${stepIndex}`}
+          style={{ borderColor: `${accent}55`, color: accent }}
+        >
+          <MessageSquare size={16} aria-hidden />
+          Hỏi AI về module này
+        </Link>
+      </div>
+
+      <ul className="lesson-study-checklist">
+        {items.map((label, i) => (
+          <li key={i} className="lesson-study-checklist__item">
+            <label className="lesson-study-checklist__label">
+              <input
+                type="checkbox"
+                checked={!!checked[i]}
+                onChange={() => toggle(i)}
+                className="lesson-study-checklist__input"
+              />
+              <span className={checked[i] ? 'lesson-study-checklist__text is-done' : 'lesson-study-checklist__text'}>{label}</span>
+            </label>
+          </li>
+        ))}
+      </ul>
+      <div className="lesson-study-kit__progress" role="status">
+        Tiến độ thực hành: <strong>{doneCount}</strong> / {items.length}
+      </div>
+
+      {cards.length > 0 && (
+        <div className="lesson-study-flash">
+          <div className="lesson-study-flash__head">
+            <Layers size={18} style={{ color: accent }} aria-hidden />
+            <div>
+              <h4 className="lesson-study-kit__title">Ôn siêu nhanh — flashcard</h4>
+              <p className="lesson-study-kit__sub">Bấm thẻ để lật xem gợi ý. Dùng mũi tên để chuyển thẻ.</p>
+            </div>
+          </div>
+          {card && (
+            <div className="lesson-study-flash__card-wrap">
+              <button
+                type="button"
+                className="lesson-study-flash__flip"
+                onClick={() => setShowBack((v) => !v)}
+                aria-pressed={showBack}
+              >
+                <span className="lesson-study-flash__kicker">{showBack ? 'Gợi ý' : 'Câu hỏi / gợi nhớ'}</span>
+                <span className="lesson-study-flash__body">{showBack ? card.back : card.front}</span>
+                <span className="lesson-study-flash__hint">{showBack ? 'Bấm để xem câu hỏi' : 'Bấm để xem đáp án gợi ý'}</span>
+              </button>
+              <div className="lesson-study-flash__nav">
+                <button
+                  type="button"
+                  className="lesson-study-flash__nav-btn"
+                  disabled={cardIdx <= 0}
+                  onClick={() => { setCardIdx((i) => i - 1); setShowBack(false) }}
+                >
+                  ← Trước
+                </button>
+                <span className="lesson-study-flash__idx">{cardIdx + 1} / {cards.length}</span>
+                <button
+                  type="button"
+                  className="lesson-study-flash__nav-btn"
+                  disabled={cardIdx >= cards.length - 1}
+                  onClick={() => { setCardIdx((i) => i + 1); setShowBack(false) }}
+                >
+                  Sau →
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function CertificateModal({ cert, examState, courseTitle, studentName, onClose }) {
@@ -1016,6 +1138,7 @@ export default function LessonDetailPage() {
                           <p style={{ color: '#64748b', margin: 0 }}>Mở khóa toàn bộ giáo trình để xem video hướng dẫn</p>
                         </div>
                       )}
+                      <LessonStudyInline lesson={lesson} step={step} stepIndex={currentStep} accent={lesson.color} />
                     </div>
                   )}
 

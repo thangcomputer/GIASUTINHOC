@@ -46,9 +46,10 @@ function persistCoinsToStorage(remainingCoins) {
   window.dispatchEvent(new Event('storage'));
 }
 
-export async function sendMessageToAI(userMessage, conversationHistory = [], requireImage = false, aiMode = 'pro', imageBase64 = null) {
+export async function sendMessageToAI(userMessage, conversationHistory = [], requireImage = false, aiMode = 'pro', imageBase64 = null, extra = {}) {
   try {
     const studentId = readStoredStudentId();
+    const lessonContext = extra?.lessonContext;
 
     const response = await fetch(`${API_URL}/api/ai/chat`, {
       method: 'POST',
@@ -59,7 +60,8 @@ export async function sendMessageToAI(userMessage, conversationHistory = [], req
         type: requireImage ? 'image' : 'text',
         aiMode: aiMode,
         studentId: studentId,
-        imageBase64: imageBase64
+        imageBase64: imageBase64,
+        ...(lessonContext ? { lessonContext } : {}),
       })
     });
 
@@ -131,6 +133,7 @@ export async function sendMessageStreamToAI(userMessage, conversationHistory = [
   onTextChunk,
   onDone,
   onError,
+  lessonContext,
 } = {}) {
   const studentId = readStoredStudentId();
 
@@ -147,6 +150,7 @@ export async function sendMessageStreamToAI(userMessage, conversationHistory = [
         studentId,
         imageBase64,
         stream: true,
+        ...(lessonContext ? { lessonContext } : {}),
       }),
     });
   } catch (e) {

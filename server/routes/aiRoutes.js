@@ -471,6 +471,18 @@ ${weakTopics.length > 0 ? `- Chủ đề cần củng cố thêm: ${weakTopics.j
     `\n[QUY TẮC BỔ SUNG]\n- Nếu học viên hỏi lại 3 lần về cùng một vấn đề, tự động đổi sang ví dụ thực tế hoàn toàn mới.`;
 }
 
+/** Ghép vào system prompt khi client gửi từ trang bài học */
+function formatLessonContext(raw) {
+  if (raw == null) return '';
+  const s = String(raw)
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .trim();
+  if (!s) return '';
+  const t = s.length > 2800 ? `${s.slice(0, 2797)}...` : s;
+  return `\n\n[NGỮ CẢNH BÀI HỌC — ưu tiên khi liên quan]\nHọc viên đang mở trang bài học trên Gia Sư Tin Học. Dùng thông tin dưới để gợi ý sát module, thao tác và thuật ngữ đúng phạm vi (không bịa nội dung không có trong ngữ cảnh).\n${t}\n`;
+}
+
 function ndjsonWrite(res, obj) {
   if (!res.writableEnded) res.write(`${JSON.stringify(obj)}\n`);
 }
@@ -519,7 +531,7 @@ async function streamAiChat(req, res) {
 
   let dynamicSystemPrompt;
   try {
-    dynamicSystemPrompt = await buildDynamicSystemPrompt(req);
+    dynamicSystemPrompt = (await buildDynamicSystemPrompt(req)) + formatLessonContext(req.body?.lessonContext);
   } catch (e) {
     return res.status(500).json({ success: false, message: e.message || 'Lỗi build prompt' });
   }
@@ -830,7 +842,7 @@ router.post('/chat', requireAuth, forceOwnStudentFields(['studentId']), checkAnd
     const { message, history, aiMode = 'pro', imageBase64 } = req.body;
     const sEmail = req.body.studentEmail || '';
 
-    const dynamicSystemPrompt = await buildDynamicSystemPrompt(req);
+    const dynamicSystemPrompt = (await buildDynamicSystemPrompt(req)) + formatLessonContext(req.body?.lessonContext);
 
     // ── Free mode — dùng Pollinations ────────────────────────────────────────
     if (aiMode === 'free') {

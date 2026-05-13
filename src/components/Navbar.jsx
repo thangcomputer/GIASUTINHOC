@@ -6,6 +6,7 @@ import './Navbar.css'
 
 import { Home, BookOpen, Target, User, Gem, Sparkles, MonitorPlay, ChevronUp, LayoutDashboard, Wallet, Compass } from 'lucide-react'
 import { LOW_CREDIT_WARN_THRESHOLD } from '../lib/creditsPolicy'
+import { clearStudentAuthStorage } from '../lib/sessionClient'
 
 const navLinks = [
   { path: '/', label: 'Trang Chủ', icon: Home },
@@ -63,9 +64,8 @@ export default function Navbar() {
   const handleLogout = async () => {
     const cf = await Swal.fire({title: 'Đăng xuất', text: 'Xác nhận Đăng xuất khỏi hệ thống?', icon: 'question', showCancelButton: true, confirmButtonText: 'Đăng xuất', cancelButtonText: 'Hủy'})
     if (cf.isConfirmed) {
-       localStorage.removeItem('auth_token')
-       localStorage.removeItem('user_info')
-       window.location.href = '/'
+      clearStudentAuthStorage()
+      window.location.href = '/'
     }
   }
 
