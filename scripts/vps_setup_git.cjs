@@ -1,14 +1,11 @@
 const { NodeSSH } = require('node-ssh');
+const { requireVpsSsh } = require('./vpsSshEnv.cjs');
 const ssh = new NodeSSH();
 
 async function run() {
   try {
     console.log('Connecting to VPS...');
-    await ssh.connect({
-       host: '103.124.92.238',
-       username: 'root',
-       password: 'O6iogp8j46WHDzua'
-    });
+    await ssh.connect(requireVpsSsh());
     
     console.log('Cleaning up accidental /root/.git...');
     await ssh.execCommand('rm -rf /root/.git');

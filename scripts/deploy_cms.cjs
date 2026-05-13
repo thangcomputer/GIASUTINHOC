@@ -1,14 +1,11 @@
 const { NodeSSH } = require('node-ssh');
+const { requireVpsSsh } = require('./vpsSshEnv.cjs');
 const ssh = new NodeSSH();
 
 async function deploy() {
   try {
     console.log('🔗 Connecting to VPS...');
-    await ssh.connect({
-       host: '103.124.92.238',
-       username: 'root',
-       password: 'O6iogp8j46WHDzua'
-    });
+    await ssh.connect(requireVpsSsh());
     
     const projectPath = '/www/wwwroot/dashboard.giasutinhoc24h.com';
     const backupEnv = '/tmp/.env_cms_backup';

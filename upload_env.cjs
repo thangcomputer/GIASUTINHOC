@@ -1,12 +1,12 @@
 const { NodeSSH } = require('node-ssh');
 const { requireVpsSsh } = require('./scripts/vpsSshEnv.cjs');
+const path = require('path');
 const ssh = new NodeSSH();
 async function run() {
   try {
     await ssh.connect(requireVpsSsh());
-    const res = await ssh.execCommand('pm2 logs giasuai --lines 100 --nostream', { cwd: '/root' });
-    console.log(res.stdout);
-    if (res.stderr) console.error(res.stderr);
+    await ssh.putFile(path.join(__dirname, '.env'), '/www/wwwroot/giasuai/.env');
+    console.log('Successfully uploaded .env to VPS');
   } catch (err) {
     console.error(err);
   } finally {
