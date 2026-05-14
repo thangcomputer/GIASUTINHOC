@@ -100,6 +100,15 @@ export default function AuthPage() {
     setName('')
     if (next === 'register') setRememberLogin(false)
     setMode(next)
+    /* URL đổi nhưng mode vẫn là login → không kích hoạt effect [mode]; phải nạp lại ghi nhớ ở đây */
+    if (next === 'login') {
+      const saved = loadSavedLoginCredentials()
+      if (saved) {
+        if (saved.identifier) setIdentifier(saved.identifier)
+        if (saved.password) setPassword(saved.password)
+        setRememberLogin(true)
+      }
+    }
   }, [location.pathname, searchParams.toString()])
 
   useEffect(() => {
@@ -222,7 +231,7 @@ export default function AuthPage() {
             <div className="authPage-brandHead">
               <div className="authPage-logoRow">
                 <div className="authPage-logoMark">
-                  <GraduationCap size={22} strokeWidth={2} />
+                  <GraduationCap size={24} strokeWidth={2} />
                 </div>
                 <div>
                   <div className="authPage-brandTitle">Gia Sư Tin Học</div>
@@ -264,7 +273,7 @@ export default function AuthPage() {
                 ].map(({ Icon, text }, i) => (
                   <div key={i} className="authPage-feature">
                     <div className="authPage-featureIcon">
-                      <Icon size={15} strokeWidth={2} />
+                      <Icon size={16} strokeWidth={2} />
                     </div>
                     <span className="authPage-featureText">{text}</span>
                   </div>
@@ -321,7 +330,7 @@ export default function AuthPage() {
                 <div className="authPage-field">
                   <label className="authPage-label" htmlFor="auth-name">Họ và tên</label>
                   <div className="authPage-inputWrap">
-                    <User size={14} className="authPage-inputIcon" aria-hidden />
+                    <User size={16} className="authPage-inputIcon" aria-hidden />
                     <input
                       id="auth-name"
                       className="authPage-input"
@@ -338,7 +347,7 @@ export default function AuthPage() {
               <div className="authPage-field">
                 <label className="authPage-label" htmlFor="auth-id">Email hoặc số điện thoại</label>
                 <div className="authPage-inputWrap">
-                  <AtSign size={14} className="authPage-inputIcon" aria-hidden />
+                  <AtSign size={16} className="authPage-inputIcon" aria-hidden />
                   <input
                     id="auth-id"
                     className={`authPage-input${identifier.trim() ? ' authPage-inputWithBadge' : ''}`}
@@ -375,7 +384,7 @@ export default function AuthPage() {
                   )}
                 </div>
                 <div className="authPage-inputWrap">
-                  <Lock size={14} className="authPage-inputIcon" aria-hidden />
+                  <Lock size={16} className="authPage-inputIcon" aria-hidden />
                   <input
                     id="auth-pass"
                     className="authPage-input authPage-inputPadRight"
@@ -396,7 +405,7 @@ export default function AuthPage() {
                 <div className="authPage-field">
                   <label className="authPage-label" htmlFor="auth-pass2">Xác nhận mật khẩu</label>
                   <div className="authPage-inputWrap">
-                    <Lock size={14} className="authPage-inputIcon" aria-hidden />
+                    <Lock size={16} className="authPage-inputIcon" aria-hidden />
                     <input
                       id="auth-pass2"
                       className="authPage-input authPage-inputPadRight"

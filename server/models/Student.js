@@ -18,6 +18,11 @@ const StudentSchema = new mongoose.Schema({
   totalEarned:  { type: Number, default: 0 }, // Tổng xu đã nạp vào (không bao giờ giảm)
   totalSpent:   { type: Number, default: 0 }, // Tổng xu đã tiêu
 
+  /** Gói nạp xu đã thanh toán gần nhất (SePay / nạp thủ công) — đồng bộ UI «Đang dùng» */
+  activeCoinPlanId: { type: String, default: '', trim: true },
+  activeCoinPlanBillingCycle: { type: String, default: '' },
+  activeCoinPlanPaidAt: { type: Date, default: null },
+
   // Thống kê sử dụng
   totalQuizGenerated: { type: Number, default: 0 },
   totalChatMessages:  { type: Number, default: 0 },

@@ -6,12 +6,14 @@ import Navbar from '../components/Navbar'
 import { useCredits } from '../context/CreditContext'
 import {
   CheckCircle, CreditCard, ShieldCheck, Database,
-  Zap, Coins, Copy, ArrowLeft, Sparkles, Star, Loader2, AlertTriangle, X,
+  Zap, Coins, Copy, ArrowLeft, Sparkles, Star, Loader2, AlertTriangle, X, Gift, TrendingUp,
 } from 'lucide-react'
 import './DepositPage.css'
 import { studentJsonAuthHeaders } from '../lib/authFetch'
 import { fetchJsonIfOk } from '../lib/parseApiResponse.js'
 import { getApiBaseUrl } from '../lib/apiBase'
+import { mergeCoinPackagesIfMissing } from '../lib/mergeCoinPackages'
+import { WELCOME_COINS } from '../lib/creditsPolicy'
 
 const BANK_INFO = {
   bank: 'acb',
@@ -21,14 +23,286 @@ const BANK_INFO = {
 
 const ICONS = [Database, Zap, ShieldCheck, Sparkles, Star]
 
-function buildPlanFeatures({ billingCycle, credits }) {
-  const period = billingCycle === 'year' ? 'một năm' : 'một tháng';
+/** Chuẩn hóa id gói (vd. yvip → vip) để gán icon / gói miễn phí */
+function canonPlanBaseId(planId) {
+  const id = String(planId || '').trim().toLowerCase()
+  if (/^y(free|standard|pro|vip)$/.test(id)) return id.slice(1)
+  return id
+}
+
+const PLAN_ICON = {
+  free: Gift,
+  standard: ShieldCheck,
+  pro: Sparkles,
+  vip: Star,
+}
+
+const PLAN_ORDER_MONTH = ['free', 'standard', 'pro', 'vip']
+const PLAN_ORDER_YEAR = ['yfree', 'ystandard', 'ypro', 'yvip']
+
+/** Gói được đánh dấu "Tin dùng / Ưa chuộng" (luôn VIP theo chu kỳ) */
+function featuredPlanIdForCycle(cycle) {
+  return cycle === 'year' ? 'yvip' : 'vip'
+}
+
+/** Gói Tiêu chuẩn — nhãn "Phổ biến" */
+function popularPlanIdForCycle(cycle) {
+  return cycle === 'year' ? 'ystandard' : 'standard'
+}
+
+/**
+ * Gói mặc định được coi là "đang chọn" trên UI:
+ * học viên chỉ có xu chào mừng (chưa nạp thêm) → free / yfree; đã nạp → nhấn mạnh VIP để nâng cấp.
+ */
+function defaultHighlightPlanIdForUser(cycle) {
+  try {
+    const u = JSON.parse(localStorage.getItem('giasu_user') || '{}')
+    const te = Number(u.totalEarned) || 0
+    if (te <= WELCOME_COINS) return cycle === 'year' ? 'yfree' : 'free'
+  } catch {
+    /* noop */
+  }
+  return featuredPlanIdForCycle(cycle)
+}
+
+function idEq(a, b) {
+  return String(a ?? '').toLowerCase() === String(b ?? '').toLowerCase()
+}
+
+/** Gói 0đ / id free — dùng cho viền xanh & gán highlight đúng thẻ dù cấu hình id lệch */
+function isFreeTierPackage(pkg) {
+  if (!pkg) return false
+  if (canonPlanBaseId(pkg.id) === 'free') return true
+  if (idEq(pkg.id, 'free') || idEq(pkg.id, 'yfree')) return true
+  const amt = Number(pkg.amount) || 0
+  const cr = Number(pkg.credits) || 0
+  return amt === 0 && cr === 0
+}
+
+/**
+ * `highlightedPlanId` luôn là id thật trong `packages` (sau khi fetch).
+ * Khớp không phân biệt hoa thường + fallback theo thứ tự gói / giá — tránh không khớp → không có Đang chọn.
+ */
+function resolveDefaultHighlightId(packages, cycle) {
+  const logical = defaultHighlightPlanIdForUser(cycle)
+  if (!Array.isArray(packages) || packages.length === 0) return logical
+  const pool = packages.filter((p) => p.billingCycle === cycle)
+  if (pool.length === 0) return logical
+
+  const findInPool = (idNeedle) => {
+    if (idNeedle == null || idNeedle === '') return null
+    const lo = String(idNeedle).toLowerCase()
+    return (
+      pool.find((p) => idEq(p.id, idNeedle)) ||
+      pool.find((p) => String(p.id).toLowerCase() === lo) ||
+      pool.find((p) => canonPlanBaseId(p.id) === canonPlanBaseId(idNeedle))
+    )
+  }
+
+  let hit = findInPool(logical)
+  if (hit) return String(hit.id)
+
+  const base = canonPlanBaseId(logical)
+  hit = pool.find((p) => canonPlanBaseId(p.id) === base)
+  if (hit) return String(hit.id)
+
+  if (base === 'free') {
+    hit = pool.find((p) => isFreeTierPackage(p))
+    if (hit) return String(hit.id)
+  }
+
+  const order = planIdsForBillingCycle(cycle)
+  for (const oid of order) {
+    hit = findInPool(oid)
+    if (hit) return String(hit.id)
+  }
+
+  const sorted = [...pool].sort((a, b) => (Number(a.amount) || 0) - (Number(b.amount) || 0))
+  let unpaidWelcome = false
+  try {
+    const u = JSON.parse(localStorage.getItem('giasu_user') || '{}')
+    unpaidWelcome = (Number(u.totalEarned) || 0) <= WELCOME_COINS
+  } catch {
+    unpaidWelcome = true
+  }
+  if (unpaidWelcome) {
+    const freeLike = pool.find((p) => isFreeTierPackage(p)) || pool.find((p) => (Number(p.amount) || 0) === 0)
+    if (freeLike) return String(freeLike.id)
+    return logical
+  }
+  return sorted[0] ? String(sorted[0].id) : logical
+}
+
+/** Gói vừa thanh toán thành công theo chu kỳ — để hiển thị "ĐANG DÙNG" */
+const LAST_PAID_PLAN_BY_CYCLE_KEY = 'giasu_last_paid_plan_by_cycle'
+
+function readLastPaidPlanIdForCycle(cycle) {
+  try {
+    const o = JSON.parse(localStorage.getItem(LAST_PAID_PLAN_BY_CYCLE_KEY) || '{}')
+    return String(o[cycle === 'year' ? 'year' : 'month'] || '')
+  } catch {
+    return ''
+  }
+}
+
+function persistLastPaidPlan(pkg) {
+  if (!pkg?.id) return
+  const c = pkg.billingCycle === 'year' ? 'year' : 'month'
+  try {
+    const o = JSON.parse(localStorage.getItem(LAST_PAID_PLAN_BY_CYCLE_KEY) || '{}')
+    o[c] = String(pkg.id)
+    localStorage.setItem(LAST_PAID_PLAN_BY_CYCLE_KEY, JSON.stringify(o))
+  } catch {
+    /* noop */
+  }
+}
+
+/** Gói trả phí đã kích hoạt trên server (SePay / nạp API) — ưu tiên hơn localStorage cũ */
+function readServerActivePlanIdForCycle(cycle) {
+  try {
+    const u = JSON.parse(localStorage.getItem('giasu_user') || '{}')
+    const id = String(u.activeCoinPlanId || '').trim()
+    if (!id) return ''
+    const bc = u.activeCoinPlanBillingCycle === 'year' ? 'year' : 'month'
+    if (bc !== cycle) return ''
+    return id
+  } catch {
+    return ''
+  }
+}
+
+function mergeActiveCoinPlanFromServerPayload(payload) {
+  const id = String(payload?.activeCoinPlanId || '').trim()
+  if (!id) return
+  const cycle = payload.activeCoinPlanBillingCycle === 'year' ? 'year' : 'month'
+  try {
+    const gu = JSON.parse(localStorage.getItem('giasu_user') || '{}')
+    gu.activeCoinPlanId = id
+    gu.activeCoinPlanBillingCycle = cycle
+    if (payload.activeCoinPlanPaidAt != null) {
+      gu.activeCoinPlanPaidAt = payload.activeCoinPlanPaidAt
+    }
+    localStorage.setItem('giasu_user', JSON.stringify(gu))
+    const o = JSON.parse(localStorage.getItem(LAST_PAID_PLAN_BY_CYCLE_KEY) || '{}')
+    o[cycle] = id
+    localStorage.setItem(LAST_PAID_PLAN_BY_CYCLE_KEY, JSON.stringify(o))
+    window.dispatchEvent(new Event('storage'))
+  } catch {
+    /* noop */
+  }
+}
+
+function planIdsForBillingCycle(cycle) {
+  return cycle === 'year' ? PLAN_ORDER_YEAR : PLAN_ORDER_MONTH
+}
+
+/**
+ * Chỉ giữ đúng 4 gói tháng + 4 gói năm (id chuẩn), bỏ dòng thừa do cấu hình cũ / trùng.
+ * Nếu thiếu gói năm, sinh lại từ 4 tháng (mergeCoinPackagesIfMissing).
+ */
+function pickDepositCoinPackages(merged) {
+  if (!Array.isArray(merged) || merged.length === 0) return merged
+  const months = PLAN_ORDER_MONTH.map((id) =>
+    merged.find((p) => (p.billingCycle || 'month') !== 'year' && idEq(p.id, id)),
+  ).filter(Boolean)
+  if (months.length !== 4) return merged
+  let years = PLAN_ORDER_YEAR.map((id) =>
+    merged.find((p) => p.billingCycle === 'year' && idEq(p.id, id)),
+  ).filter(Boolean)
+  if (years.length !== 4) {
+    years = mergeCoinPackagesIfMissing(months).filter((p) => p.billingCycle === 'year')
+  }
+  return [...months, ...years]
+}
+
+function buildPlanFeatures({ billingCycle, credits, planId }) {
+  const base = canonPlanBaseId(planId)
+  const periodShort = billingCycle === 'year' ? 'năm' : 'tháng'
+  const xuLabel = `${Number(credits) || 0} Xu`
+
+  if (base === 'free') {
+    return [
+      {
+        text: 'Lộ trình tin học văn phòng (Word, Excel, PowerPoint) qua bài học có hướng dẫn từng bước — phù hợp người mới bắt đầu',
+        strong: true,
+      },
+      {
+        text: 'Ôn luyện với câu hỏi trắc nghiệm theo chủ đề MOS và kiểm tra nhanh sau mỗi phần để nắm chắc kiến thức',
+        strong: true,
+      },
+      {
+        text: `Gia Sư AI đồng hành: giải thích lý thuyết, ví dụ minh họa và gợi ý cách làm bài trong phạm vi ${xuLabel} chào mừng`,
+        strong: false,
+      },
+    ]
+  }
+  if (base === 'standard') {
+    return [
+      {
+        text: `Gói ${periodShort} cho nhịp học đều đặn: làm bài trong khóa, củng cố phần yếu và luyện thực hành trên bài mẫu có đáp án tham khảo`,
+        strong: true,
+      },
+      {
+        text: `${xuLabel} dùng cho chat AI chữa bài, tạo đề luyện tập và chấm bài tập tự luận — học chủ động theo tiến độ của bạn`,
+        strong: true,
+      },
+      {
+        text: 'Phù hợp học sinh, sinh viên hoặc người đi làm cần luyện MOS / tin học văn phòng ở mức ổn định mỗi tuần',
+        strong: false,
+      },
+    ]
+  }
+  if (base === 'pro') {
+    return [
+      {
+        text: 'Luyện sâu: kết hợp bài lab, tình huống thực tế và phản hồi AI chi tiết để nâng kỹ năng Word/Excel nâng cao (hàm, bảng, biểu đồ…)',
+        strong: true,
+      },
+      {
+        text: `${xuLabel} dành cho nhiều vòng hỏi đáp, tạo đề dài hơn và chấm bài kỹ — phù hợp giai đoạn ôn thi hoặc dự án ngắn`,
+        strong: true,
+      },
+      {
+        text: 'Dành cho người đã có nền tảng, muốn chuẩn bị chứng chỉ hoặc cần tăng tốc học trong một khoảng thời gian tập trung',
+        strong: false,
+      },
+    ]
+  }
+  if (base === 'vip') {
+    return [
+      {
+        text: `Gói ${periodShort} đầy đủ: nhiều lượt AI cho vòng lặp học — hỏi — làm bài — chấm — chỉnh sửa liên tục trên toàn bộ nội dung khóa`,
+        strong: true,
+      },
+      {
+        text: `${xuLabel} để tận dụng tối đa chat AI, tạo đề và chấm bài khi bạn cần hỗ trợ dày đặc trong thời gian học`,
+        strong: true,
+      },
+      {
+        text: 'Phù hợp giáo viên hướng dẫn nhóm, doanh nghiệp đào tạo nội bộ hoặc học viên muốn trải nghiệm sâu mọi tính năng học tập trên nền tảng',
+        strong: false,
+      },
+    ]
+  }
   return [
-    { text: `Gói học ${period} — thanh toán một lần`, strong: true },
-    { text: `${credits} Xu vào ví (chat AI, đề, chấm bài…)`, strong: true },
-    { text: 'Truy cập khóa học & tính năng theo quy định nền tảng' },
-    { text: 'VietQR / chuyển khoản — tự cộng xu khi đã cấu hình SePay' },
-  ];
+    { text: `Gói học ${periodShort} — ${xuLabel} hỗ trợ luyện tập với AI theo nội dung khóa`, strong: true },
+    { text: 'Truy cập bài học, đề thi và công cụ chấm bài theo quyền của gói', strong: true },
+    { text: 'Theo dõi tiến độ và lặp lại phần chưa vững cho đến khi đạt mục tiêu', strong: false },
+  ]
+}
+
+/** Một dòng: giá VND bên trái, xu bên phải (vd. 279.000đ / 500 Xu) */
+function formatPriceCoinLine(amountMs, credits) {
+  const n = Math.round(Number(amountMs) || 0)
+  const c = Math.round(Number(credits) || 0)
+  const vnd = n <= 0 ? '0đ' : `${n.toLocaleString('vi-VN')}đ`
+  return `${vnd} / ${c} Xu`
+}
+
+function formatVndFromMs(ms) {
+  const n = Math.round(Number(ms) || 0);
+  if (!n) return 'Miễn phí';
+  return `${n.toLocaleString('vi-VN')}₫`;
 }
 
 function readStudentId() {
@@ -59,6 +333,9 @@ function persistCoinsEverywhere(newCoins, coinsAdded) {
     if (gs) {
       const gu = JSON.parse(gs)
       gu.coins = newCoins
+      if (typeof coinsAdded === 'number' && coinsAdded > 0) {
+        gu.totalEarned = (Number(gu.totalEarned) || 0) + coinsAdded
+      }
       localStorage.setItem('giasu_user', JSON.stringify(gu))
     }
   } catch { /* noop */ }
@@ -74,6 +351,10 @@ export default function DepositPage() {
   const [successPkg, setSuccessPkg] = useState(null)
   const [copied, setCopied] = useState('')
   const [packages, setPackages] = useState([])
+  /** Gói đang được nhấn mạnh trên thẻ (mặc định: miễn phí nếu chưa nạp, VIP nếu đã nạp) */
+  const [highlightedPlanId, setHighlightedPlanId] = useState(() =>
+    resolveDefaultHighlightId([], 'month'),
+  )
   /** @type {'month'|'year'} */
   const [billingCycle, setBillingCycle] = useState('month')
 
@@ -83,6 +364,8 @@ export default function DepositPage() {
   const pollTimerRef = useRef(null)
   const paidDoneRef = useRef(false)
   const selectedPkgRef = useRef(null)
+  /** true = học viên đã bấm chọn thẻ; không ghi đè highlight bằng mặc định khi `packages` re-render */
+  const depositHighlightUserSetRef = useRef(false)
 
   useEffect(() => {
     selectedPkgRef.current = selected
@@ -97,33 +380,56 @@ export default function DepositPage() {
   }, [billingCycle, selected])
 
   useEffect(() => {
+    depositHighlightUserSetRef.current = false
+  }, [billingCycle])
+
+  useEffect(() => {
+    if (!packages.length) return
+    if (depositHighlightUserSetRef.current) return
+    setHighlightedPlanId((prev) => {
+      const pool = packages.filter((p) => p.billingCycle === billingCycle)
+      if (!pool.length) return prev
+      if (pool.some((p) => idEq(p.id, prev))) return prev
+      return resolveDefaultHighlightId(packages, billingCycle)
+    })
+  }, [billingCycle, packages])
+
+  useEffect(() => {
     fetch('/api/settings/public')
       .then((r) => fetchJsonIfOk(r))
       .then((d) => {
         if (d?.success && d.data?.coinPackages) {
+          const merged = mergeCoinPackagesIfMissing(d.data.coinPackages)
+          const forUi = pickDepositCoinPackages(merged)
           setPackages(
-            d.data.coinPackages.map((p, i) => {
+            forUi.map((p, i) => {
               const cycle = p.billingCycle === 'year' ? 'year' : 'month';
+              const priceMs = Number(p.priceMs) || 0;
+              const priceText =
+                (p.price && String(p.price).trim()) || formatVndFromMs(priceMs);
+              const baseId = canonPlanBaseId(p.id)
+              const IconComp = PLAN_ICON[baseId] || ICONS[i % ICONS.length]
               const base = {
                 id: p.id || String(i),
-                priceText: p.price,
-                amount: p.priceMs || 0,
+                priceText,
+                amount: priceMs,
                 credits: p.coins,
                 label: p.label || 'Gói học',
                 billingCycle: cycle,
-                icon: ICONS[i % ICONS.length],
+                icon: IconComp,
                 highlight:
                   p.bonus && String(p.bonus) !== '0%'
                     ? String(p.bonus).includes('%') || String(p.bonus).includes('Tiết')
                       ? p.bonus
                       : `${p.bonus}`
                     : cycle === 'year'
-                      ? 'Ưu đãi thanh toán năm'
+                      ? 'Lộ trình học cả năm'
                       : 'Gói học tiêu chuẩn',
                 color: p.color || '#6366f1',
                 features: buildPlanFeatures({
                   billingCycle: cycle,
                   credits: p.coins,
+                  planId: p.id,
                 }),
               };
               return base;
@@ -191,16 +497,20 @@ export default function DepositPage() {
       pollTimerRef.current = null
     }
     const pkg = selectedPkgRef.current
+    if (pkg) persistLastPaidPlan(pkg)
     const newCoins = data.currentCoins
     const added = data.coins ?? pkg?.credits
     if (typeof newCoins === 'number') {
       persistCoinsEverywhere(newCoins, added)
       if (typeof added === 'number') addCredits(added)
     }
+    mergeActiveCoinPlanFromServerPayload(data)
     setSuccessPkg(pkg)
     setSelected(null)
     setCheckout(null)
     setConfirmed(true)
+    depositHighlightUserSetRef.current = false
+    setHighlightedPlanId(resolveDefaultHighlightId(packages, billingCycle))
     Swal.fire({
       icon: 'success',
       title: 'Đã nhận thanh toán',
@@ -208,7 +518,7 @@ export default function DepositPage() {
       timer: 2800,
       showConfirmButton: false,
     })
-  }, [addCredits])
+  }, [addCredits, billingCycle, packages])
 
   useEffect(() => {
     if (!checkout?.sessionId || paidDoneRef.current) return
@@ -256,13 +566,34 @@ export default function DepositPage() {
     return () => socket.disconnect()
   }, [checkout?.sessionId, finalizePaid])
 
-  const visiblePackages = useMemo(
-    () =>
-      packages
-        .filter((p) => p.billingCycle === billingCycle)
-        .map((pkg, i) => ({ ...pkg, popular: i === 1 })),
+  const visiblePackages = useMemo(() => {
+    const pool = packages.filter((p) => p.billingCycle === billingCycle)
+    const byId = new Map(pool.map((p) => [String(p.id).toLowerCase(), p]))
+    const order = planIdsForBillingCycle(billingCycle)
+    const ordered = order.map((id) => byId.get(String(id).toLowerCase())).filter(Boolean)
+    if (ordered.length > 0) return ordered
+    return [...pool].sort((a, b) => (Number(a.amount) || 0) - (Number(b.amount) || 0))
+  }, [packages, billingCycle])
+
+  const defaultHighlightResolvedId = useMemo(
+    () => resolveDefaultHighlightId(packages, billingCycle),
     [packages, billingCycle],
-  );
+  )
+  const lastPaidPlanIdForCycle =
+    readServerActivePlanIdForCycle(billingCycle) || readLastPaidPlanIdForCycle(billingCycle)
+
+  /** Gói «đang dùng» (ưu tiên gói vừa mua trong chu kỳ, không gộp với thẻ đang highlight) */
+  const inUsePlanId = useMemo(() => {
+    const pool = visiblePackages
+    if (!pool.length) return ''
+    if (lastPaidPlanIdForCycle && pool.some((p) => idEq(p.id, lastPaidPlanIdForCycle))) {
+      return String(pool.find((p) => idEq(p.id, lastPaidPlanIdForCycle)).id)
+    }
+    if (defaultHighlightResolvedId && pool.some((p) => idEq(p.id, defaultHighlightResolvedId))) {
+      return String(pool.find((p) => idEq(p.id, defaultHighlightResolvedId)).id)
+    }
+    return ''
+  }, [visiblePackages, lastPaidPlanIdForCycle, defaultHighlightResolvedId])
 
   const handleCopy = (text, field) => {
     navigator.clipboard.writeText(text)
@@ -299,16 +630,22 @@ export default function DepositPage() {
         localStorage.setItem('user_info', JSON.stringify(userInfo))
         localStorage.setItem('user_credits', String(userInfo.credits))
         addCredits(selected.credits)
+        persistLastPaidPlan(selected)
         const gs = localStorage.getItem('giasu_user')
         if (gs) {
           const gu = JSON.parse(gs)
           gu.coins = d.currentCoins
+          const add = Number(selected.credits) || 0
+          if (add > 0) gu.totalEarned = (Number(gu.totalEarned) || 0) + add
           localStorage.setItem('giasu_user', JSON.stringify(gu))
         }
+        mergeActiveCoinPlanFromServerPayload(d)
         setSuccessPkg(selected)
         setSelected(null)
         setCheckout(null)
         setConfirmed(true)
+        depositHighlightUserSetRef.current = false
+        setHighlightedPlanId(resolveDefaultHighlightId(packages, billingCycle))
       } else {
         Swal.fire('Lỗi', d.message, 'error')
       }
@@ -318,6 +655,24 @@ export default function DepositPage() {
   }
 
   const handleSelect = (pkg) => {
+    depositHighlightUserSetRef.current = true
+    const isFree = isFreeTierPackage(pkg)
+    const sameFreeReselect = isFree && idEq(highlightedPlanId, pkg.id)
+    setHighlightedPlanId(String(pkg.id))
+    const paid = Number(pkg.amount) >= 1000 && Number(pkg.credits) > 0
+    if (!paid || isFree) {
+      setSelected(null)
+      setCheckout(null)
+      setCheckoutErr('')
+      if (!sameFreeReselect) {
+        Swal.fire({
+          icon: 'info',
+          title: 'Gói Miễn Phí',
+          text: 'Bạn đang dùng gói miễn phí. Chọn Tiêu chuẩn / Pro / VIP để thanh toán và nhận xu.',
+        })
+      }
+      return
+    }
     setSelected(pkg)
     setConfirmed(false)
   }
@@ -398,29 +753,102 @@ export default function DepositPage() {
               </p>
             </div>
 
-            <div className="packages-grid">
+            <div className="packages-grid packages-grid--animated" key={billingCycle}>
               {visiblePackages.length === 0 && (
                 <p className="deposit-empty-cycle" style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#94a3b8', padding: '24px' }}>
                   Chưa có gói cho chu kỳ này. Vui lòng liên hệ quản trị hoặc chọn chu kỳ khác.
                 </p>
               )}
-              {visiblePackages.map((pkg) => (
+              {visiblePackages.map((pkg) => {
+                const isHighlight = idEq(highlightedPlanId, pkg.id)
+                const inCheckout = idEq(selected?.id, pkg.id)
+                const featuredId = featuredPlanIdForCycle(billingCycle)
+                const isFeatured = idEq(pkg.id, featuredId)
+                const popularId = popularPlanIdForCycle(billingCycle)
+                const isPopularTier = idEq(pkg.id, popularId)
+                const isInUsePlan = !!(inUsePlanId && idEq(pkg.id, inUsePlanId))
+                const inUseLockedUi = isInUsePlan && !isHighlight
+                const showBadges = isFeatured || isHighlight || isPopularTier || isInUsePlan
+                const highlightInList = visiblePackages.some((p) => idEq(p.id, highlightedPlanId))
+                const isDimmed = highlightInList && !isHighlight && !isFeatured && !isInUsePlan
+                /** Viền xanh «đang dùng»; khi đang thanh toán trên đúng thẻ đó thì dùng viền cam checkout */
+                const useGreenChrome = isInUsePlan && !(isHighlight && inCheckout)
+                const highlightCardClass =
+                  isInUsePlan && !(isHighlight && inCheckout)
+                    ? 'package-card--current-tier'
+                    : isHighlight
+                      ? 'popular'
+                      : ''
+                const iconAccent = useGreenChrome
+                  ? '#34d399'
+                  : isHighlight
+                    ? '#f59e0b'
+                    : isFeatured
+                      ? '#c4b5fd'
+                      : '#6366f1'
+                const pillBg = useGreenChrome
+                  ? 'rgba(16,185,129,0.15)'
+                  : isHighlight
+                    ? 'rgba(245,158,11,0.15)'
+                    : isFeatured
+                      ? 'rgba(168,85,247,0.14)'
+                      : 'rgba(99,102,241,0.12)'
+                const pillColor = useGreenChrome
+                  ? '#34d399'
+                  : isHighlight
+                    ? '#f59e0b'
+                    : isFeatured
+                      ? '#c4b5fd'
+                      : '#818cf8'
+                const pillBorder = useGreenChrome
+                  ? 'rgba(16,185,129,0.35)'
+                  : isHighlight
+                    ? 'rgba(245,158,11,0.3)'
+                    : isFeatured
+                      ? 'rgba(168,85,247,0.35)'
+                      : 'rgba(99,102,241,0.25)'
+                const topBadgeLabel =
+                  inCheckout && isHighlight
+                    ? 'ĐANG CHỌN — thanh toán'
+                    : isInUsePlan
+                      ? 'ĐANG DÙNG'
+                      : 'ĐANG CHỌN'
+                const priceAmountMs = Math.round(Number(pkg.amount) || 0)
+                const priceCredits = Math.round(Number(pkg.credits) || 0)
+                const priceVndDisplay = priceAmountMs <= 0 ? '0đ' : `${priceAmountMs.toLocaleString('vi-VN')}đ`
+                return (
                 <div
                   key={pkg.id}
-                  className={`package-card glass-card ${pkg.popular ? 'popular' : ''} ${selected?.id === pkg.id ? 'selected' : ''}`}
+                  className={`package-card glass-card ${isFeatured ? 'package-card--featured' : ''} ${highlightCardClass} ${inCheckout ? 'selected package-card--checkout' : ''} ${showBadges ? 'package-card--has-badges' : ''} ${isDimmed ? 'package-card--muted' : ''} ${inUseLockedUi ? 'package-card--in-use-locked' : ''}`}
                   onClick={() => handleSelect(pkg)}
-                  style={{ cursor: 'pointer', outline: selected?.id === pkg.id ? `2px solid ${pkg.color || '#6366f1'}` : 'none' }}
+                  style={{ cursor: inUseLockedUi ? 'default' : 'pointer' }}
                   role="presentation"
                 >
-                  {pkg.popular && (
-                    <div className="popular-badge">
-                      <Sparkles size={13} style={{ display: 'inline', marginRight: '4px' }} />
-                      Đề xuất
+                  {showBadges && (
+                    <div className="package-card__badges">
+                      {isFeatured && (
+                        <div className="featured-badge" role="status" aria-label="Gói tin dùng, ưa chuộng">
+                          <Star size={13} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} />
+                          Tin dùng · Ưa chuộng
+                        </div>
+                      )}
+                      {isPopularTier && (
+                        <div className="popular-tier-badge" role="status" aria-label="Gói phổ biến">
+                          <TrendingUp size={13} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} />
+                          Phổ biến
+                        </div>
+                      )}
+                      {(isInUsePlan || isHighlight) && (
+                        <div className={`popular-badge ${isFeatured || isPopularTier ? 'popular-badge--below' : ''} ${isInUsePlan ? 'popular-badge--current' : ''}`}>
+                          <Sparkles size={13} style={{ display: 'inline', marginRight: '4px' }} />
+                          {topBadgeLabel}
+                        </div>
+                      )}
                     </div>
                   )}
 
                   <div
-                    style={{ color: pkg.popular ? '#f59e0b' : '#6366f1', display: 'flex', justifyContent: 'center', marginBottom: '10px' }}
+                    style={{ color: iconAccent, display: 'flex', justifyContent: 'center', marginBottom: '10px' }}
                   >
                     <pkg.icon size={38} />
                   </div>
@@ -449,16 +877,20 @@ export default function DepositPage() {
                   <div style={{
                     display: 'inline-block', fontSize: '0.75rem', fontWeight: 700,
                     padding: '3px 10px', borderRadius: '50px', marginBottom: '10px',
-                    background: pkg.popular ? 'rgba(245,158,11,0.15)' : 'rgba(99,102,241,0.12)',
-                    color: pkg.popular ? '#f59e0b' : '#818cf8',
-                    border: `1px solid ${pkg.popular ? 'rgba(245,158,11,0.3)' : 'rgba(99,102,241,0.25)'}`,
+                    background: pillBg,
+                    color: pillColor,
+                    border: `1px solid ${pillBorder}`,
                   }}
                   >
                     {pkg.highlight}
                   </div>
 
                   <div className="pkg-price-tag" style={{ margin: '8px 0 14px' }}>
-                    <div className="pkg-price">{pkg.priceText}</div>
+                    <div className="pkg-price pkg-price--split" aria-label={formatPriceCoinLine(pkg.amount, pkg.credits)}>
+                      <span className="pkg-price__vnd">{priceVndDisplay}</span>
+                      <span className="pkg-price__sep" aria-hidden>/</span>
+                      <span className="pkg-price__xu">{priceCredits} Xu</span>
+                    </div>
                   </div>
 
                   <ul className="pkg-features" style={{ listStyle: 'none', padding: 0, textAlign: 'left', marginBottom: '20px' }}>
@@ -478,14 +910,23 @@ export default function DepositPage() {
 
                   <button
                     type="button"
-                    className="btn-primary pkg-btn"
+                    className={`btn-primary pkg-btn ${isFeatured ? 'pkg-btn--featured' : ''}`}
+                    tabIndex={inUseLockedUi ? -1 : 0}
                     onClick={(e) => { e.stopPropagation(); handleSelect(pkg) }}
-                    style={{ width: '100%', justifyContent: 'center', background: selected?.id === pkg.id ? 'linear-gradient(135deg,#059669,#10b981)' : undefined }}
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      ...(inCheckout || useGreenChrome ? { background: 'linear-gradient(135deg,#059669,#10b981)' } : {}),
+                    }}
                   >
-                    {selected?.id === pkg.id ? '✓ Đã chọn' : `Chọn gói — ${pkg.billingCycle === 'year' ? 'năm' : 'tháng'}`}
+                    {isHighlight && !inCheckout && (isInUsePlan ? 'ĐANG DÙNG' : 'ĐANG CHỌN')}
+                    {isInUsePlan && !isHighlight && !inCheckout && 'ĐANG DÙNG'}
+                    {isHighlight && inCheckout && 'ĐANG CHỌN — thanh toán'}
+                    {!isHighlight && !isInUsePlan && `Chọn gói — ${pkg.billingCycle === 'year' ? 'năm' : 'tháng'}`}
                   </button>
                 </div>
-              ))}
+                )
+              })}
             </div>
 
             {selected && (

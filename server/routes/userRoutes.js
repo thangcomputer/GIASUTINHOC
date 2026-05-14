@@ -284,8 +284,38 @@ router.put('/:id', requireAuth, allowSelfOrAdmin('id'), async (req, res) => {
 
 router.delete('/:id', requireAdmin, async (req, res) => {
   try {
-    await Student.findByIdAndUpdate(req.params.id, { isActive: false });
-    res.json({ success: true, message: 'Đã vô hiệu hoá tài khoản' });
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'ID không hợp lệ' });
+    }
+    if (String(req.user.id) === String(id)) {
+      return res.status(400).json({ success: false, message: 'Không thể vô hiệu chính tài khoản đang đăng nhập' });
+    }
+
+    const target = await Student.findById(id).select('role isActive');
+    if (!target) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
+    }
+    if (target.isActive === false) {
+      return res.json({ success: true, message: 'Tài khoản đã được vô hiệu hóa trước đó' });
+    }
+
+    if (req.user.role === 'staff' && target.role !== 'student') {
+      return res.status(403).json({ success: false, message: 'Nhân viên chỉ có thể vô hiệu tài khoản học viên' });
+    }
+
+    if (target.role === 'admin') {
+      const activeAdmins = await Student.countDocuments({ role: 'admin', isActive: true });
+      if (activeAdmins <= 1) {
+        return res.status(400).json({ success: false, message: 'Không thể vô hiệu admin duy nhất còn hoạt động' });
+      }
+    }
+
+    await Student.findByIdAndUpdate(id, {
+      $set: { isActive: false, updatedAt: new Date() },
+      $inc: { sessionSerial: 1 },
+    });
+    res.json({ success: true, message: 'Đã vô hiệu hóa tài khoản (không thể đăng nhập)' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

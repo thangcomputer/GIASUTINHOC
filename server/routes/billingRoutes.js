@@ -4,6 +4,7 @@ import Student from '../models/Student.js';
 import Transaction from '../models/Transaction.js';
 import { recordTransaction } from './userRoutes.js';
 import { getSettings } from './settingsRoutes.js';
+import { activateStudentCoinPlanFromPurchase } from '../utils/coinPlanActivation.js';
 import { optionalAuth, requireAdmin } from '../middleware/auth.js';
 
 /* global process */
@@ -50,6 +51,7 @@ router.post('/deposit', optionalAuth, async (req, res) => {
     let coinsToAdd = amountCoins || 0;
     let paidAmount = amountVND || 0;
     let planLabel  = note || 'Nạp tự động / thủ công';
+    let planBillingCycle = 'month';
 
     const pkgs = getSettings().coinPackages || [];
 
@@ -59,6 +61,7 @@ router.post('/deposit', optionalAuth, async (req, res) => {
         coinsToAdd = plan.coins;
         paidAmount = plan.priceMs;
         planLabel  = plan.label;
+        planBillingCycle = plan.billingCycle === 'year' ? 'year' : 'month';
       }
     } else if (amountVND && !amountCoins) {
       const base  = Math.floor(paidAmount / 1000);
@@ -75,6 +78,9 @@ router.post('/deposit', optionalAuth, async (req, res) => {
 
     student.coins       += coinsToAdd;
     student.totalEarned += coinsToAdd;
+    if (planId) {
+      activateStudentCoinPlanFromPurchase(student, planId, planBillingCycle);
+    }
     await student.save();
 
     await recordTransaction(student._id, 'deposit', coinsToAdd, student.coins, {
@@ -92,6 +98,9 @@ router.post('/deposit', optionalAuth, async (req, res) => {
       message:      `Nạp thành công ${coinsToAdd} xu`,
       added:        coinsToAdd,
       currentCoins: student.coins,
+      activeCoinPlanId: student.activeCoinPlanId || '',
+      activeCoinPlanBillingCycle: student.activeCoinPlanBillingCycle || '',
+      activeCoinPlanPaidAt: student.activeCoinPlanPaidAt || null,
     });
   } catch (err) {
     console.error('Lỗi nạp tiền:', err);

@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import PaymentSession from '../models/PaymentSession.js';
 import Student from '../models/Student.js';
 import { getSettings } from './settingsRoutes.js';
+import { activateStudentCoinPlanFromPurchase } from '../utils/coinPlanActivation.js';
 import { recordTransaction } from './userRoutes.js';
 import { requireAuth, forceOwnStudentFields } from '../middleware/auth.js';
 
@@ -82,6 +83,7 @@ router.post(
       let coins = Number(coinsBody) || 0;
       let planLabel = 'Nạp xu';
       let pid = planId ? String(planId) : '';
+      let planBillingCycle = 'month';
 
       if (planId) {
         const plan = pkgs.find((p) => String(p.id) === String(planId));
@@ -89,6 +91,7 @@ router.post(
         coins = Number(plan.coins) || 0;
         amount = Number(plan.priceMs) || 0;
         planLabel = plan.label || planLabel;
+        planBillingCycle = plan.billingCycle === 'year' ? 'year' : 'month';
       } else {
         if (!amount || !coins) {
           return res.status(400).json({ success: false, message: 'Thiếu amountVND hoặc coins' });
@@ -113,6 +116,7 @@ router.post(
         amount,
         coins,
         planId: pid,
+        planBillingCycle,
         planLabel,
         status: 'pending',
         studentName: student.name || '',
@@ -185,7 +189,9 @@ router.get('/payment-status', requireAuth, async (req, res) => {
     if (String(s.studentId) !== String(req.user.id)) {
       return res.status(403).json({ success: false, message: 'Không có quyền' });
     }
-    const st = await Student.findById(s.studentId).select('coins').lean();
+    const st = await Student.findById(s.studentId)
+      .select('coins activeCoinPlanId activeCoinPlanBillingCycle activeCoinPlanPaidAt')
+      .lean();
     res.json({
       success: true,
       data: {
@@ -197,6 +203,9 @@ router.get('/payment-status', requireAuth, async (req, res) => {
         paidAmount: s.paidAmount,
         paidAt: s.paidAt,
         currentCoins: st?.coins,
+        activeCoinPlanId: st?.activeCoinPlanId || '',
+        activeCoinPlanBillingCycle: st?.activeCoinPlanBillingCycle || '',
+        activeCoinPlanPaidAt: st?.activeCoinPlanPaidAt || null,
       },
     });
   } catch (e) {
@@ -225,6 +234,11 @@ async function fulfillSession(sessionDoc, paidAmount, sepayTxnId, io) {
   const coins = sessionDoc.coins;
   student.coins += coins;
   student.totalEarned += coins;
+  activateStudentCoinPlanFromPurchase(
+    student,
+    sessionDoc.planId,
+    sessionDoc.planBillingCycle || 'month',
+  );
   await student.save();
 
   await recordTransaction(student._id, 'deposit', coins, student.coins, {
@@ -233,7 +247,12 @@ async function fulfillSession(sessionDoc, paidAmount, sepayTxnId, io) {
     paymentMethod: 'sepay_bank',
     paymentRef: String(sepayTxnId || sessionDoc.sessionId),
     description: `Nạp xu — ${sessionDoc.planLabel || 'QR'}`,
-    metadata: { sessionId: sessionDoc.sessionId, refDisplay: sessionDoc.refDisplay },
+    metadata: {
+      sessionId: sessionDoc.sessionId,
+      refDisplay: sessionDoc.refDisplay,
+      planId: sessionDoc.planId || '',
+      planBillingCycle: sessionDoc.planBillingCycle || 'month',
+    },
     status: 'completed',
   });
 

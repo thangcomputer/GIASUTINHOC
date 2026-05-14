@@ -1,17 +1,23 @@
 import Swal from 'sweetalert2';
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users, TrendingUp, ShieldCheck, LogOut, BarChart2,
   CreditCard, Settings, Search, RefreshCw, Plus, ChevronLeft,
   ChevronRight, KeyRound, Building2, BookOpen, Save, Eye, EyeOff, LayoutTemplate,
-  Coins, MessageSquare, Bot, User as UserIcon, Database, Upload, FileText, CheckCircle, Trash2, Cpu, Edit, ArrowLeft, FileQuestion, Bell, ToggleLeft, ToggleRight, Image, X
+  Coins, MessageSquare, Bot, User as UserIcon, Database, Upload, FileText, CheckCircle, Trash2, Cpu, Edit, ArrowLeft, FileQuestion, Bell, ToggleLeft, ToggleRight, Image, X, Lock
 } from 'lucide-react'
 import './AdminDashboard.css'
 import AdminCourseForm from '../components/AdminCourseForm'
 import AdminQuizForm from '../components/AdminQuizForm'
 import AdminExamTab from '../components/AdminExamTab'
 import { adminJsonAuthHeaders, adminAuthHeaders } from '../lib/authFetch'
+
+/** Gói miễn phí mặc định — không cho sửa / xóa trên bảng cấu hình */
+function isImmutableDefaultFreeCoinRow(p) {
+  const id = String(p?.id || '').toLowerCase()
+  return id === 'free' || id === 'yfree'
+}
 
 // ─── Guard: chỉ admin mới vào được ─────────────
 function useAdminGuard() {
@@ -60,10 +66,14 @@ export default function AdminDashboard() {
 
   // Chat history
   const [chatHistory, setChatHistory]   = useState([])
-  const [chatSearch, setChatSearch]     = useState('')
+  /** Lọc danh sách học viên trong cột trái tab Hỏi đáp AI */
+  const [chatStudentQuery, setChatStudentQuery] = useState('')
   const [chatLoading, setChatLoading]   = useState(false)
   const [chatTotal, setChatTotal]       = useState(0)
   const [selectedStudent, setSelectedStudent] = useState(null) // lọc theo user
+  const [chatFilterUsers, setChatFilterUsers] = useState([])
+  const [chatStats, setChatStats]       = useState(null)
+  const [expandedChatMsgIds, setExpandedChatMsgIds] = useState(() => new Set())
 
   // Modals
   const [adjustTarget, setAdjustTarget]   = useState(null)
@@ -320,12 +330,28 @@ export default function AdminDashboard() {
   const fetchChatHistory = async (studentId = '') => {
     setChatLoading(true)
     const url = studentId
-      ? `/api/chat-history/student/${studentId}?limit=40`
-      : '/api/chat-history?limit=40'
+      ? `/api/chat-history/student/${studentId}?limit=80`
+      : '/api/chat-history?limit=80'
     const r = await fetch(url, { headers: adminAuthHeaders() })
     const d = await r.json()
     if (d.success) { setChatHistory(d.data); setChatTotal(d.total) }
     setChatLoading(false)
+  }
+
+  const fetchChatStats = async () => {
+    try {
+      const r = await fetch('/api/chat-history/stats', { headers: adminAuthHeaders() })
+      const d = await r.json()
+      if (d.success) setChatStats(d.data)
+    } catch { setChatStats(null) }
+  }
+
+  const fetchChatFilterUsers = async () => {
+    try {
+      const r = await fetch('/api/users?page=1&limit=500&search=', { headers: adminAuthHeaders() })
+      const d = await r.json()
+      if (d.success) setChatFilterUsers(d.data || [])
+    } catch { setChatFilterUsers([]) }
   }
 
   useEffect(() => { fetchStats(); fetchUsers(); fetchTx(); fetchSettings(); }, [])
@@ -372,8 +398,19 @@ export default function AdminDashboard() {
   }
 
   useEffect(() => {
-    if (tab === 'chatlog') fetchChatHistory(selectedStudent || '')
+    if (tab !== 'chatlog') return
+    fetchChatHistory(selectedStudent || '')
   }, [tab, selectedStudent])
+
+  useEffect(() => {
+    setExpandedChatMsgIds(new Set())
+  }, [selectedStudent])
+
+  useEffect(() => {
+    if (tab !== 'chatlog') return
+    fetchChatStats()
+    fetchChatFilterUsers()
+  }, [tab])
 
   useEffect(() => {
     if (tab === 'popups') fetchPopups()
@@ -417,6 +454,44 @@ export default function AdminDashboard() {
       } else Swal.fire('❌ ' + d.message)
     } catch { Swal.fire('Lỗi kết nối server') }
     finally { setResetLoading(false) }
+  }
+
+  /** Vô hiệu hóa tài khoản (DELETE — khóa đăng nhập, không xóa cứng dữ liệu) */
+  const handleDeactivateUser = async (u) => {
+    if (!admin) return
+    const selfId = admin._id ?? admin.id
+    if (String(u._id) === String(selfId)) {
+      Swal.fire({ icon: 'warning', title: 'Không thể thực hiện', text: 'Bạn không thể vô hiệu chính tài khoản đang đăng nhập.' })
+      return
+    }
+    if (u.isActive === false) return
+    if (admin.role === 'staff' && u.role !== 'student') {
+      Swal.fire({ icon: 'info', title: 'Không có quyền', text: 'Nhân viên chỉ có thể vô hiệu tài khoản học viên.' })
+      return
+    }
+    const ok = await Swal.fire({
+      title: 'Vô hiệu hóa tài khoản?',
+      html: `Người dùng <strong>${u.name}</strong> (${u.email}) sẽ <strong>không đăng nhập</strong> được nữa. Lịch sử giao dịch / chat vẫn được giữ trong hệ thống.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Vô hiệu hóa',
+      cancelButtonText: 'Hủy',
+      confirmButtonColor: '#dc2626',
+    })
+    if (!ok.isConfirmed) return
+    try {
+      const res = await fetch(`/api/users/${u._id}`, { method: 'DELETE', headers: adminAuthHeaders() })
+      const d = await res.json()
+      if (d.success) {
+        Swal.fire({ icon: 'success', title: d.message || 'Đã vô hiệu hóa', timer: 2000, showConfirmButton: false })
+        fetchUsers(page, search)
+        fetchStats()
+      } else {
+        Swal.fire({ icon: 'error', title: 'Lỗi', text: d.message || 'Thao tác thất bại' })
+      }
+    } catch {
+      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không kết nối được server' })
+    }
   }
 
   // Save bank settings (lưu localStorage)
@@ -469,6 +544,38 @@ export default function AdminDashboard() {
   }
   const setFooter = (key, val) => setFooterConfig(f => ({ ...f, [key]: val }))
 
+  const displayedChatMessages = useMemo(() => {
+    if (!selectedStudent) return chatHistory
+    return [...chatHistory].reverse()
+  }, [chatHistory, selectedStudent])
+
+  const chatSidebarUsers = useMemo(() => {
+    const q = chatStudentQuery.trim().toLowerCase()
+    let list = chatFilterUsers
+    if (q) {
+      list = list.filter(u =>
+        (u.name || '').toLowerCase().includes(q) ||
+        (u.email || '').toLowerCase().includes(q)
+      )
+    }
+    return list
+  }, [chatFilterUsers, chatStudentQuery])
+
+  const chatSelectedLabel = useMemo(() => {
+    if (!selectedStudent) return null
+    const u = chatFilterUsers.find(x => String(x._id) === String(selectedStudent))
+    return u ? `${u.name} · ${u.email}` : `ID: ${selectedStudent}`
+  }, [selectedStudent, chatFilterUsers])
+
+  const toggleChatExpand = (id) => {
+    setExpandedChatMsgIds(prev => {
+      const n = new Set(prev)
+      if (n.has(id)) n.delete(id)
+      else n.add(id)
+      return n
+    })
+  }
+
   if (!admin) return null
 
   const totalPages = Math.ceil(totalUsers / 10)
@@ -497,6 +604,14 @@ export default function AdminDashboard() {
     ? ALL_NAV_ITEMS.filter(item => STAFF_ALLOWED_TABS.includes(item.id))
     : ALL_NAV_ITEMS;
 
+  const allowedNavIds = new Set(NAV_ITEMS.map(i => i.id))
+  const NAV_ITEM_BY_ID = Object.fromEntries(ALL_NAV_ITEMS.map(i => [i.id, i]))
+  const NAV_GROUPS = [
+    { label: 'Điều hành', ids: ['overview', 'users', 'billing', 'chatlog'] },
+    { label: 'Nội dung & AI', ids: ['advisor', 'knowledge', 'cms', 'exams'] },
+    { label: 'Hệ thống', ids: ['popups', 'settings'] },
+  ]
+
   return (
     <div className="admin-dashboard">
       {/* ── Sidebar ── */}
@@ -507,27 +622,39 @@ export default function AdminDashboard() {
         </div>
 
         <nav className="sidebar-nav">
-          <button 
-            className="sidebar-item" 
+          <button
+            type="button"
+            className="sidebar-cta"
             onClick={() => navigate('/')}
-            style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)', marginBottom: '16px' }}
           >
             <ArrowLeft size={20}/> Ra Website Chính
           </button>
-          
-          {NAV_ITEMS.map(item => (
-            <button
-              key={item.id}
-              className={`sidebar-item ${tab === item.id ? 'active' : ''}`}
-              onClick={() => { setTab(item.id); if (item.id === 'cms') setCmsView('overview'); }}
-            >
-              {item.icon} {item.label}
-            </button>
-          ))}
-          <button 
-            className="sidebar-item" 
+
+          {NAV_GROUPS.map(group => {
+            const items = group.ids
+              .map(id => NAV_ITEM_BY_ID[id])
+              .filter(item => item && allowedNavIds.has(item.id))
+            if (!items.length) return null
+            return (
+              <Fragment key={group.label}>
+                <div className="sidebar-section-label">{group.label}</div>
+                {items.map(item => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`sidebar-item ${tab === item.id ? 'active' : ''}`}
+                    onClick={() => { setTab(item.id); if (item.id === 'cms') setCmsView('overview'); }}
+                  >
+                    {item.icon} {item.label}
+                  </button>
+                ))}
+              </Fragment>
+            )
+          })}
+          <button
+            type="button"
+            className="sidebar-item sidebar-item--ghost"
             onClick={() => navigate('/admin/homepage-config')}
-            style={{ marginTop: '16px', background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}
           >
             <LayoutTemplate size={20}/> Trang Chủ Marketing
           </button>
@@ -619,7 +746,7 @@ export default function AdminDashboard() {
                       <td>
                         <div className="user-cell">
                           <div className="user-avatar-sm">{u.name?.[0]}</div>
-                          <span>{u.name}</span>
+                          <span>{u.name}{u.isActive === false ? <span className="user-locked-pill">Đã khóa</span> : null}</span>
                         </div>
                       </td>
                       <td>{u.email}</td>
@@ -629,18 +756,36 @@ export default function AdminDashboard() {
                       <td><span className={`role-badge ${u.role}`}>{u.role}</span></td>
                       <td>
                         <div className="action-btns">
-                          <button className="action-btn edit" title="Điều chỉnh xu" onClick={() => setAdjustTarget(u)}>
+                          <button type="button" className="action-btn edit" title="Điều chỉnh xu" onClick={() => setAdjustTarget(u)}>
                             <Coins size={15} />
                           </button>
-                          <button className="action-btn deposit" title="Nạp 30 xu nhanh" onClick={async () => {
-                            const r = await fetch('/api/billing/deposit', { method:'POST', headers: adminJsonAuthHeaders(), body: JSON.stringify({ studentId: u._id, planId: 'starter' }) })
+                          <button type="button" className="action-btn deposit" title="Nạp 30 xu nhanh" onClick={async () => {
+                            const r = await fetch('/api/billing/deposit', { method:'POST', headers: adminJsonAuthHeaders(), body: JSON.stringify({ studentId: u._id, planId: 'standard' }) })
                             const d = await r.json()
                             if (d.success) { Swal.fire(`✅ Nạp ${d.added} xu cho ${u.name}`); fetchUsers(page, search); fetchStats() }
                           }}>
                             <Plus size={15} />
                           </button>
-                          <button className="action-btn reset-pw" title="Reset mật khẩu" onClick={() => setResetTarget(u)}>
+                          <button type="button" className="action-btn reset-pw" title="Reset mật khẩu" onClick={() => setResetTarget(u)}>
                             <KeyRound size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            className="action-btn delete"
+                            title={
+                              u.isActive === false ? 'Tài khoản đã vô hiệu' :
+                              (admin.role === 'staff' && u.role !== 'student') ? 'Nhân viên không thể vô hiệu tài khoản quản trị' :
+                              String(u._id) === String(admin._id ?? admin.id) ? 'Không thể vô hiệu chính bạn' :
+                              'Vô hiệu hóa tài khoản (không đăng nhập được)'
+                            }
+                            disabled={
+                              u.isActive === false ||
+                              (admin.role === 'staff' && u.role !== 'student') ||
+                              String(u._id) === String(admin._id ?? admin.id)
+                            }
+                            onClick={() => handleDeactivateUser(u)}
+                          >
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </td>
@@ -691,80 +836,195 @@ export default function AdminDashboard() {
 
         {/* ── CHATLOG TAB ── */}
         {tab === 'chatlog' && (
-          <div className="admin-content animate-fade-in-up">
-            <div className="content-header">
-              <h2>💬 Lịch Sử Hỏi Đáp AI</h2>
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div className="admin-content admin-content--wide animate-fade-in-up">
+            <header className="admin-page-head">
+              <div className="admin-page-head-main">
+                <span className="admin-page-kicker">Giám sát</span>
+                <h2 className="admin-page-title">Hỏi đáp AI</h2>
+                <p className="admin-page-desc">
+                  Theo dõi tin nhắn học viên với trợ lý. Chọn học viên ở cột trái để xem cuộc hội thoại theo thứ tự thời gian.
+                </p>
+              </div>
+              <div className="admin-page-head-actions">
                 {selectedStudent && (
-                  <button className="btn-refresh" style={{ color: '#f87171', borderColor: 'rgba(248,113,113,0.3)' }}
-                    onClick={() => setSelectedStudent(null)}>
-                    ✕ Bỏ lọc user
+                  <button
+                    type="button"
+                    className="btn-refresh btn-refresh--danger"
+                    onClick={() => setSelectedStudent(null)}
+                  >
+                    Bỏ lọc học viên
                   </button>
                 )}
-                <button className="btn-refresh" onClick={() => fetchChatHistory(selectedStudent || '')}>
+                <button
+                  type="button"
+                  className="btn-refresh"
+                  onClick={() => {
+                    fetchChatHistory(selectedStudent || '')
+                    fetchChatStats()
+                  }}
+                >
                   <RefreshCw size={16}/> Làm mới
                 </button>
               </div>
-            </div>
+            </header>
 
-            {/* Lọc theo học viên */}
-            <div className="glass-card" style={{ padding: '14px 18px', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <span style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>Lọc theo học viên:</span>
-              <div className="search-box" style={{ flex: 1, minWidth: '200px' }}>
-                <Search size={16}/>
-                <select
-                  style={{ background: 'none', border: 'none', outline: 'none', color: '#f1f5f9', fontSize: '0.9rem', width: '100%' }}
-                  value={selectedStudent || ''}
-                  onChange={e => setSelectedStudent(e.target.value || null)}
-                >
-                  <option value="">— Tất cả học viên —</option>
-                  {users.map(u => (
-                    <option key={u._id} value={u._id}>{u.name} ({u.email})</option>
-                  ))}
-                </select>
+            {chatStats && (
+              <div className="admin-chat-stat-row glass-card">
+                <div className="admin-chat-stat">
+                  <span className="admin-chat-stat-value">{chatStats.totalMessages?.toLocaleString('vi-VN')}</span>
+                  <span className="admin-chat-stat-label">Tổng tin</span>
+                </div>
+                <div className="admin-chat-stat">
+                  <span className="admin-chat-stat-value">{chatStats.userMessages?.toLocaleString('vi-VN')}</span>
+                  <span className="admin-chat-stat-label">Tin học viên</span>
+                </div>
+                <div className="admin-chat-stat">
+                  <span className="admin-chat-stat-value">{chatStats.todayMessages?.toLocaleString('vi-VN')}</span>
+                  <span className="admin-chat-stat-label">Hôm nay</span>
+                </div>
+                <div className="admin-chat-stat admin-chat-stat--wide">
+                  <span className="admin-chat-stat-label">Top 5 học viên (số câu hỏi)</span>
+                  <div className="admin-chat-top-list">
+                    {(chatStats.topStudents || []).map((s) => (
+                      <button
+                        key={String(s._id)}
+                        type="button"
+                        className={`admin-chat-top-chip ${selectedStudent === String(s._id) ? 'active' : ''}`}
+                        onClick={() => setSelectedStudent(String(s._id))}
+                      >
+                        <span className="admin-chat-top-name">{s.name || 'Học viên'}</span>
+                        <span className="admin-chat-top-count">{s.count}</span>
+                      </button>
+                    ))}
+                    {(!chatStats.topStudents || chatStats.topStudents.length === 0) && (
+                      <span className="admin-chat-stat-muted">Chưa có dữ liệu</span>
+                    )}
+                  </div>
+                </div>
               </div>
-              <span style={{ color: '#475569', fontSize: '0.82rem' }}>Tổng: {chatTotal} tin nhắn</span>
-            </div>
+            )}
 
-            {/* Danh sách hỏi đáp */}
-            <div className="glass-card table-card">
-              {chatLoading ? (
-                <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>Đang tải lịch sử...</div>
-              ) : chatHistory.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px', color: '#475569' }}>
-                  <MessageSquare size={40} color="#334155" style={{ margin: '0 auto 12px' }}/>
-                  <p>Chưa có lịch sử hỏi đáp nào.</p>
+            <div className="admin-chat-shell glass-card">
+              <aside className="admin-chat-sidebar" aria-label="Chọn học viên">
+                <div className="admin-chat-sidebar-head">
+                  <span className="admin-chat-sidebar-title">Học viên</span>
+                  <span className="admin-chat-total-chip">{chatTotal} tin</span>
                 </div>
-              ) : (
-                <div className="chatlog-list">
-                  {chatHistory.map((msg, idx) => {
-                    const isUser = msg.role === 'user'
-                    return (
-                      <div key={msg._id || idx} className={`chatlog-item ${isUser ? 'user-msg' : 'ai-msg'}`}>
-                        <div className="chatlog-avatar">
-                          {isUser
-                            ? <div className="chatlog-avatar-user"><UserIcon size={16}/></div>
-                            : <div className="chatlog-avatar-ai"><Bot size={16}/></div>
-                          }
-                        </div>
-                        <div className="chatlog-body">
-                          <div className="chatlog-meta">
-                            <span className="chatlog-name">
-                              {isUser ? (msg.studentName || 'Học viên') : '🤖 Gia Sư AI'}
-                            </span>
-                            {isUser && <span className="chatlog-email">{msg.studentEmail}</span>}
-                            <span className={`chatlog-mode ${msg.aiMode}`}>{msg.aiMode === 'pro' ? 'PRO' : 'Free'}</span>
-                            <span className="chatlog-time">{new Date(msg.createdAt).toLocaleString('vi-VN')}</span>
-                          </div>
-                          <div className={`chatlog-content ${isUser ? 'user' : 'ai'}`}>
-                            {msg.content?.slice(0, 400)}{msg.content?.length > 400 ? '...' : ''}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
+                <button
+                  type="button"
+                  className={`admin-chat-all-btn ${!selectedStudent ? 'active' : ''}`}
+                  onClick={() => setSelectedStudent(null)}
+                >
+                  <MessageSquare size={18} />
+                  Tất cả (mới nhất trước)
+                </button>
+                <div className="search-box admin-chat-search">
+                  <Search size={16} />
+                  <input
+                    placeholder="Tìm tên hoặc email..."
+                    value={chatStudentQuery}
+                    onChange={e => setChatStudentQuery(e.target.value)}
+                  />
                 </div>
-              )}
+                <div className="admin-chat-user-list">
+                  {chatSidebarUsers.map(u => (
+                    <button
+                      key={u._id}
+                      type="button"
+                      className={`admin-chat-user-row ${selectedStudent === String(u._id) ? 'active' : ''}`}
+                      onClick={() => setSelectedStudent(String(u._id))}
+                    >
+                      <span className="admin-chat-user-avatar">{u.name?.[0] || '?'}</span>
+                      <span className="admin-chat-user-text">
+                        <span className="admin-chat-user-name">{u.name}</span>
+                        <span className="admin-chat-user-email">{u.email}</span>
+                      </span>
+                    </button>
+                  ))}
+                  {chatSidebarUsers.length === 0 && (
+                    <p className="admin-chat-empty-hint">Không có học viên khớp tìm kiếm.</p>
+                  )}
+                </div>
+              </aside>
+
+              <section className="admin-chat-pane">
+                <div className="admin-chat-pane-head">
+                  <div>
+                    <h3 className="admin-chat-pane-title">
+                      {selectedStudent ? 'Cuộc hội thoại' : 'Luồng tin mới nhất'}
+                    </h3>
+                    {selectedStudent && chatSelectedLabel && (
+                      <p className="admin-chat-pane-sub">{chatSelectedLabel}</p>
+                    )}
+                    {!selectedStudent && (
+                      <p className="admin-chat-pane-sub">Gồm tối đa 80 tin gần nhất trên toàn hệ thống.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="admin-chat-messages">
+                  {chatLoading ? (
+                    <div className="admin-chat-loading">Đang tải lịch sử...</div>
+                  ) : displayedChatMessages.length === 0 ? (
+                    <div className="admin-chat-empty">
+                      <MessageSquare size={40} strokeWidth={1.25} />
+                      <p>Chưa có lịch sử hỏi đáp trong bộ lọc này.</p>
+                    </div>
+                  ) : (
+                    <div className="chatlog-list">
+                      {displayedChatMessages.map((msg, idx) => {
+                        const isUser = msg.role === 'user'
+                        const msgKey = msg._id ? String(msg._id) : `m-${idx}-${msg.createdAt}`
+                        const full = msg.content || ''
+                        const isLong = full.length > 900
+                        const expanded = expandedChatMsgIds.has(msgKey)
+                        const shown = !isLong || expanded ? full : `${full.slice(0, 900)}…`
+                        return (
+                          <div key={msgKey} className={`chatlog-item ${isUser ? 'user-msg' : 'ai-msg'}`}>
+                            <div className="chatlog-avatar">
+                              {isUser
+                                ? <div className="chatlog-avatar-user"><UserIcon size={16}/></div>
+                                : <div className="chatlog-avatar-ai"><Bot size={16}/></div>
+                              }
+                            </div>
+                            <div className="chatlog-body">
+                              <div className="chatlog-meta">
+                                <span className="chatlog-name">
+                                  {isUser ? (msg.studentName || 'Học viên') : 'Gia Sư AI'}
+                                </span>
+                                {isUser && msg.studentEmail && (
+                                  <span className="chatlog-email">{msg.studentEmail}</span>
+                                )}
+                                {!selectedStudent && !isUser && msg.studentName && (
+                                  <span className="chatlog-email">↳ {msg.studentName}</span>
+                                )}
+                                <span className={`chatlog-mode ${msg.aiMode || 'free'}`}>
+                                  {msg.aiMode === 'pro' ? 'PRO' : 'Free'}
+                                </span>
+                                <span className="chatlog-time">
+                                  {new Date(msg.createdAt).toLocaleString('vi-VN')}
+                                </span>
+                              </div>
+                              <div className={`chatlog-content ${isUser ? 'user' : 'ai'}`}>
+                                {shown}
+                              </div>
+                              {isLong && (
+                                <button
+                                  type="button"
+                                  className="chatlog-expand"
+                                  onClick={() => toggleChatExpand(msgKey)}
+                                >
+                                  {expanded ? 'Thu gọn' : 'Xem toàn bộ'}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </section>
             </div>
           </div>
         )}
@@ -1243,15 +1503,27 @@ export default function AdminDashboard() {
                   <Coins size={22} color="#f59e0b" />
                   <div>
                     <h3>Gói học &amp; nạp xu</h3>
-                    <p>Mỗi dòng: chu kỳ Tháng/Năm, nhãn, giá hiển thị, số xu cộng khi thanh toán thành công</p>
+                    <p>
+                      Đúng <strong>4 gói tháng</strong> (Miễn phí, Tiêu chuẩn, Pro, VIP) + <strong>4 gói năm</strong> tương ứng.
+                      Bấm <strong>Lưu cấu hình API</strong> để hệ thống đồng bộ id chuẩn. Dùng nút thùng rác để xóa dòng thừa trước khi lưu (trừ <strong>gói miễn phí</strong> — cố định, không sửa/xóa).
+                    </p>
                   </div>
                 </div>
                 <div className="pricing-table">
-                  {appSettings.coinPackages?.map((p, i) => (
-                    <div key={p.id || i} className="pricing-row" style={{ borderLeft: `3px solid ${p.color}`, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {appSettings.coinPackages?.map((p, i) => {
+                    const lockedFree = isImmutableDefaultFreeCoinRow(p)
+                    return (
+                    <div key={`${p.id || 'row'}-${i}`} className={`pricing-row ${lockedFree ? 'pricing-row--locked-free' : ''}`} style={{ borderLeft: `3px solid ${p.color || '#64748b'}`, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      {lockedFree && (
+                        <span className="pricing-row-lock" title="Gói miễn phí mặc định — không sửa, không xóa">
+                          <Lock size={14} aria-hidden />
+                          Cố định
+                        </span>
+                      )}
                       <select
                         className="settings-input"
                         style={{ width: '100px', padding: '4px 8px' }}
+                        disabled={lockedFree}
                         value={p.billingCycle === 'year' ? 'year' : 'month'}
                         onChange={(e) => {
                           const newP = [...appSettings.coinPackages];
@@ -1263,23 +1535,40 @@ export default function AdminDashboard() {
                         <option value="month">Tháng</option>
                         <option value="year">Năm</option>
                       </select>
-                      <input className="settings-input" style={{ minWidth: '120px', flex: 1, padding: '4px 8px' }} value={p.label || ''} onChange={(e) => {
+                      <input className="settings-input" style={{ minWidth: '120px', flex: 1, padding: '4px 8px' }} readOnly={lockedFree} value={p.label || ''} onChange={(e) => {
                         const newP = [...appSettings.coinPackages];
                         newP[i] = { ...newP[i], label: e.target.value };
                         setAppSettings({ ...appSettings, coinPackages: newP });
                       }} placeholder="Tên gói" />
-                      <input className="settings-input" style={{ flex: 1, padding: '4px 8px' }} value={p.price || ''} onChange={e => {
+                      <input className="settings-input" style={{ flex: 1, padding: '4px 8px' }} readOnly={lockedFree} value={p.price || ''} onChange={e => {
                         const newP = [...appSettings.coinPackages];
                         newP[i] = { ...newP[i], price: e.target.value, priceMs: Number(e.target.value.replace(/\D/g, '')) };
                         setAppSettings({...appSettings, coinPackages: newP})
                       }} />
-                      <input className="settings-input" type="number" style={{width: '70px', padding: '4px 8px'}} value={p.coins || ''} onChange={e => {
+                      <input className="settings-input" type="number" style={{width: '70px', padding: '4px 8px'}} readOnly={lockedFree} value={p.coins ?? ''} onChange={e => {
                         const newP = [...appSettings.coinPackages];
                         newP[i] = { ...newP[i], coins: Number(e.target.value) };
                         setAppSettings({...appSettings, coinPackages: newP})
                       }} /> <span style={{fontSize:'0.8rem'}}>xu</span>
+                      {!lockedFree ? (
+                      <button
+                        type="button"
+                        className="action-btn delete"
+                        title="Xóa dòng gói"
+                        style={{ flexShrink: 0 }}
+                        onClick={() => {
+                          const next = appSettings.coinPackages.filter((_, j) => j !== i)
+                          setAppSettings({ ...appSettings, coinPackages: next })
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                      ) : (
+                        <span style={{ flexShrink: 0, width: '36px', height: '36px' }} aria-hidden />
+                      )}
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
 

@@ -4,14 +4,30 @@ import { ShieldCheck, Eye, EyeOff, Lock, Mail, LogIn } from 'lucide-react'
 import './AdminLoginPage.css'
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('admin@giasutinhoc24h.com')
+  const [email, setEmail] = useState('admin@giasuai.com')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
   const [sessionBanner, setSessionBanner] = useState('')
   const [loading, setLoading] = useState(false)
+  /** null = đang kiểm tra; true/false chỉ dùng khi import.meta.env.DEV */
+  const [apiReachable, setApiReachable] = useState(null)
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    const ac = new AbortController()
+    const t = setTimeout(() => ac.abort(), 4000)
+    fetch('/api/settings/public', { signal: ac.signal })
+      .then((r) => setApiReachable(r.ok))
+      .catch(() => setApiReachable(false))
+      .finally(() => clearTimeout(t))
+    return () => {
+      clearTimeout(t)
+      ac.abort()
+    }
+  }, [])
 
   useEffect(() => {
     const msg = location.state?.sessionMessage
@@ -39,7 +55,9 @@ export default function AdminLoginPage() {
       localStorage.setItem('admin_user', JSON.stringify(data.data))
       navigate('/admin/dashboard')
     } catch {
-      setError('Không thể kết nối đến Server')
+      setError(
+        'Không kết nối được API. Trong thư mục project chạy npm run dev (đã gồm Vite + backend). Bật MongoDB; lần đầu: npm run seed:admin. Kiểm tra PORT trong .env (mặc định 5000). Trên điện thoại dùng IP máy tính thay vì localhost.',
+      )
     } finally {
       setLoading(false)
     }
@@ -68,6 +86,19 @@ export default function AdminLoginPage() {
           <div className="admin-notice-box" role="status">{sessionBanner}</div>
         )}
 
+        {import.meta.env.DEV && apiReachable === false && (
+          <div className="admin-dev-api-hint" role="status">
+            <strong>API chưa chạy hoặc sai cổng.</strong>
+            <ol>
+              <li>Bật MongoDB (mongod / Windows Service).</li>
+              <li>Trong thư mục project chỉ cần: <code>npm run dev</code> — lệnh này đã chạy cả giao diện (Vite) và API (cổng mặc định 5000). Hoặc tách: <code>npm run dev:vite</code> + <code>npm run start:backend</code>.</li>
+              <li>Lần đầu hoặc báo <strong>sai mật khẩu</strong>: <code>npm run seed:admin</code> — đăng nhập <code>admin@giasuai.com</code> / <code>Admin@2024!</code> (script luôn ghi đè mật khẩu đúng).</li>
+              <li>Trong <code>.env</code>, <code>PORT</code> phải trùng proxy Vite (thường 5000). Nếu terminal báo <code>EADDRINUSE</code>: tắt các tiến trình <code>node</code> cũ đang giữ cổng đó rồi chạy lại <code>npm run dev</code>.</li>
+              <li>Trên điện thoại cùng Wi‑Fi: mở <code>http://192.168.x.x:5173/admin</code> (IP máy tính), không dùng <code>localhost</code> trên điện thoại.</li>
+            </ol>
+          </div>
+        )}
+
         {error && (
           <div className="admin-error-box">⚠️ {error}</div>
         )}
@@ -78,7 +109,7 @@ export default function AdminLoginPage() {
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="admin@giasutinhoc24h.com"
+            placeholder="admin@giasuai.com"
             required
           />
         </div>

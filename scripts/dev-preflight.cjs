@@ -44,13 +44,13 @@ function checkPort(port, host = '127.0.0.1') {
   if (apiUp) {
     console.log(`[✓] Cổng ${apiPort} đang mở (có thể đã có backend)`)
   } else {
-    console.log(`[ ] Cổng ${apiPort} chưa có — chạy: npm run start:backend (hoặc npm run dev:all); PORT trong .env phải khớp vite proxy.`)
+    console.log(`[ ] Cổng ${apiPort} chưa có — chạy: npm run dev (gồm API) hoặc npm run start:backend; PORT trong .env phải khớp vite proxy.`)
   }
 
   if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
     console.warn('[!] Production nên đặt JWT_SECRET trong .env')
   }
 
-  console.log('\nGợi ý: npm run dev:all')
+  console.log('\nGợi ý: npm run dev (đã gồm Vite + API)')
   console.log('==========================\n')
 })()

@@ -40,9 +40,14 @@ export function CreditProvider({ children }) {
         if (!res.ok || !d?.success) return;
         if (typeof d.data?.coins === 'number') {
           setCredits(d.data.coins);
-          
+
           // Update localstorage so other tabs sync up too
           const updatedU = { ...u, coins: d.data.coins };
+          if (d.data.activeCoinPlanId) {
+            updatedU.activeCoinPlanId = d.data.activeCoinPlanId
+            updatedU.activeCoinPlanBillingCycle = d.data.activeCoinPlanBillingCycle || ''
+            updatedU.activeCoinPlanPaidAt = d.data.activeCoinPlanPaidAt ?? updatedU.activeCoinPlanPaidAt
+          }
           localStorage.setItem('giasu_user', JSON.stringify(updatedU));
         }
       } catch {}

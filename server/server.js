@@ -26,6 +26,7 @@ import popupRoutes       from './routes/popupRoutes.js';
 import progressRoutes    from './routes/progressRoutes.js';
 import examRoutes        from './routes/examRoutes.js';
 import paymentWebhookRoutes from './routes/paymentWebhookRoutes.js';
+import { DEFAULT_MONGODB_URI } from './constants/defaultMongoUri.js';
 
 dotenv.config();
 
@@ -110,7 +111,7 @@ app.use('/api/exams',        examRoutes);
 app.use('/api/webhooks',     paymentWebhookRoutes);
 
 // ─── MongoDB ──────────────────────────────────
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/giasuai_db';
+const MONGODB_URI = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
 
 mongoose.connect(MONGODB_URI).then(() => {
   console.log("✅ Đã kết nối Database MongoDB (Node.js Backend)");
@@ -130,6 +131,16 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`🚀 Server Web & API đang chạy tại cổng http://localhost:${PORT}`);
-});
+server
+  .listen(PORT, () => {
+    console.log(`🚀 Server Web & API đang chạy tại cổng http://localhost:${PORT}`);
+  })
+  .on('error', (err) => {
+    if (err && err.code === 'EADDRINUSE') {
+      console.error(`\n❌ Cổng ${PORT} đang được sử dụng (EADDRINUSE).`);
+      console.error('   → Tắt tiến trình backend cũ (Task Manager / lệnh: Get-Process node | Stop-Process), hoặc đổi PORT trong .env và khớp Vite proxy.\n');
+    } else {
+      console.error('❌ Không thể mở cổng server:', err?.message || err);
+    }
+    process.exit(1);
+  });

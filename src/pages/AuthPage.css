@@ -31,14 +31,14 @@
 }
 
 .authPage-card {
-  /* Gần vuông; cao vừa đủ để không cần scrollbar trong thẻ */
-  width: min(100%, 528px);
-  max-height: min(560px, 92vh);
-  height: min(560px, 92vh);
+  /* Đủ cao để chữ lớn hơn + form đăng ký vẫn không cần scrollbar trong thẻ */
+  width: min(100%, 760px);
+  max-height: min(720px, 95vh);
+  height: min(660px, 93vh);
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 0.44fr) minmax(0, 0.56fr);
   align-items: stretch;
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
   border: 1px solid rgba(148, 163, 184, 0.12);
   box-shadow:
@@ -50,7 +50,7 @@
 /* —— Brand (trái) —— */
 .authPage-brand {
   position: relative;
-  padding: 16px 18px 12px;
+  padding: 16px 20px 12px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -91,13 +91,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .authPage-logoMark {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -107,25 +107,25 @@
 }
 
 .authPage-brandTitle {
-  font-size: 0.88rem;
+  font-size: 0.98rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: #fff;
 }
 
 .authPage-brandSub {
-  font-size: 0.65rem;
+  font-size: 0.74rem;
   color: rgba(226, 232, 240, 0.72);
   margin-top: 1px;
 }
 
 .authPage-headline {
-  font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+  font-size: clamp(1.08rem, 1.75vw, 1.32rem);
   font-weight: 700;
   line-height: 1.22;
   letter-spacing: -0.02em;
   color: #fff;
-  margin: 0 0 6px;
+  margin: 0 0 5px;
 }
 
 .authPage-headlineAccent {
@@ -134,16 +134,16 @@
 }
 
 .authPage-lead {
-  font-size: 0.72rem;
-  line-height: 1.45;
+  font-size: 0.84rem;
+  line-height: 1.42;
   color: rgba(226, 232, 240, 0.78);
-  margin: 0 0 10px;
-  max-width: 42ch;
+  margin: 0 0 8px;
+  max-width: 48ch;
 }
 
 /* Ảnh minh họa — thấp, gọn */
 .authPage-brandVisual {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   position: relative;
   z-index: 1;
 }
@@ -178,7 +178,7 @@
   gap: 5px;
   padding: 5px 7px;
   border-radius: 8px;
-  font-size: 0.6rem;
+  font-size: 0.66rem;
   font-weight: 600;
   line-height: 1.25;
   color: #e0e7ff;
@@ -197,7 +197,7 @@
 .authPage-features {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   position: relative;
   z-index: 1;
 }
@@ -206,7 +206,7 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 6px 8px;
+  padding: 5px 8px;
   border-radius: 8px;
   background: rgba(15, 23, 42, 0.28);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -226,15 +226,15 @@
 }
 
 .authPage-featureIcon svg {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
 }
 
 .authPage-featureText {
-  font-size: 0.68rem;
+  font-size: 0.76rem;
   font-weight: 500;
   color: rgba(248, 250, 252, 0.95);
-  line-height: 1.35;
+  line-height: 1.32;
   padding-top: 1px;
 }
 
@@ -242,15 +242,15 @@
   position: relative;
   z-index: 1;
   flex-shrink: 0;
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   color: rgba(226, 232, 240, 0.45);
-  margin-top: 8px;
-  padding-top: 6px;
+  margin-top: 6px;
+  padding-top: 4px;
 }
 
 /* —— Form (phải) —— */
 .authPage-formCol {
-  padding: 16px 18px;
+  padding: 16px 22px 18px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -266,15 +266,15 @@
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(148, 163, 184, 0.1);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .authPage-tab {
   flex: 1;
-  padding: 7px 10px;
+  padding: 8px 10px;
   border-radius: 8px;
   border: none;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
@@ -289,18 +289,18 @@
 }
 
 .authPage-formTitle {
-  font-size: 1.05rem;
+  font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: #f8fafc;
-  margin: 0 0 4px;
+  margin: 0 0 3px;
 }
 
 .authPage-formHint {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: #64748b;
-  margin: 0 0 14px;
-  line-height: 1.45;
+  margin: 0 0 10px;
+  line-height: 1.4;
 }
 
 .authPage-alert {
@@ -309,8 +309,8 @@
   gap: 8px;
   padding: 8px 10px;
   border-radius: 8px;
-  margin-bottom: 12px;
-  font-size: 0.72rem;
+  margin-bottom: 10px;
+  font-size: 0.78rem;
   line-height: 1.4;
   background: rgba(127, 29, 29, 0.25);
   border: 1px solid rgba(248, 113, 113, 0.25);
@@ -326,13 +326,13 @@
 .authPage-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .authPage-field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .authPage-labelRow {
@@ -347,7 +347,7 @@
 }
 
 .authPage-label {
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -358,7 +358,7 @@
   background: none;
   border: none;
   padding: 0;
-  font-size: 0.7rem;
+  font-size: 0.76rem;
   font-weight: 500;
   color: #818cf8;
   cursor: pointer;
@@ -376,7 +376,7 @@
 
 .authPage-inputIcon {
   position: absolute;
-  left: 11px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: #475569;
@@ -384,15 +384,15 @@
 }
 
 .authPage-inputIcon svg {
-  width: 15px;
-  height: 15px;
+  width: 17px;
+  height: 17px;
 }
 
 .authPage-input {
   width: 100%;
-  padding: 9px 11px 9px 36px;
+  padding: 10px 12px 10px 40px;
   box-sizing: border-box;
-  font-size: 0.82rem;
+  font-size: 0.92rem;
   color: #f1f5f9;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(71, 85, 105, 0.45);
@@ -411,11 +411,11 @@
 }
 
 .authPage-inputPadRight {
-  padding-right: 38px;
+  padding-right: 42px;
 }
 
 .authPage-inputWithBadge {
-  padding-right: 76px;
+  padding-right: 80px;
 }
 
 .authPage-remember {
@@ -434,16 +434,17 @@
 }
 
 .authPage-rememberRow input[type='checkbox'] {
-  width: 15px;
-  height: 15px;
-  min-width: 15px;
-  margin-top: 2px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  margin-top: 1px;
+  border-radius: 5px;
   accent-color: #6366f1;
   cursor: pointer;
 }
 
 .authPage-rememberLabel {
-  font-size: 0.74rem;
+  font-size: 0.82rem;
   font-weight: 500;
   color: #cbd5e1;
   line-height: 1.35;
@@ -451,8 +452,8 @@
 
 .authPage-rememberHint {
   margin: 0;
-  padding-left: 23px;
-  font-size: 0.6rem;
+  padding-left: 28px;
+  font-size: 0.68rem;
   color: #64748b;
   line-height: 1.4;
 }
@@ -483,7 +484,7 @@
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   font-weight: 600;
   padding: 4px 8px;
   border-radius: 6px;
@@ -505,10 +506,10 @@
 .authPage-submit {
   width: 100%;
   margin-top: 2px;
-  padding: 10px 14px;
+  padding: 11px 14px;
   border: none;
   border-radius: 9px;
-  font-size: 0.82rem;
+  font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -536,7 +537,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 12px 0;
+  margin: 8px 0;
 }
 
 .authPage-dividerLine {
@@ -546,16 +547,16 @@
 }
 
 .authPage-dividerText {
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   color: #475569;
   white-space: nowrap;
 }
 
 .authPage-google {
   width: 100%;
-  padding: 9px 12px;
+  padding: 10px 12px;
   border-radius: 9px;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -582,7 +583,7 @@
   margin: 0;
   padding: 8px 10px;
   border-radius: 8px;
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   line-height: 1.5;
   color: #94a3b8;
   background: rgba(15, 23, 42, 0.55);
@@ -597,7 +598,7 @@
 }
 
 .authPage-footNote {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
   padding: 0;
   display: flex;
   align-items: center;
@@ -605,7 +606,7 @@
   gap: 7px;
   flex-wrap: wrap;
   text-align: center;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   color: #475569;
   line-height: 1.35;
 }
@@ -635,11 +636,11 @@
   animation: authPage-spin 0.9s linear infinite;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .authPage-card {
     grid-template-columns: 1fr;
-    max-width: 440px;
-    width: min(100%, 440px);
+    max-width: 480px;
+    width: min(100%, 480px);
     height: auto;
     max-height: none;
     min-height: 0;

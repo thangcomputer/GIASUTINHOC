@@ -14,6 +14,8 @@ const PaymentSessionSchema = new mongoose.Schema({
   amount:      { type: Number, required: true },
   coins:       { type: Number, required: true },
   planId:      { type: String, default: '' },
+  /** Chu kỳ gói tại lúc tạo phiên (tháng / năm) — dùng khi kích hoạt gói trên Student */
+  planBillingCycle: { type: String, enum: ['month', 'year'], default: 'month' },
   planLabel:   { type: String, default: '' },
   status:      { type: String, enum: ['pending', 'paid', 'expired', 'cancelled'], default: 'pending', index: true },
   studentName: { type: String, default: '' },
