@@ -156,10 +156,10 @@ export default function Navbar() {
         <div className="navbar-container">
           <Link to="/" className="navbar-brand">
             <div className="brand-icon" style={{ width: '48px', height: '48px', borderRadius: '12px', overflow: 'hidden', background: 'transparent', flexShrink: 0 }}>
-              <img src="/logo_cartoon.png" alt="Gia Sư Tin Học AI" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+              <img src="/logo_cartoon.png" alt="Gia Sư Tin Học 24h AI" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
             </div>
             <div className="brand-text">
-              <span className="brand-name">Gia Sư Tin Học</span>
+              <span className="brand-name">Gia Sư Tin Học 24h</span>
               <span className="brand-sub">AI Gia Sư Thông Minh</span>
             </div>
           </Link>

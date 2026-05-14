@@ -61,7 +61,7 @@ export default function CreditsGuidePage() {
   return (
     <div className="credits-page">
       <Helmet>
-        <title>Xu học & gói nạp — Gia Sư Tin Học</title>
+        <title>Xu học & gói nạp — Gia Sư Tin Học 24h</title>
         <meta
           name="description"
           content="Mỗi tài khoản mới nhận xu chào mừng để trải nghiệm AI. Xem bảng giá xu theo tính năng và các gói nạp."

@@ -5,6 +5,7 @@ import Student from '../models/Student.js';
 import Transaction from '../models/Transaction.js';
 import { requireAdmin, requireAuth, allowSelfOrAdmin } from '../middleware/auth.js';
 import { WELCOME_COINS } from '../constants/credits.js';
+import { syncStudentActiveCoinPlanWindow } from '../utils/coinPlanActivation.js';
 
 const router = express.Router();
 
@@ -249,6 +250,8 @@ router.get('/:id', requireAuth, allowSelfOrAdmin('id'), async (req, res) => {
 
     const student = await Student.findById(req.params.id).select('-password');
     if (!student) return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
+
+    await syncStudentActiveCoinPlanWindow(student);
 
     res.json({ success: true, data: student });
   } catch (err) {

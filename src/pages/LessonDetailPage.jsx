@@ -223,7 +223,7 @@ function CertificateModal({ cert, examState, courseTitle, studentName, onClose }
             <div className="tr" style={{ position:'absolute', width:'30px', height:'30px', borderStyle:'solid', top:'24px', right:'24px', borderTopWidth:'3px', borderRightWidth:'3px', borderTopColor:'#f59e0b', borderRightColor:'#f59e0b', borderBottomWidth:0, borderLeftWidth:0 }} />
             <div className="bl" style={{ position:'absolute', width:'30px', height:'30px', borderStyle:'solid', bottom:'24px', left:'24px', borderBottomWidth:'3px', borderLeftWidth:'3px', borderBottomColor:'#f59e0b', borderLeftColor:'#f59e0b', borderTopWidth:0, borderRightWidth:0 }} />
             <div className="br" style={{ position:'absolute', width:'30px', height:'30px', borderStyle:'solid', bottom:'24px', right:'24px', borderBottomWidth:'3px', borderRightWidth:'3px', borderBottomColor:'#f59e0b', borderRightColor:'#f59e0b', borderTopWidth:0, borderLeftWidth:0 }} />
-            <div style={{ fontSize:'12px', letterSpacing:'0.2em', color:'#f59e0b', textTransform:'uppercase', marginBottom:'6px', fontWeight:700 }}>GIA SƯ TIN HỌC</div>
+            <div style={{ fontSize:'12px', letterSpacing:'0.2em', color:'#f59e0b', textTransform:'uppercase', marginBottom:'6px', fontWeight:700 }}>GIA SƯ TIN HỌC 24H</div>
             <div style={{ fontSize:'11px', color:'#64748b', marginBottom:'20px', letterSpacing:'0.1em' }}>TRUNG TÂM ĐÀO TẠO TIN HỌC ỨNG DỤNG</div>
             <div style={{ fontSize:'38px', fontFamily:"'Be Vietnam Pro', system-ui, sans-serif", fontWeight:800, background:'linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', marginBottom:'4px', lineHeight:1 }}>Chứng Chỉ Hoàn Thành</div>
             <div style={{ fontSize:'11px', color:'#94a3b8', letterSpacing:'0.15em', textTransform:'uppercase', marginBottom:'24px' }}>Certificate of Completion</div>
@@ -1312,7 +1312,7 @@ export default function LessonDetailPage() {
                         <Play size={20} color={lesson.color}/>
                         <h3 style={{ margin: 0, color: '#e2e8f0', fontSize: '1.1rem', fontWeight: 700 }}>Video Hướng Dẫn Thực Hành</h3>
                       </div>
-                      <p style={{ color: '#64748b', margin: '0 0 20px', fontSize: '0.9rem' }}>AI Avatar dẫn dắt từng thao tác trực quan — học online cùng gia sư tin học.</p>
+                      <p style={{ color: '#64748b', margin: '0 0 20px', fontSize: '0.9rem' }}>AI Avatar dẫn dắt từng thao tác trực quan — học online cùng gia sư tin học 24h.</p>
                       {isCurrentStepFree ? (
                         <div style={{ borderRadius: '12px', overflow: 'hidden', background: '#000', position: 'relative', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <p style={{ color: '#94a3b8', fontSize: '1rem' }}>☝️ Video hướng dẫn chi tiết đang được chiếu ở khung hình phía trên.</p>

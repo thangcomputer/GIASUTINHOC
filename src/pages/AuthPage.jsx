@@ -234,14 +234,14 @@ export default function AuthPage() {
                   <GraduationCap size={24} strokeWidth={2} />
                 </div>
                 <div>
-                  <div className="authPage-brandTitle">Gia Sư Tin Học</div>
+                  <div className="authPage-brandTitle">Gia Sư Tin Học 24h</div>
                   <div className="authPage-brandSub">Trung tâm đào tạo tin học &amp; chứng chỉ</div>
                 </div>
               </div>
 
               <h2 className="authPage-headline">
                 Học tin học online<br />
-                <span className="authPage-headlineAccent">cùng Gia Sư Tin Học &amp; AI</span>
+                <span className="authPage-headlineAccent">cùng Gia Sư Tin Học 24h &amp; AI</span>
               </h2>
               <p className="authPage-lead">
                 Nền tảng kết hợp giảng viên và AI trợ giảng — lộ trình rõ ràng, hướng tới chứng chỉ MOS/IC3.
@@ -282,7 +282,7 @@ export default function AuthPage() {
             </div>
 
             <div className="authPage-brandFoot">
-              © {new Date().getFullYear()} Gia Sư Tin Học · Kết nối bảo mật TLS
+              © {new Date().getFullYear()} Gia Sư Tin Học 24h · Kết nối bảo mật TLS
             </div>
           </div>
 

@@ -196,7 +196,7 @@ export default function VirtualExamRoom({ questions, timeLimit = 1800, onComplet
               <Shield size={48} color="white" />
             </div>
             <h1 style={{ color: 'white', fontSize: '2.2rem', fontWeight: 900, margin: '0 0 8px' }}>Báo Cáo Năng Lực Chuyên Môn</h1>
-            <p style={{ color: '#94a3b8', margin: 0 }}>Hệ thống đánh giá — Gia Sư Tin Học · học tin học online</p>
+            <p style={{ color: '#94a3b8', margin: 0 }}>Hệ thống đánh giá — Gia Sư Tin Học 24h · học tin học online</p>
 
             <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: '8px', marginTop: '20px', padding: '16px 40px', borderRadius: '20px', background: passed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${passed ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
               <span style={{ fontSize: '4rem', fontWeight: 900, color: passed ? '#10b981' : '#ef4444', lineHeight: 1 }}>{result.score}</span>

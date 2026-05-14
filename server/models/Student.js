@@ -22,6 +22,8 @@ const StudentSchema = new mongoose.Schema({
   activeCoinPlanId: { type: String, default: '', trim: true },
   activeCoinPlanBillingCycle: { type: String, default: '' },
   activeCoinPlanPaidAt: { type: Date, default: null },
+  /** Sau mốc này gói active tự gỡ (xu trong ví không bị trừ) */
+  activeCoinPlanValidUntil: { type: Date, default: null },
 
   // Thống kê sử dụng
   totalQuizGenerated: { type: Number, default: 0 },

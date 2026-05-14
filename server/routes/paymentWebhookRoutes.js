@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import PaymentSession from '../models/PaymentSession.js';
 import Student from '../models/Student.js';
 import { getSettings } from './settingsRoutes.js';
-import { activateStudentCoinPlanFromPurchase } from '../utils/coinPlanActivation.js';
+import { activateStudentCoinPlanFromPurchase, syncStudentActiveCoinPlanWindow } from '../utils/coinPlanActivation.js';
 import { recordTransaction } from './userRoutes.js';
 import { requireAuth, forceOwnStudentFields } from '../middleware/auth.js';
 
@@ -190,8 +190,8 @@ router.get('/payment-status', requireAuth, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Không có quyền' });
     }
     const st = await Student.findById(s.studentId)
-      .select('coins activeCoinPlanId activeCoinPlanBillingCycle activeCoinPlanPaidAt')
-      .lean();
+      .select('coins activeCoinPlanId activeCoinPlanBillingCycle activeCoinPlanPaidAt activeCoinPlanValidUntil');
+    if (st) await syncStudentActiveCoinPlanWindow(st);
     res.json({
       success: true,
       data: {
@@ -206,6 +206,7 @@ router.get('/payment-status', requireAuth, async (req, res) => {
         activeCoinPlanId: st?.activeCoinPlanId || '',
         activeCoinPlanBillingCycle: st?.activeCoinPlanBillingCycle || '',
         activeCoinPlanPaidAt: st?.activeCoinPlanPaidAt || null,
+        activeCoinPlanValidUntil: st?.activeCoinPlanValidUntil || null,
       },
     });
   } catch (e) {

@@ -41,12 +41,20 @@ export function CreditProvider({ children }) {
         if (typeof d.data?.coins === 'number') {
           setCredits(d.data.coins);
 
-          // Update localstorage so other tabs sync up too
           const updatedU = { ...u, coins: d.data.coins };
-          if (d.data.activeCoinPlanId) {
-            updatedU.activeCoinPlanId = d.data.activeCoinPlanId
-            updatedU.activeCoinPlanBillingCycle = d.data.activeCoinPlanBillingCycle || ''
-            updatedU.activeCoinPlanPaidAt = d.data.activeCoinPlanPaidAt ?? updatedU.activeCoinPlanPaidAt
+          if ('activeCoinPlanId' in d.data) {
+            const pid = String(d.data.activeCoinPlanId || '').trim();
+            if (pid) {
+              updatedU.activeCoinPlanId = pid;
+              updatedU.activeCoinPlanBillingCycle = d.data.activeCoinPlanBillingCycle || '';
+              updatedU.activeCoinPlanPaidAt = d.data.activeCoinPlanPaidAt ?? updatedU.activeCoinPlanPaidAt;
+              updatedU.activeCoinPlanValidUntil = d.data.activeCoinPlanValidUntil ?? updatedU.activeCoinPlanValidUntil;
+            } else {
+              updatedU.activeCoinPlanId = '';
+              updatedU.activeCoinPlanBillingCycle = '';
+              updatedU.activeCoinPlanPaidAt = null;
+              updatedU.activeCoinPlanValidUntil = null;
+            }
           }
           localStorage.setItem('giasu_user', JSON.stringify(updatedU));
         }

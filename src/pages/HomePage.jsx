@@ -359,9 +359,9 @@ export default function HomePage() {
   return (
     <div className="home">
       <Helmet>
-        <title>Gia Sư Tin Học — Học máy tính từ đầu, hỏi đáp &amp; AI gợi ý bài tập tin học</title>
+        <title>Gia Sư Tin Học 24h — Học máy tính từ đầu, hỏi đáp &amp; AI gợi ý bài tập tin học</title>
         <meta name="description" content="Nền tảng học máy vi tính cho người mới, học sinh và sinh viên: lộ trình từ số không, khóa Word/Excel/PowerPoint, hỏi đáp 24/7 và AI gợi ý làm bài tập tin học bằng tiếng Việt." />
-        <meta name="keywords" content="học máy vi tính cho người mới, tin học học sinh, tin học sinh viên, hỏi đáp tin học, giải bài tập word excel, AI gia sư tin học, học word excel online, ôn tin học THPT, lộ trình tin học cơ bản" />
+        <meta name="keywords" content="học máy vi tính cho người mới, tin học học sinh, tin học sinh viên, hỏi đáp tin học, giải bài tập word excel, AI gia sư tin học 24h, học word excel online, ôn tin học THPT, lộ trình tin học cơ bản" />
         <link rel="canonical" href="https://giasutinhoc24h.com/" />
       </Helmet>
       <Navbar />
@@ -511,7 +511,7 @@ export default function HomePage() {
                 {HOME_INTRO_YOUTUBE_ID ? (
                   <iframe
                     className="hp-video-iframe"
-                    title="Video giới thiệu Gia Sư Tin Học"
+                    title="Video giới thiệu Gia Sư Tin Học 24h"
                     src={`https://www.youtube-nocookie.com/embed/${HOME_INTRO_YOUTUBE_ID}?rel=0`}
                     allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
@@ -1041,7 +1041,7 @@ export default function HomePage() {
             <div className="hp-footer-brand">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <img src="/logo_cartoon.png" alt="" width={40} height={40} style={{ borderRadius: 10, objectFit: 'cover' }} />
-                <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#e2e8f0' }}>Gia Sư Tin Học</span>
+                <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#e2e8f0' }}>Gia Sư Tin Học 24h</span>
               </div>
               <p>Nền tảng học tin học hiện đại: bài học có lộ trình + AI hỗ trợ hỏi đáp và gợi ý bài tập cho học sinh, sinh viên và người mới.</p>
             </div>
@@ -1059,7 +1059,7 @@ export default function HomePage() {
             ))}
           </div>
           <div className="hp-footer-bottom">
-            <span>© {new Date().getFullYear()} Gia Sư Tin Học</span>
+            <span>© {new Date().getFullYear()} Gia Sư Tin Học 24h</span>
             <span>TLS · Dữ liệu học tập được xử lý theo chính sách nền tảng</span>
           </div>
         </div>

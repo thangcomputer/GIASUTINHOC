@@ -6,6 +6,7 @@ import Transaction from '../models/Transaction.js';
 import { signAccessToken } from '../utils/tokens.js';
 import { requireAuth } from '../middleware/auth.js';
 import { WELCOME_COINS } from '../constants/credits.js';
+import { syncStudentActiveCoinPlanWindow } from '../utils/coinPlanActivation.js';
 
 const router = express.Router();
 
@@ -17,10 +18,11 @@ router.get('/me', requireAuth, async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.user.id)) {
       return res.status(400).json({ success: false, message: 'ID không hợp lệ' });
     }
-    const student = await Student.findById(req.user.id).select('-password').lean();
+    const student = await Student.findById(req.user.id).select('-password');
     if (!student) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
     if (student.isActive === false) return res.status(403).json({ success: false, message: 'Tài khoản đã bị khoá' });
-    res.json({ success: true, data: student });
+    await syncStudentActiveCoinPlanWindow(student);
+    res.json({ success: true, data: student.toJSON() });
   } catch (err) {
     console.error('Auth me error:', err);
     res.status(500).json({ success: false, message: err.message });
@@ -81,6 +83,7 @@ router.post('/register', async (req, res) => {
       activeCoinPlanId: '',
       activeCoinPlanBillingCycle: '',
       activeCoinPlanPaidAt: null,
+      activeCoinPlanValidUntil: null,
       totalQuizGenerated: 0,
       totalChatMessages:  0,
       sessionSerial:      1,
@@ -208,6 +211,7 @@ router.post('/google', async (req, res) => {
         activeCoinPlanId: '',
         activeCoinPlanBillingCycle: '',
         activeCoinPlanPaidAt: null,
+        activeCoinPlanValidUntil: null,
         totalQuizGenerated: 0,
         totalChatMessages:  0,
         sessionSerial:      1,

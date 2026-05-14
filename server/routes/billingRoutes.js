@@ -101,6 +101,7 @@ router.post('/deposit', optionalAuth, async (req, res) => {
       activeCoinPlanId: student.activeCoinPlanId || '',
       activeCoinPlanBillingCycle: student.activeCoinPlanBillingCycle || '',
       activeCoinPlanPaidAt: student.activeCoinPlanPaidAt || null,
+      activeCoinPlanValidUntil: student.activeCoinPlanValidUntil || null,
     });
   } catch (err) {
     console.error('Lỗi nạp tiền:', err);

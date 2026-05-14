@@ -75,7 +75,7 @@ export default function StartHerePage() {
   return (
     <div className="start-page">
       <Helmet>
-        <title>Bắt đầu học — Gia Sư Tin Học</title>
+        <title>Bắt đầu học — Gia Sư Tin Học 24h</title>
         <meta name="description" content="Lộ trình 4 bước cho người mới: đăng ký, bài học, AI, xu và nạp tiền." />
       </Helmet>
       <div className="start-bg" aria-hidden />

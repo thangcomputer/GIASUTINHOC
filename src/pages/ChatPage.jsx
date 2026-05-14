@@ -557,7 +557,7 @@ export default function ChatPage() {
   return (
     <div className="chat-page">
       <Helmet>
-        <title>Hỏi đáp AI — Gia Sư Tin Học</title>
+        <title>Hỏi đáp AI — Gia Sư Tin Học 24h</title>
         <meta name="description" content="Trợ lý tin học chuyên nghiệp: Word, Excel, PowerPoint, Windows, MOS/IC3. Trả lời rõ ràng, có cấu trúc." />
       </Helmet>
       <Navbar />
@@ -684,7 +684,7 @@ export default function ChatPage() {
             <div className="chat-welcome">
               <div>
                 <h1 className="welcome-title">Gặp gỡ Gia Sư AI của bạn</h1>
-                <p className="welcome-subtitle">Trợ lý chuyên nghiệp — trả lời rõ ràng, có cấu trúc · Học tin học online cùng Gia Sư Tin Học</p>
+                <p className="welcome-subtitle">Trợ lý chuyên nghiệp — trả lời rõ ràng, có cấu trúc · Học tin học online cùng Gia Sư Tin Học 24h</p>
               </div>
 
               <div className="welcome-input-wrap">
@@ -898,7 +898,7 @@ export default function ChatPage() {
                   </div>
                 </div>
                 <div className="input-hint">
-                  <Shield size={11} /> Gia Sư Tin Học · Học online có lộ trình
+                  <Shield size={11} /> Gia Sư Tin Học 24h · Học online có lộ trình
                 </div>
               </div>
             </>

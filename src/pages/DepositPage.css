@@ -197,13 +197,13 @@
 }
 
 .package-card--muted {
-  opacity: 0.52 !important;
-  filter: saturate(0.72) brightness(0.88);
+  opacity: 0.72 !important;
+  filter: saturate(0.82) brightness(0.94);
 }
 
 .package-card--muted:hover {
-  opacity: 0.78 !important;
-  filter: saturate(0.88) brightness(0.94);
+  opacity: 0.88 !important;
+  filter: saturate(0.92) brightness(0.98);
 }
 
 /** Gói đang chọn để thanh toán — viền xanh, luôn rõ (ghi đè mờ nếu có) */
@@ -414,6 +414,20 @@
   font-size: 1.15rem;
 }
 
+.deposit-plan-countdown {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #86efac;
+  text-align: center;
+  margin: -6px 0 14px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  width: 100%;
+  line-height: 1.35;
+}
+
 .pkg-features {
   list-style: none;
   padding: 0;
@@ -427,7 +441,7 @@
 
 .pkg-features li {
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: #cbd5e1;
 }
 
 .pkg-btn {

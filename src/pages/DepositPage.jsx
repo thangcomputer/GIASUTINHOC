@@ -99,6 +99,13 @@ function resolveDefaultHighlightId(packages, cycle) {
     )
   }
 
+  /** Đang có gói trả phí active (đúng chu kỳ) → mặc định «Đang chọn» trùng thẻ đó, không nhảy sang VIP */
+  const activeFromServer = readServerActivePlanIdForCycle(cycle)
+  if (activeFromServer) {
+    const hitActive = findInPool(activeFromServer)
+    if (hitActive) return String(hitActive.id)
+  }
+
   let hit = findInPool(logical)
   if (hit) return String(hit.id)
 
@@ -136,15 +143,6 @@ function resolveDefaultHighlightId(packages, cycle) {
 /** Gói vừa thanh toán thành công theo chu kỳ — để hiển thị "ĐANG DÙNG" */
 const LAST_PAID_PLAN_BY_CYCLE_KEY = 'giasu_last_paid_plan_by_cycle'
 
-function readLastPaidPlanIdForCycle(cycle) {
-  try {
-    const o = JSON.parse(localStorage.getItem(LAST_PAID_PLAN_BY_CYCLE_KEY) || '{}')
-    return String(o[cycle === 'year' ? 'year' : 'month'] || '')
-  } catch {
-    return ''
-  }
-}
-
 function persistLastPaidPlan(pkg) {
   if (!pkg?.id) return
   const c = pkg.billingCycle === 'year' ? 'year' : 'month'
@@ -157,7 +155,7 @@ function persistLastPaidPlan(pkg) {
   }
 }
 
-/** Gói trả phí đã kích hoạt trên server (SePay / nạp API) — ưu tiên hơn localStorage cũ */
+/** Gói trả phí đã kích hoạt trên server — chỉ khi còn trong hạn dùng */
 function readServerActivePlanIdForCycle(cycle) {
   try {
     const u = JSON.parse(localStorage.getItem('giasu_user') || '{}')
@@ -165,22 +163,62 @@ function readServerActivePlanIdForCycle(cycle) {
     if (!id) return ''
     const bc = u.activeCoinPlanBillingCycle === 'year' ? 'year' : 'month'
     if (bc !== cycle) return ''
+    if (u.activeCoinPlanValidUntil) {
+      if (new Date(u.activeCoinPlanValidUntil).getTime() <= Date.now()) return ''
+    }
     return id
   } catch {
     return ''
   }
 }
 
+function readUserActivePlanValidUntilIso() {
+  try {
+    const u = JSON.parse(localStorage.getItem('giasu_user') || '{}')
+    return u.activeCoinPlanValidUntil ? String(u.activeCoinPlanValidUntil) : ''
+  } catch {
+    return ''
+  }
+}
+
+/** Hiển thị đếm ngược thời gian còn lại của gói active */
+function formatTimeLeftVn(untilIso, nowMs) {
+  if (!untilIso) return ''
+  const end = new Date(untilIso).getTime()
+  const t = end - nowMs
+  if (t <= 0) return 'Đã hết hạn gói — có thể chọn gói mới'
+  const sec = Math.floor(t / 1000)
+  const d = Math.floor(sec / 86400)
+  const h = Math.floor((sec % 86400) / 3600)
+  const m = Math.floor((sec % 3600) / 60)
+  if (d > 0) return `Còn lại: ${d} ngày ${h} giờ`
+  if (h > 0) return `Còn lại: ${h} giờ ${m} phút`
+  return `Còn lại: ${m} phút`
+}
+
 function mergeActiveCoinPlanFromServerPayload(payload) {
-  const id = String(payload?.activeCoinPlanId || '').trim()
-  if (!id) return
-  const cycle = payload.activeCoinPlanBillingCycle === 'year' ? 'year' : 'month'
+  if (!payload || typeof payload !== 'object') return
+  const id = String(payload.activeCoinPlanId ?? '').trim()
   try {
     const gu = JSON.parse(localStorage.getItem('giasu_user') || '{}')
+    if (!id) {
+      gu.activeCoinPlanId = ''
+      gu.activeCoinPlanBillingCycle = ''
+      gu.activeCoinPlanPaidAt = null
+      gu.activeCoinPlanValidUntil = null
+      localStorage.setItem('giasu_user', JSON.stringify(gu))
+      localStorage.setItem(LAST_PAID_PLAN_BY_CYCLE_KEY, JSON.stringify({ month: '', year: '' }))
+      window.dispatchEvent(new Event('storage'))
+      return
+    }
+    const cycle = payload.activeCoinPlanBillingCycle === 'year' ? 'year' : 'month'
     gu.activeCoinPlanId = id
     gu.activeCoinPlanBillingCycle = cycle
     if (payload.activeCoinPlanPaidAt != null) {
       gu.activeCoinPlanPaidAt = payload.activeCoinPlanPaidAt
+    }
+    if (payload.activeCoinPlanValidUntil != null) {
+      gu.activeCoinPlanValidUntil = payload.activeCoinPlanValidUntil
     }
     localStorage.setItem('giasu_user', JSON.stringify(gu))
     const o = JSON.parse(localStorage.getItem(LAST_PAID_PLAN_BY_CYCLE_KEY) || '{}')
@@ -361,6 +399,8 @@ export default function DepositPage() {
   const [checkout, setCheckout] = useState(null)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutErr, setCheckoutErr] = useState('')
+  /** Làm mới đếm ngược / hết hạn gói active (client) */
+  const [clockTick, setClockTick] = useState(() => Date.now())
   const pollTimerRef = useRef(null)
   const paidDoneRef = useRef(false)
   const selectedPkgRef = useRef(null)
@@ -384,14 +424,19 @@ export default function DepositPage() {
   }, [billingCycle])
 
   useEffect(() => {
+    const id = setInterval(() => setClockTick(Date.now()), 15_000)
+    const onStorage = () => setClockTick(Date.now())
+    window.addEventListener('storage', onStorage)
+    return () => {
+      clearInterval(id)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!packages.length) return
     if (depositHighlightUserSetRef.current) return
-    setHighlightedPlanId((prev) => {
-      const pool = packages.filter((p) => p.billingCycle === billingCycle)
-      if (!pool.length) return prev
-      if (pool.some((p) => idEq(p.id, prev))) return prev
-      return resolveDefaultHighlightId(packages, billingCycle)
-    })
+    setHighlightedPlanId(resolveDefaultHighlightId(packages, billingCycle))
   }, [billingCycle, packages])
 
   useEffect(() => {
@@ -504,7 +549,9 @@ export default function DepositPage() {
       persistCoinsEverywhere(newCoins, added)
       if (typeof added === 'number') addCredits(added)
     }
-    mergeActiveCoinPlanFromServerPayload(data)
+    if (data && 'activeCoinPlanId' in data) {
+      mergeActiveCoinPlanFromServerPayload(data)
+    }
     setSuccessPkg(pkg)
     setSelected(null)
     setCheckout(null)
@@ -579,8 +626,11 @@ export default function DepositPage() {
     () => resolveDefaultHighlightId(packages, billingCycle),
     [packages, billingCycle],
   )
-  const lastPaidPlanIdForCycle =
-    readServerActivePlanIdForCycle(billingCycle) || readLastPaidPlanIdForCycle(billingCycle)
+  /** Chỉ tin bản sao active trên `giasu_user` (đã sync server); không dùng last-paid local để tránh «đang dùng» sai chu kỳ / sau khi đổi gói. */
+  const lastPaidPlanIdForCycle = useMemo(
+    () => readServerActivePlanIdForCycle(billingCycle),
+    [billingCycle, clockTick],
+  )
 
   /** Gói «đang dùng» (ưu tiên gói vừa mua trong chu kỳ, không gộp với thẻ đang highlight) */
   const inUsePlanId = useMemo(() => {
@@ -593,7 +643,7 @@ export default function DepositPage() {
       return String(pool.find((p) => idEq(p.id, defaultHighlightResolvedId)).id)
     }
     return ''
-  }, [visiblePackages, lastPaidPlanIdForCycle, defaultHighlightResolvedId])
+  }, [visiblePackages, lastPaidPlanIdForCycle, defaultHighlightResolvedId, clockTick])
 
   const handleCopy = (text, field) => {
     navigator.clipboard.writeText(text)
@@ -655,8 +705,19 @@ export default function DepositPage() {
   }
 
   const handleSelect = (pkg) => {
-    depositHighlightUserSetRef.current = true
     const isFree = isFreeTierPackage(pkg)
+    const isInUse = !!(inUsePlanId && idEq(pkg.id, inUsePlanId))
+    if (isInUse) {
+      if (!isFree) {
+        const untilIso = readUserActivePlanValidUntilIso()
+        const untilMs = untilIso ? new Date(untilIso).getTime() : null
+        const subWindowOpen = untilMs == null || untilMs > clockTick
+        if (credits > 0 && subWindowOpen) return
+      } else if (!idEq(highlightedPlanId, pkg.id)) {
+        return
+      }
+    }
+    depositHighlightUserSetRef.current = true
     const sameFreeReselect = isFree && idEq(highlightedPlanId, pkg.id)
     setHighlightedPlanId(String(pkg.id))
     const paid = Number(pkg.amount) >= 1000 && Number(pkg.credits) > 0
@@ -767,7 +828,15 @@ export default function DepositPage() {
                 const popularId = popularPlanIdForCycle(billingCycle)
                 const isPopularTier = idEq(pkg.id, popularId)
                 const isInUsePlan = !!(inUsePlanId && idEq(pkg.id, inUsePlanId))
-                const inUseLockedUi = isInUsePlan && !isHighlight
+                const isFreePkg = isFreeTierPackage(pkg)
+                const untilIso = readUserActivePlanValidUntilIso()
+                const untilMs = untilIso ? new Date(untilIso).getTime() : null
+                const subWindowOpen = untilMs == null || untilMs > clockTick
+                const paidUseLocked = isInUsePlan && !isFreePkg && credits > 0 && subWindowOpen
+                const freeUseLocked = isInUsePlan && isFreePkg && !isHighlight
+                const inUseLockedUi = paidUseLocked || freeUseLocked
+                const planCountdownLine =
+                  isInUsePlan && !isFreePkg && untilIso ? formatTimeLeftVn(untilIso, clockTick) : ''
                 const showBadges = isFeatured || isHighlight || isPopularTier || isInUsePlan
                 const highlightInList = visiblePackages.some((p) => idEq(p.id, highlightedPlanId))
                 const isDimmed = highlightInList && !isHighlight && !isFeatured && !isInUsePlan
@@ -892,17 +961,22 @@ export default function DepositPage() {
                       <span className="pkg-price__xu">{priceCredits} Xu</span>
                     </div>
                   </div>
+                  {planCountdownLine ? (
+                    <div className="deposit-plan-countdown" role="status">
+                      {planCountdownLine}
+                    </div>
+                  ) : null}
 
                   <ul className="pkg-features" style={{ listStyle: 'none', padding: 0, textAlign: 'left', marginBottom: '20px' }}>
                     {pkg.features.map((f, i) => (
                       <li key={i} style={{
                         display: 'flex', alignItems: 'flex-start', gap: '8px',
                         marginBottom: '10px', fontSize: '0.86rem',
-                        color: f.strong ? '#e2e8f0' : '#94a3b8',
-                        fontWeight: f.strong ? 700 : 400,
+                        color: f.strong ? '#e2e8f0' : '#cbd5e1',
+                        fontWeight: f.strong ? 700 : 500,
                       }}
                       >
-                        <CheckCircle size={14} color={f.strong ? '#10b981' : '#475569'} style={{ marginTop: '2px', flexShrink: 0 }} />
+                        <CheckCircle size={14} color={f.strong ? '#10b981' : '#64748b'} style={{ marginTop: '2px', flexShrink: 0 }} />
                         {f.text}
                       </li>
                     ))}
