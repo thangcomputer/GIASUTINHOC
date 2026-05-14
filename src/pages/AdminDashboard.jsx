@@ -1242,15 +1242,33 @@ export default function AdminDashboard() {
                 <div className="settings-card-header">
                   <Coins size={22} color="#f59e0b" />
                   <div>
-                    <h3>Bảng Giá Nạp Xu</h3>
-                    <p>Các gói xu hiện tại đang áp dụng</p>
+                    <h3>Gói học &amp; nạp xu</h3>
+                    <p>Mỗi dòng: chu kỳ Tháng/Năm, nhãn, giá hiển thị, số xu cộng khi thanh toán thành công</p>
                   </div>
                 </div>
                 <div className="pricing-table">
                   {appSettings.coinPackages?.map((p, i) => (
-                    <div key={p.id || i} className="pricing-row" style={{ borderLeft: `3px solid ${p.color}`, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <span className="pricing-label" style={{minWidth: '100px'}}>{p.label}</span>
-                      <input className="settings-input" style={{flex: 1, padding: '4px 8px'}} value={p.price || ''} onChange={e => {
+                    <div key={p.id || i} className="pricing-row" style={{ borderLeft: `3px solid ${p.color}`, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <select
+                        className="settings-input"
+                        style={{ width: '100px', padding: '4px 8px' }}
+                        value={p.billingCycle === 'year' ? 'year' : 'month'}
+                        onChange={(e) => {
+                          const newP = [...appSettings.coinPackages];
+                          newP[i] = { ...newP[i], billingCycle: e.target.value };
+                          setAppSettings({ ...appSettings, coinPackages: newP });
+                        }}
+                        aria-label="Chu kỳ thanh toán"
+                      >
+                        <option value="month">Tháng</option>
+                        <option value="year">Năm</option>
+                      </select>
+                      <input className="settings-input" style={{ minWidth: '120px', flex: 1, padding: '4px 8px' }} value={p.label || ''} onChange={(e) => {
+                        const newP = [...appSettings.coinPackages];
+                        newP[i] = { ...newP[i], label: e.target.value };
+                        setAppSettings({ ...appSettings, coinPackages: newP });
+                      }} placeholder="Tên gói" />
+                      <input className="settings-input" style={{ flex: 1, padding: '4px 8px' }} value={p.price || ''} onChange={e => {
                         const newP = [...appSettings.coinPackages];
                         newP[i] = { ...newP[i], price: e.target.value, priceMs: Number(e.target.value.replace(/\D/g, '')) };
                         setAppSettings({...appSettings, coinPackages: newP})

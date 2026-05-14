@@ -15,15 +15,20 @@ if (!fs.existsSync(path.dirname(SETTINGS_FILE))) {
   fs.mkdirSync(path.dirname(SETTINGS_FILE), { recursive: true });
 }
 
+function formatVndPrice(ms) {
+  const n = Math.round(Number(ms) || 0);
+  return `${n.toLocaleString('vi-VN')}₫`;
+}
+
 export const getSettings = () => {
   let settings = {
     geminiKey: '',
     openaiKey: '',
     tavilyApiKey: '',
     coinPackages: [
-      { id: '1', label: 'Gói Khởi Động', price: '50.000₫',  coins: 50,  bonus: '0%',   color: '#3b82f6', priceMs: 50000  },
+      { id: '1', label: 'Gói Khởi Động', price: '50.000₫', coins: 50, bonus: '0%', color: '#3b82f6', priceMs: 50000 },
       { id: '2', label: 'Gói Tiêu Chuẩn', price: '100.000₫', coins: 110, bonus: '+10%', color: '#6366f1', priceMs: 100000 },
-      { id: '3', label: 'Gói Nâng Cao',   price: '200.000₫', coins: 230, bonus: '+15%', color: '#10b981', priceMs: 200000 },
+      { id: '3', label: 'Gói Nâng Cao', price: '200.000₫', coins: 230, bonus: '+15%', color: '#10b981', priceMs: 200000 },
       { id: '4', label: 'Gói Chuyên Gia', price: '500.000₫', coins: 600, bonus: '+20%', color: '#f59e0b', priceMs: 500000 },
     ],
     aiCost: {
@@ -38,6 +43,38 @@ export const getSettings = () => {
   } catch (e) {
     console.error('Lỗi đọc settings:', e.message);
   }
+
+  const pkgs = settings.coinPackages || [];
+  const hasYearTier = pkgs.some((p) => p.billingCycle === 'year');
+  const hasSynthYearId = pkgs.some((p) => /^y\d/.test(String(p.id || '')));
+  const monthBase = pkgs.filter(
+    (p) => (p.billingCycle || 'month') !== 'year' && !String(p.id || '').startsWith('y'),
+  );
+  if (!hasYearTier && !hasSynthYearId && monthBase.length > 0 && monthBase.length <= 6) {
+    const monthSource = monthBase.map((p) => ({
+      ...p,
+      billingCycle: 'month',
+    }));
+    const yearAppend = monthSource.map((p, idx) => {
+      const baseId = String(p.id ?? idx + 1);
+      const priceMs = Math.max(1000, Math.round(Number(p.priceMs || 0) * 12 * 0.83));
+      const coins = Math.max(1, Math.round(Number(p.coins || 0) * 12 * 1.08));
+      return {
+        ...p,
+        id: `y${baseId}`,
+        billingCycle: 'year',
+        priceMs,
+        coins,
+        price: formatVndPrice(priceMs),
+        bonus: 'Tiết kiệm ~17% so với 12 tháng lẻ',
+      };
+    });
+    settings = {
+      ...settings,
+      coinPackages: [...monthSource, ...yearAppend],
+    };
+  }
+
   return settings;
 };
 

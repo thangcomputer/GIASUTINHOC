@@ -1,5 +1,5 @@
 import Swal from 'sweetalert2';
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { io } from 'socket.io-client'
 import Navbar from '../components/Navbar'
@@ -20,6 +20,16 @@ const BANK_INFO = {
 }
 
 const ICONS = [Database, Zap, ShieldCheck, Sparkles, Star]
+
+function buildPlanFeatures({ billingCycle, credits }) {
+  const period = billingCycle === 'year' ? 'một năm' : 'một tháng';
+  return [
+    { text: `Gói học ${period} — thanh toán một lần`, strong: true },
+    { text: `${credits} Xu vào ví (chat AI, đề, chấm bài…)`, strong: true },
+    { text: 'Truy cập khóa học & tính năng theo quy định nền tảng' },
+    { text: 'VietQR / chuyển khoản — tự cộng xu khi đã cấu hình SePay' },
+  ];
+}
 
 function readStudentId() {
   try {
@@ -64,6 +74,8 @@ export default function DepositPage() {
   const [successPkg, setSuccessPkg] = useState(null)
   const [copied, setCopied] = useState('')
   const [packages, setPackages] = useState([])
+  /** @type {'month'|'year'} */
+  const [billingCycle, setBillingCycle] = useState('month')
 
   const [checkout, setCheckout] = useState(null)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
@@ -77,26 +89,46 @@ export default function DepositPage() {
   }, [selected])
 
   useEffect(() => {
+    if (selected && selected.billingCycle !== billingCycle) {
+      setSelected(null)
+      setCheckout(null)
+      setCheckoutErr('')
+    }
+  }, [billingCycle, selected])
+
+  useEffect(() => {
     fetch('/api/settings/public')
       .then((r) => fetchJsonIfOk(r))
       .then((d) => {
         if (d?.success && d.data?.coinPackages) {
-          setPackages(d.data.coinPackages.map((p, i) => ({
-            id: p.id || String(i),
-            priceText: p.price,
-            amount: p.priceMs || 0,
-            credits: p.coins,
-            label: p.label,
-            popular: i === 1,
-            icon: ICONS[i % ICONS.length],
-            highlight: p.bonus !== '0%' ? `${p.bonus} Xu thưởng` : p.label,
-            color: p.color,
-            features: [
-              { text: `${p.coins} Xu nạp vào tài khoản`, strong: true },
-              { text: 'Sử dụng toàn bộ tính năng AI' },
-              { text: 'Không giới hạn thời gian sử dụng' },
-            ],
-          })))
+          setPackages(
+            d.data.coinPackages.map((p, i) => {
+              const cycle = p.billingCycle === 'year' ? 'year' : 'month';
+              const base = {
+                id: p.id || String(i),
+                priceText: p.price,
+                amount: p.priceMs || 0,
+                credits: p.coins,
+                label: p.label || 'Gói học',
+                billingCycle: cycle,
+                icon: ICONS[i % ICONS.length],
+                highlight:
+                  p.bonus && String(p.bonus) !== '0%'
+                    ? String(p.bonus).includes('%') || String(p.bonus).includes('Tiết')
+                      ? p.bonus
+                      : `${p.bonus}`
+                    : cycle === 'year'
+                      ? 'Ưu đãi thanh toán năm'
+                      : 'Gói học tiêu chuẩn',
+                color: p.color || '#6366f1',
+                features: buildPlanFeatures({
+                  billingCycle: cycle,
+                  credits: p.coins,
+                }),
+              };
+              return base;
+            }),
+          );
         }
       })
       .catch(() => {})
@@ -224,6 +256,14 @@ export default function DepositPage() {
     return () => socket.disconnect()
   }, [checkout?.sessionId, finalizePaid])
 
+  const visiblePackages = useMemo(
+    () =>
+      packages
+        .filter((p) => p.billingCycle === billingCycle)
+        .map((pkg, i) => ({ ...pkg, popular: i === 1 })),
+    [packages, billingCycle],
+  );
+
   const handleCopy = (text, field) => {
     navigator.clipboard.writeText(text)
     setCopied(field)
@@ -249,7 +289,7 @@ export default function DepositPage() {
           planId: selected.id,
           amountCoins: selected.credits,
           amountVND: selected.amount,
-          note: `Nạp xu - ${selected.label || 'Gói nạp'} (dev)`,
+          note: `Gói học (${selected.billingCycle === 'year' ? 'năm' : 'tháng'}) — ${selected.label || 'Gói'} (dev)`,
         }),
       })
       const d = await res.json()
@@ -306,12 +346,12 @@ export default function DepositPage() {
       <div className="container deposit-container">
         <div className="deposit-header" style={{ textAlign: 'center', marginBottom: '40px' }}>
           <span className="badge badge-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <CreditCard size={16} /> Nạp Xu Học Tập
+            <CreditCard size={16} /> Gói học &amp; thanh toán
           </span>
-          <h1 className="gradient-text">Nạp Xu Gia Sư AI</h1>
-          <p style={{ color: '#94a3b8', maxWidth: '540px', margin: '12px auto' }}>
-            Chọn gói Xu, quét VietQR hoặc chuyển khoản đúng nội dung — hệ thống tự cộng xu khi nhận được tiền (qua SePay).{' '}
-            <Link to="/credits" style={{ color: '#818cf8', fontWeight: 600 }}>Xem xu dùng cho tính năng nào</Link>.
+          <h1 className="gradient-text">Gói học Gia Sư AI</h1>
+          <p style={{ color: '#94a3b8', maxWidth: '560px', margin: '12px auto' }}>
+            Chọn chu kỳ <strong style={{ color: '#e2e8f0' }}>Tháng</strong> hoặc <strong style={{ color: '#e2e8f0' }}>Năm</strong>, rồi chọn gói — quét VietQR hoặc chuyển khoản đúng nội dung; hệ thống tự cộng xu khi nhận tiền (SePay).{' '}
+            <Link to="/credits" style={{ color: '#818cf8', fontWeight: 600 }}>Xu dùng cho tính năng nào?</Link>
           </p>
 
           <div style={{
@@ -328,8 +368,43 @@ export default function DepositPage() {
 
         {!confirmed && (
           <>
+            <div className="deposit-billing-wrap">
+              <p className="deposit-billing-label">Chu kỳ thanh toán</p>
+              <div className="deposit-billing-toggle" role="tablist" aria-label="Chọn thanh toán theo tháng hoặc năm">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={billingCycle === 'month'}
+                  className={`deposit-billing-btn ${billingCycle === 'month' ? 'is-active' : ''}`}
+                  onClick={() => setBillingCycle('month')}
+                >
+                  Tháng
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={billingCycle === 'year'}
+                  className={`deposit-billing-btn ${billingCycle === 'year' ? 'is-active' : ''}`}
+                  onClick={() => setBillingCycle('year')}
+                >
+                  Năm
+                  <span className="deposit-billing-discount" aria-hidden>~-17%</span>
+                </button>
+              </div>
+              <p className="deposit-billing-hint">
+                {billingCycle === 'month'
+                  ? 'Thanh toán từng tháng — linh hoạt gia hạn.'
+                  : 'Thanh toán cả năm — thường rẻ hơn so với 12 lần trả tháng.'}
+              </p>
+            </div>
+
             <div className="packages-grid">
-              {packages.map(pkg => (
+              {visiblePackages.length === 0 && (
+                <p className="deposit-empty-cycle" style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#94a3b8', padding: '24px' }}>
+                  Chưa có gói cho chu kỳ này. Vui lòng liên hệ quản trị hoặc chọn chu kỳ khác.
+                </p>
+              )}
+              {visiblePackages.map((pkg) => (
                 <div
                   key={pkg.id}
                   className={`package-card glass-card ${pkg.popular ? 'popular' : ''} ${selected?.id === pkg.id ? 'selected' : ''}`}
@@ -344,11 +419,32 @@ export default function DepositPage() {
                     </div>
                   )}
 
-                  <div style={{ color: pkg.popular ? '#f59e0b' : '#6366f1', display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                  <div
+                    style={{ color: pkg.popular ? '#f59e0b' : '#6366f1', display: 'flex', justifyContent: 'center', marginBottom: '10px' }}
+                  >
                     <pkg.icon size={38} />
                   </div>
 
-                  <h2 style={{ fontSize: '1.9rem', margin: '0 0 4px' }}>{pkg.credits} Xu</h2>
+                  <div
+                    className="deposit-plan-period"
+                    style={{
+                      display: 'inline-block',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      padding: '4px 12px',
+                      borderRadius: '999px',
+                      marginBottom: '8px',
+                      background: pkg.billingCycle === 'year' ? 'rgba(245,158,11,0.12)' : 'rgba(99,102,241,0.12)',
+                      color: pkg.billingCycle === 'year' ? '#fbbf24' : '#a5b4fc',
+                      border: `1px solid ${pkg.billingCycle === 'year' ? 'rgba(245,158,11,0.35)' : 'rgba(99,102,241,0.3)'}`,
+                    }}
+                  >
+                    {pkg.billingCycle === 'year' ? '1 năm' : '1 tháng'}
+                  </div>
+
+                  <h2 style={{ fontSize: '1.55rem', margin: '0 0 6px', lineHeight: 1.25 }}>{pkg.label}</h2>
 
                   <div style={{
                     display: 'inline-block', fontSize: '0.75rem', fontWeight: 700,
@@ -386,7 +482,7 @@ export default function DepositPage() {
                     onClick={(e) => { e.stopPropagation(); handleSelect(pkg) }}
                     style={{ width: '100%', justifyContent: 'center', background: selected?.id === pkg.id ? 'linear-gradient(135deg,#059669,#10b981)' : undefined }}
                   >
-                    {selected?.id === pkg.id ? '✓ Đã chọn' : `Chọn ${pkg.credits} Xu`}
+                    {selected?.id === pkg.id ? '✓ Đã chọn' : `Chọn gói — ${pkg.billingCycle === 'year' ? 'năm' : 'tháng'}`}
                   </button>
                 </div>
               ))}
@@ -533,9 +629,10 @@ export default function DepositPage() {
             >
               <CheckCircle size={44} color="#10b981" />
             </div>
-            <h2 style={{ fontSize: '1.6rem', marginBottom: '10px', color: '#10b981' }}>Nạp Xu Thành Công!</h2>
+            <h2 style={{ fontSize: '1.6rem', marginBottom: '10px', color: '#10b981' }}>Thanh toán thành công!</h2>
             <p style={{ color: '#94a3b8', marginBottom: '8px' }}>
-              Đã cộng <strong style={{ color: '#fff' }}>{successPkg?.credits} Xu</strong> vào tài khoản của bạn.
+              Đã cộng <strong style={{ color: '#fff' }}>{successPkg?.credits} Xu</strong> theo gói <strong style={{ color: '#e2e8f0' }}>{successPkg?.label}</strong>
+              {successPkg?.billingCycle === 'year' ? ' (năm)' : ' (tháng)'}.
             </p>
             <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '28px' }}>
               Số dư hiện tại: <strong style={{ color: '#a5b4fc' }}>{credits} Xu</strong>
@@ -546,7 +643,7 @@ export default function DepositPage() {
                 <Sparkles size={18} /> Chat AI Ngay
               </button>
               <button type="button" className="btn-ghost" onClick={() => { setSuccessPkg(null); setConfirmed(false) }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ArrowLeft size={18} /> Nạp Thêm
+                <ArrowLeft size={18} /> Chọn gói khác
               </button>
             </div>
           </div>

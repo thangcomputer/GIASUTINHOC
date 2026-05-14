@@ -27,10 +27,78 @@
   font-size: 1.1rem;
 }
 
+.deposit-billing-wrap {
+  max-width: 480px;
+  margin: 0 auto 32px;
+  text-align: center;
+}
+
+.deposit-billing-label {
+  margin: 0 0 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.deposit-billing-toggle {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  gap: 4px;
+}
+
+.deposit-billing-btn {
+  position: relative;
+  border: none;
+  cursor: pointer;
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #94a3b8;
+  background: transparent;
+  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.deposit-billing-btn.is-active {
+  color: #f8fafc;
+  background: linear-gradient(135deg, #6366f1, #4338ca);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.45);
+}
+
+.deposit-billing-btn:focus-visible {
+  outline: 2px solid #a5b4fc;
+  outline-offset: 2px;
+}
+
+.deposit-billing-discount {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.deposit-billing-hint {
+  margin: 14px 0 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.55;
+}
+
 /* Packages Grid */
 .packages-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 24px;
 }
 
