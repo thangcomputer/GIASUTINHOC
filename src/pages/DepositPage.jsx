@@ -847,6 +847,9 @@ export default function DepositPage() {
                   isInUsePlan && !isFreePkg && untilIso ? formatTimeLeftVn(untilIso, clockTick) : ''
                 const showBadges = isFeatured || isHighlight || isPopularTier || isInUsePlan
                 const highlightInList = visiblePackages.some((p) => idEq(p.id, highlightedPlanId))
+                /** VIP «tin dùng» vẫn hiện nhãn, nhưng khi học viên đang chọn gói khác thì hạ độ nổi để thẻ «ĐANG CHỌN» nổi bật hơn */
+                const featuredRecessed =
+                  isFeatured && highlightInList && !isHighlight && !isInUsePlan
                 const isDimmed = highlightInList && !isHighlight && !isFeatured && !isInUsePlan
                 /** Viền xanh «đang dùng»; khi đang thanh toán trên đúng thẻ đó thì dùng viền cam checkout */
                 const useGreenChrome = isInUsePlan && !(isHighlight && inCheckout)
@@ -896,7 +899,7 @@ export default function DepositPage() {
                 return (
                 <div
                   key={pkg.id}
-                  className={`package-card glass-card ${isFeatured ? 'package-card--featured' : ''} ${highlightCardClass} ${inCheckout ? 'selected package-card--checkout' : ''} ${showBadges ? 'package-card--has-badges' : ''} ${isDimmed ? 'package-card--muted' : ''} ${inUseLockedUi ? 'package-card--in-use-locked' : ''}`}
+                  className={`package-card glass-card ${isFeatured ? 'package-card--featured' : ''} ${featuredRecessed ? 'package-card--featured-recessed' : ''} ${highlightCardClass} ${inCheckout ? 'selected package-card--checkout' : ''} ${showBadges ? 'package-card--has-badges' : ''} ${isDimmed ? 'package-card--muted' : ''} ${inUseLockedUi ? 'package-card--in-use-locked' : ''}`}
                   onClick={() => handleSelect(pkg)}
                   style={{ cursor: inUseLockedUi ? 'default' : 'pointer' }}
                   role="presentation"
