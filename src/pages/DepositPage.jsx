@@ -14,6 +14,7 @@ import { fetchJsonIfOk } from '../lib/parseApiResponse.js'
 import { getApiBaseUrl } from '../lib/apiBase'
 import { mergeCoinPackagesIfMissing } from '../lib/mergeCoinPackages'
 import { WELCOME_COINS } from '../lib/creditsPolicy'
+import { GIASU_USER_REFRESH, notifyGiasuUserUpdated } from '../lib/giasuUserSync.js'
 
 const BANK_INFO = {
   bank: 'acb',
@@ -155,7 +156,7 @@ function persistLastPaidPlan(pkg) {
   }
 }
 
-/** Gói trả phí đã kích hoạt trên server — chỉ khi còn trong hạn dùng */
+/** Gói trả phí đã kích hoạt trên server — chỉ khi còn trong hạn dùng (bắt buộc có validUntil để tránh kẹt «đang dùng» từ dữ liệu cũ). */
 function readServerActivePlanIdForCycle(cycle) {
   try {
     const u = JSON.parse(localStorage.getItem('giasu_user') || '{}')
@@ -163,9 +164,9 @@ function readServerActivePlanIdForCycle(cycle) {
     if (!id) return ''
     const bc = u.activeCoinPlanBillingCycle === 'year' ? 'year' : 'month'
     if (bc !== cycle) return ''
-    if (u.activeCoinPlanValidUntil) {
-      if (new Date(u.activeCoinPlanValidUntil).getTime() <= Date.now()) return ''
-    }
+    const untilRaw = u.activeCoinPlanValidUntil
+    if (!untilRaw) return ''
+    if (new Date(untilRaw).getTime() <= Date.now()) return ''
     return id
   } catch {
     return ''
@@ -208,7 +209,7 @@ function mergeActiveCoinPlanFromServerPayload(payload) {
       gu.activeCoinPlanValidUntil = null
       localStorage.setItem('giasu_user', JSON.stringify(gu))
       localStorage.setItem(LAST_PAID_PLAN_BY_CYCLE_KEY, JSON.stringify({ month: '', year: '' }))
-      window.dispatchEvent(new Event('storage'))
+      notifyGiasuUserUpdated()
       return
     }
     const cycle = payload.activeCoinPlanBillingCycle === 'year' ? 'year' : 'month'
@@ -224,7 +225,7 @@ function mergeActiveCoinPlanFromServerPayload(payload) {
     const o = JSON.parse(localStorage.getItem(LAST_PAID_PLAN_BY_CYCLE_KEY) || '{}')
     o[cycle] = id
     localStorage.setItem(LAST_PAID_PLAN_BY_CYCLE_KEY, JSON.stringify(o))
-    window.dispatchEvent(new Event('storage'))
+    notifyGiasuUserUpdated()
   } catch {
     /* noop */
   }
@@ -425,11 +426,13 @@ export default function DepositPage() {
 
   useEffect(() => {
     const id = setInterval(() => setClockTick(Date.now()), 15_000)
-    const onStorage = () => setClockTick(Date.now())
-    window.addEventListener('storage', onStorage)
+    const bump = () => setClockTick(Date.now())
+    window.addEventListener('storage', bump)
+    window.addEventListener(GIASU_USER_REFRESH, bump)
     return () => {
       clearInterval(id)
-      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('storage', bump)
+      window.removeEventListener(GIASU_USER_REFRESH, bump)
     }
   }, [])
 
@@ -632,15 +635,20 @@ export default function DepositPage() {
     [billingCycle, clockTick],
   )
 
-  /** Gói «đang dùng» (ưu tiên gói vừa mua trong chu kỳ, không gộp với thẻ đang highlight) */
+  /** Gói «đang dùng»: chỉ theo active trên server (chu kỳ khớp); không dùng highlight mặc định (VIP) → tránh hết xu vẫn hiện «ĐANG DÙNG» nhầm. Gói 0đ: chỉ khi đó là highlight mặc định (học viên chưa có gói trả phí active). */
   const inUsePlanId = useMemo(() => {
     const pool = visiblePackages
     if (!pool.length) return ''
     if (lastPaidPlanIdForCycle && pool.some((p) => idEq(p.id, lastPaidPlanIdForCycle))) {
       return String(pool.find((p) => idEq(p.id, lastPaidPlanIdForCycle)).id)
     }
-    if (defaultHighlightResolvedId && pool.some((p) => idEq(p.id, defaultHighlightResolvedId))) {
-      return String(pool.find((p) => idEq(p.id, defaultHighlightResolvedId)).id)
+    if (
+      !lastPaidPlanIdForCycle &&
+      defaultHighlightResolvedId &&
+      pool.some((p) => idEq(p.id, defaultHighlightResolvedId))
+    ) {
+      const d = pool.find((p) => idEq(p.id, defaultHighlightResolvedId))
+      if (d && isFreeTierPackage(d)) return String(d.id)
     }
     return ''
   }, [visiblePackages, lastPaidPlanIdForCycle, defaultHighlightResolvedId, clockTick])
