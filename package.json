@@ -14,6 +14,8 @@
     "dev:all": "concurrently \"npm run dev\" \"npm run start:backend\"",
     "migrate:welcome100": "node scripts/migrate-welcome-100.cjs",
     "deploy": "node scripts/deploy_vps.cjs",
+    "vps:pull": "node scripts/vps_pull.cjs",
+    "vps:setup-git": "node scripts/vps_setup_git.cjs",
     "sync": "git add . && git commit -m \"auto-sync\" && git push origin main && node scripts/vps_pull.cjs"
   },
   "dependencies": {

@@ -537,5 +537,5 @@ export const QUICK_TIPS = [
   { tip: 'Dùng phím Win+D để thu gọn toàn bộ về màn hình Desktop.' },
   { tip: 'Nhấn Win+L để lập tức khoá màn hình bảo mật máy tính.' },
   { tip: 'Không bao giờ nhấp vào liên kết đáng ngờ trên Internet.' },
-  { tip: 'Áp dụng học trực tiếp và kèm cặp 1-1 để tối ưu hoá hiệu quả đào tạo.' },
+  { tip: 'Kết hợp video bài học, quiz và chat AI để ôn đều đặn — tối ưu hiệu quả học online.' },
 ]

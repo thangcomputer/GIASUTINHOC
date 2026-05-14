@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { LESSONS, CATEGORIES } from '../data/lessons'
-import { BookOpen, Search, Laptop, Globe, Shield, Folder, Clock, List, ArrowRight, MessageSquare, Play, CheckCircle, Trophy } from 'lucide-react'
+import { BookOpen, Search, Laptop, Globe, Shield, Folder, Clock, List, ArrowRight, MessageSquare, Play, Trophy, Briefcase } from 'lucide-react'
 import './LessonsPage.css'
 import { studentAuthHeaders } from '../lib/authFetch'
 import { fetchJsonIfOk } from '../lib/parseApiResponse.js'
@@ -12,7 +12,6 @@ export default function LessonsPage() {
   const [search, setSearch] = useState('')
   const [dbLessons, setDbLessons] = useState(LESSONS)
   const [progressMap, setProgressMap] = useState({}) // courseId → progress data
-  const navigate = useNavigate()
 
   // Lấy user
   const user = (() => { try { return JSON.parse(localStorage.getItem('giasu_user') || '{}') } catch { return {} } })()
@@ -99,6 +98,7 @@ export default function LessonsPage() {
             >
               {cat === 'Tất cả' && <Folder size={18} />}
               {cat === 'Cơ Bản' && <Laptop size={18} />}
+              {cat === 'Văn Phòng' && <Briefcase size={18} />}
               {cat === 'Internet' && <Globe size={18} />}
               {cat === 'An Toàn' && <Shield size={18} />}
               {cat}
@@ -115,83 +115,111 @@ export default function LessonsPage() {
         {/* Lessons Grid */}
         {filtered.length > 0 ? (
           <div className="lessons-grid">
-            {filtered.map((lesson, i) => (
-              <Link
-                key={lesson.id}
-                to={`/lessons/${lesson.id}`}
-                className="lesson-card glass-card"
-                style={{ animationDelay: `${i * 0.08}s`, cursor: 'pointer', textDecoration: 'none', display: 'flex', flexDirection: 'column' }}
-                id={`lesson-${lesson.id}`}
-              >
-                <div className="lesson-card-top">
-                  <div
-                    className="lesson-icon-big"
-                    style={{ background: `${lesson.color}22`, color: lesson.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    <BookOpen size={24} />
+            {filtered.map((lesson, i) => {
+              const prog = progressMap[lesson.id]
+              const ctaDone = prog?.isCompleted
+              const ctaProgress = prog && !prog.isCompleted
+              const ctaClass = `lesson-card-ctaBtn${ctaDone ? ' lesson-card-ctaBtn--gold' : ctaProgress ? ' lesson-card-ctaBtn--continue' : ''}`
+              let ctaInner = (
+                <>
+                  <Play size={16} className="lesson-card-ctaIcon" aria-hidden />
+                  Bắt đầu học
+                </>
+              )
+              if (ctaDone) {
+                ctaInner = (
+                  <>
+                    <Trophy size={16} className="lesson-card-ctaIcon" aria-hidden />
+                    Xem lại &amp; chứng chỉ
+                  </>
+                )
+              } else if (ctaProgress) {
+                ctaInner = (
+                  <>
+                    <Play size={16} className="lesson-card-ctaIcon" fill="currentColor" aria-hidden />
+                    Tiếp tục học
+                  </>
+                )
+              }
+
+              return (
+                <Link
+                  key={lesson.id}
+                  to={`/lessons/${lesson.id}`}
+                  className="lesson-card"
+                  style={{
+                    '--lesson-accent': lesson.color || '#6366f1',
+                    animationDelay: `${i * 0.06}s`,
+                  }}
+                  id={`lesson-${lesson.id}`}
+                >
+                  <span className="lesson-card-shine" aria-hidden />
+                  <div className="lesson-card-accent" aria-hidden />
+
+                  <div className="lesson-card-head">
+                    <div className="lesson-card-iconPlate">
+                      <BookOpen size={22} strokeWidth={2} aria-hidden />
+                    </div>
+                    <div className="lesson-card-badges">
+                      <span className="lesson-card-cat">{lesson.category}</span>
+                      <span className="lesson-card-level">
+                        <span className="lesson-card-levelDot" />
+                        {lesson.level}
+                      </span>
+                    </div>
                   </div>
-                  <div className="lesson-card-meta">
-                    <span className="badge badge-primary">{lesson.category}</span>
-                    <span className="lesson-level">
-                      <span className="level-dot" style={{ background: lesson.color }}></span>
-                      {lesson.level}
+
+                  <h3 className="lesson-title">{lesson.title}</h3>
+                  <p className="lesson-desc">{lesson.description}</p>
+
+                  {prog && (
+                    <div className="lesson-card-progress">
+                      <div className="lesson-card-progressTop">
+                        <span className="lesson-card-progressLabel">
+                          {prog.isCompleted ? 'Đã hoàn thành' : `Tiến độ ${prog.completedSteps?.length || 0}/${prog.totalSteps || lesson.steps.length} bài`}
+                        </span>
+                        <span className={`lesson-card-progressPct${prog.isCompleted ? ' is-done' : ''}`}>
+                          {prog.progressPct || 0}%
+                        </span>
+                      </div>
+                      <div className="lesson-card-progressBar">
+                        <div
+                          className={`lesson-card-progressFill${prog.isCompleted ? ' is-done' : ''}`}
+                          style={{ width: `${prog.progressPct || 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="lesson-tags">
+                    {lesson.tags.map(tag => (
+                      <span key={tag} className="lesson-tag">{tag}</span>
+                    ))}
+                  </div>
+
+                  <div className="lesson-card-stats">
+                    <span className="lesson-stat">
+                      <Clock size={15} strokeWidth={2} aria-hidden />
+                      {lesson.duration}
+                    </span>
+                    <span className="lesson-stat-sep" aria-hidden />
+                    <span className="lesson-stat">
+                      <List size={15} strokeWidth={2} aria-hidden />
+                      {lesson.steps.length} phần
                     </span>
                   </div>
-                </div>
 
-                <h3 className="lesson-title">{lesson.title}</h3>
-                <p className="lesson-desc">{lesson.description}</p>
-
-                {/* Progress bar nếu đã bắt đầu học */}
-                {progressMap[lesson.id] && (
-                  <div style={{ marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                      <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                        {progressMap[lesson.id].isCompleted ? '✅ Đã hoàn thành' : `Tiến độ: ${progressMap[lesson.id].completedSteps?.length || 0}/${progressMap[lesson.id].totalSteps || lesson.steps.length} bài`}
-                      </span>
-                      <span style={{ fontSize: '0.72rem', color: progressMap[lesson.id].isCompleted ? '#10b981' : '#6366f1', fontWeight: 700 }}>
-                        {progressMap[lesson.id].progressPct || 0}%
-                      </span>
-                    </div>
-                    <div style={{ height: '4px', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', borderRadius: '4px', width: `${progressMap[lesson.id].progressPct || 0}%`, background: progressMap[lesson.id].isCompleted ? 'linear-gradient(90deg,#10b981,#34d399)' : 'linear-gradient(90deg,#6366f1,#8b5cf6)', transition: 'width 0.4s' }} />
-                    </div>
-                  </div>
-                )}
-
-                <div className="lesson-tags">
-                  {lesson.tags.map(tag => (
-                    <span key={tag} className="lesson-tag">{tag}</span>
-                  ))}
-                </div>
-
-                <div className="lesson-footer">
-                  <span className="lesson-duration" style={{display: 'inline-flex', alignItems: 'center', gap: '4px'}}><Clock size={14} /> {lesson.duration}</span>
-                  <span className="lesson-steps" style={{display: 'inline-flex', alignItems: 'center', gap: '4px'}}><List size={14} /> {lesson.steps.length} phần</span>
-                  {progressMap[lesson.id]?.isCompleted
-                    ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#f59e0b', fontWeight: 700, fontSize: '0.78rem' }}><Trophy size={13} /> Xem chứng chỉ</span>
-                    : progressMap[lesson.id]
-                      ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#6366f1', fontWeight: 700, fontSize: '0.78rem' }}><Play size={13} fill="currentColor" /> Tiếp tục học</span>
-                      : <span className="lesson-cta" style={{display: 'inline-flex', alignItems: 'center', gap: '4px'}}>Chi tiết <ArrowRight size={14} /></span>
-                  }
-                </div>
-
-                {/* Nút Bắt đầu học nổi bật */}
-                {user?._id && lesson.steps.length > 0 && (
-                  <button
-                    onClick={e => { e.preventDefault(); navigate(`/lessons/${lesson.id}`); }}
-                    style={{ marginTop: '12px', width: '100%', padding: '10px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.88rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: progressMap[lesson.id]?.isCompleted ? 'rgba(245,158,11,0.1)' : progressMap[lesson.id] ? 'rgba(99,102,241,0.12)' : 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15))', color: progressMap[lesson.id]?.isCompleted ? '#f59e0b' : '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', transition: 'all 0.2s' }}
-                  >
-                    {progressMap[lesson.id]?.isCompleted
-                      ? <><Trophy size={15} /> Xem lại &amp; Chứng Chỉ</>
-                      : progressMap[lesson.id]
-                        ? <><Play size={15} fill="currentColor" /> Tiếp tục học</>
-                        : <><Play size={15} fill="currentColor" /> Bắt đầu học</>
-                    }
-                  </button>
-                )}
-              </Link>
-            ))}
+                  {user?._id && lesson.steps.length > 0 ? (
+                    <span className={ctaClass}>{ctaInner}</span>
+                  ) : (
+                    <span className="lesson-card-ctaGhost">
+                      Xem chương trình
+                      <ArrowRight size={16} strokeWidth={2} aria-hidden />
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
           </div>
         ) : (
           <div className="no-results glass-card">

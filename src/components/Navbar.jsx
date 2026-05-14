@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useCredits } from '../context/CreditContext'
 import './Navbar.css'
 
-import { Home, BookOpen, Target, User, Gem, Sparkles, MonitorPlay, ChevronUp, LayoutDashboard, Wallet, Compass } from 'lucide-react'
+import { Home, BookOpen, Target, User, Gem, Sparkles, MonitorPlay, ChevronUp, LayoutDashboard, Wallet, Compass, ArrowLeftRight } from 'lucide-react'
 import { LOW_CREDIT_WARN_THRESHOLD } from '../lib/creditsPolicy'
 import { clearStudentAuthStorage } from '../lib/sessionClient'
 
@@ -17,6 +17,9 @@ const navLinks = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, authOnly: true },
 ]
 
+const NAVBAR_GUEST_AUTH_SLOT = 'giasu_navbar_guest_auth_slot'
+const NAVBAR_AUTH_ROTATE_MS = 3000
+
 export default function Navbar() {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -26,6 +29,82 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userName, setUserName] = useState('')
   const [isAdminSession, setIsAdminSession] = useState(false)
+
+  const path = location.pathname
+  const onLoginPage = path === '/login'
+  const onRegisterPage = path === '/register'
+  const showGuestAuthToggle = !onLoginPage && !onRegisterPage
+
+  const [guestAuthSlot, setGuestAuthSlot] = useState(() => {
+    try {
+      const s = localStorage.getItem(NAVBAR_GUEST_AUTH_SLOT)
+      if (s === 'login' || s === 'register') return s
+    } catch {
+      /* ignore */
+    }
+    return 'register'
+  })
+
+  useEffect(() => {
+    if (onLoginPage) {
+      setGuestAuthSlot('login')
+      try {
+        localStorage.setItem(NAVBAR_GUEST_AUTH_SLOT, 'login')
+      } catch {
+        /* ignore */
+      }
+    } else if (onRegisterPage) {
+      setGuestAuthSlot('register')
+      try {
+        localStorage.setItem(NAVBAR_GUEST_AUTH_SLOT, 'register')
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [onLoginPage, onRegisterPage])
+
+  useEffect(() => {
+    if (!showGuestAuthToggle || isLoggedIn) return
+    const id = setInterval(() => {
+      setGuestAuthSlot((s) => {
+        const n = s === 'login' ? 'register' : 'login'
+        try {
+          localStorage.setItem(NAVBAR_GUEST_AUTH_SLOT, n)
+        } catch {
+          /* ignore */
+        }
+        return n
+      })
+    }, NAVBAR_AUTH_ROTATE_MS)
+    return () => clearInterval(id)
+  }, [showGuestAuthToggle, isLoggedIn])
+
+  const toggleGuestAuthSlot = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setGuestAuthSlot((s) => {
+      const n = s === 'login' ? 'register' : 'login'
+      try {
+        localStorage.setItem(NAVBAR_GUEST_AUTH_SLOT, n)
+      } catch {
+        /* ignore */
+      }
+      return n
+    })
+  }
+
+  let guestAuthHref = '/register'
+  let guestAuthLabel = 'Đăng ký'
+  if (onLoginPage) {
+    guestAuthHref = '/register'
+    guestAuthLabel = 'Đăng ký'
+  } else if (onRegisterPage) {
+    guestAuthHref = '/login'
+    guestAuthLabel = 'Đăng nhập'
+  } else {
+    guestAuthHref = guestAuthSlot === 'login' ? '/login' : '/register'
+    guestAuthLabel = guestAuthSlot === 'login' ? 'Đăng nhập' : 'Đăng ký'
+  }
 
   const refreshSession = () => {
     const token = localStorage.getItem('auth_token')
@@ -117,13 +196,41 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: '12px' }}>
-                <Link to="/login" className="nav-link" onClick={() => setMenuOpen(false)} style={{ color: '#cbd5e1', fontWeight: 500 }}>
-                  Đăng nhập
+              <div className="navbar-guestAuth">
+                <Link
+                  to={guestAuthHref}
+                  className="navbar-guestAuth-link btn-primary"
+                  onClick={() => setMenuOpen(false)}
+                  aria-label={guestAuthLabel}
+                >
+                  {showGuestAuthToggle ? (
+                    <span className="navbar-guestAuth-dualWrap" aria-live="polite">
+                      <span className={`navbar-guestAuth-dualTxt ${guestAuthSlot === 'login' ? 'is-on' : ''}`}>
+                        Đăng nhập
+                      </span>
+                      <span className={`navbar-guestAuth-dualTxt ${guestAuthSlot === 'register' ? 'is-on' : ''}`}>
+                        Đăng ký
+                      </span>
+                    </span>
+                  ) : (
+                    guestAuthLabel
+                  )}
                 </Link>
-                <Link to="/register" className="btn-primary nav-cta" onClick={() => setMenuOpen(false)} style={{ padding: '8px 20px', borderRadius: '50px' }}>
-                  Đăng ký
-                </Link>
+                {showGuestAuthToggle && (
+                  <button
+                    type="button"
+                    className="navbar-guestAuth-swap"
+                    onClick={toggleGuestAuthSlot}
+                    aria-label={
+                      guestAuthSlot === 'register'
+                        ? 'Chuyển sang hiển thị Đăng nhập'
+                        : 'Chuyển sang hiển thị Đăng ký'
+                    }
+                    title="Đổi giữa đăng nhập / đăng ký"
+                  >
+                    <ArrowLeftRight size={16} strokeWidth={2} aria-hidden />
+                  </button>
+                )}
               </div>
             )}
           </div>

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const HomepageConfigSchema = new mongoose.Schema({
   hero: {
-    title: { type: String, default: 'Gia Sư AI - Dạy kèm Tin học thông minh' }, // keep for fallback if needed
+    title: { type: String, default: 'Gia Sư Tin Học — Học tin học online' }, // keep for fallback if needed
     titleLine1: { type: String, default: 'Học Tin Học' },
     titleHighlight1: { type: String, default: 'Thông Minh' },
     titleLine2: { type: String, default: 'Cùng Gia Sư' },

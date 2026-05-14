@@ -2,9 +2,21 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import Navbar from '../components/Navbar'
-import { Gem, Sparkles, MessageSquare, ImageIcon, ClipboardList, GraduationCap, ArrowRight, Coins } from 'lucide-react'
+import {
+  Gem,
+  Sparkles,
+  MessageSquare,
+  ImageIcon,
+  ClipboardList,
+  GraduationCap,
+  ArrowRight,
+  Coins,
+  Wallet,
+} from 'lucide-react'
 import { WELCOME_COINS, LOW_CREDIT_WARN_THRESHOLD } from '../lib/creditsPolicy'
 import { fetchJsonIfOk } from '../lib/parseApiResponse.js'
+import { useCredits } from '../context/CreditContext'
+import './CreditsGuidePage.css'
 
 const COST_ROWS = [
   { key: 'chatFree', label: 'Chat AI (chế độ tiết kiệm)', icon: MessageSquare, hint: 'Phù hợp làm quen' },
@@ -19,6 +31,18 @@ const COST_ROWS = [
 
 export default function CreditsGuidePage() {
   const [settings, setSettings] = useState(null)
+  const { credits } = useCredits()
+  const [hasSession, setHasSession] = useState(false)
+
+  useEffect(() => {
+    try {
+      const t = localStorage.getItem('auth_token')
+      const u = localStorage.getItem('giasu_user')
+      setHasSession(!!(t && u))
+    } catch {
+      setHasSession(false)
+    }
+  }, [])
 
   useEffect(() => {
     fetch('/api/settings/public')
@@ -35,137 +59,170 @@ export default function CreditsGuidePage() {
   const packages = settings?.coinPackages || []
 
   return (
-    <div style={{ minHeight: '100vh', background: '#060912', color: '#e2e8f0' }}>
+    <div className="credits-page">
       <Helmet>
         <title>Xu học & gói nạp — Gia Sư Tin Học</title>
-        <meta name="description" content="Mỗi tài khoản mới nhận xu chào mừng để trải nghiệm AI. Xem bảng giá xu theo tính năng và các gói nạp." />
+        <meta
+          name="description"
+          content="Mỗi tài khoản mới nhận xu chào mừng để trải nghiệm AI. Xem bảng giá xu theo tính năng và các gói nạp."
+        />
       </Helmet>
+      <div className="credits-bg" aria-hidden />
       <Navbar />
 
-      <main style={{ maxWidth: '880px', margin: '0 auto', padding: '104px 24px 64px' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.35)', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 700, color: '#a5b4fc', marginBottom: '20px' }}>
-          <Gem size={14} /> Minh bạch xu học
-        </div>
-        <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 900, margin: '0 0 12px', letterSpacing: '-0.02em' }}>
-          Xu học là gì?
-        </h1>
-        <p style={{ color: '#94a3b8', lineHeight: 1.75, margin: '0 0 28px', fontSize: '1.02rem' }}>
-          <strong style={{ color: '#e2e8f0' }}>Xu</strong> là đơn vị dùng cho các tính năng AI (hỏi đáp, tạo đề, chấm bài, minh họa…). Bạn có{' '}
-          <strong style={{ color: '#fbbf24' }}>{welcome} xu miễn phí</strong> khi tạo tài khoản mới để làm quen. Hết xu, bạn có thể{' '}
-          <Link to="/deposit" style={{ color: '#818cf8' }}>nạp thêm</Link> theo gói — không giới hạn thời gian dùng số xu đã có.
-        </p>
+      <main className="credits-main">
+        {hasSession && (
+          <div className="credits-wallet">
+            <div className="credits-wallet-left">
+              <div className="credits-wallet-icon">
+                <Wallet size={22} strokeWidth={2} aria-hidden />
+              </div>
+              <div>
+                <div className="credits-wallet-label">Số xu hiện tại</div>
+                <div className="credits-wallet-value">
+                  {credits}
+                  <span>xu</span>
+                </div>
+              </div>
+            </div>
+            <Link className="credits-wallet-link" to="/deposit">
+              <Gem size={18} strokeWidth={2} aria-hidden />
+              Nạp xu
+            </Link>
+          </div>
+        )}
 
-        <section
-          style={{
-            background: 'rgba(15,23,42,0.65)',
-            border: '1px solid rgba(99,102,241,0.2)',
-            borderRadius: '16px',
-            padding: '22px 24px',
-            marginBottom: '28px',
-          }}
-        >
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '0 0 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Coins size={20} color="#fbbf24" /> Bảng giá xu (theo cấu hình hệ thống)
-          </h2>
-          <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '0 0 16px' }}>
-            Số xu có thể được admin điều chỉnh trong cài đặt. Giá trị hiển thị là mức hiện tại.
-          </p>
-          <div style={{ display: 'grid', gap: '10px' }}>
+        <header className="credits-hero">
+          <div>
+            <div className="credits-pill">
+              <Gem size={15} strokeWidth={2} aria-hidden />
+              Minh bạch xu học
+            </div>
+            <h1>Xu học &amp; gói nạp</h1>
+            <p className="credits-hero-lead">
+              <strong>Xu</strong> là đơn vị dùng cho các tính năng AI (hỏi đáp, tạo đề, chấm bài, minh họa…). Bạn có{' '}
+              <strong className="credits-gold">{welcome} xu miễn phí</strong> khi tạo tài khoản mới để làm quen. Hết
+              xu, bạn có thể <Link to="/deposit">nạp thêm</Link> theo gói — không giới hạn thời gian dùng số xu đã có.
+            </p>
+          </div>
+
+          <div className="credits-visual" aria-hidden>
+            <div className="credits-visual-glow" />
+            <span className="credits-coin-float credits-coin-float--a">
+              <Coins size={16} strokeWidth={2.2} />
+            </span>
+            <span className="credits-coin-float credits-coin-float--b">
+              <Gem size={14} strokeWidth={2.2} />
+            </span>
+            <span className="credits-coin-float credits-coin-float--c">
+              <Coins size={13} strokeWidth={2.2} />
+            </span>
+            <div className="credits-coin-stack">
+              <div className="credits-coin credits-coin--lg">
+                <Gem size={40} strokeWidth={2} className="credits-coin-gem" aria-hidden />
+              </div>
+              <div className="credits-coin credits-coin--md">
+                <Gem size={26} strokeWidth={2} className="credits-coin-gem" aria-hidden />
+              </div>
+              <div className="credits-coin credits-coin--sm">
+                <Coins size={22} strokeWidth={2} className="credits-coin-gem" aria-hidden />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section className="credits-section credits-section--accent">
+          <div className="credits-section-head">
+            <div className="credits-section-icon credits-section-icon--gold">
+              <Coins size={22} strokeWidth={2} aria-hidden />
+            </div>
+            <div>
+              <h2>Bảng giá xu</h2>
+              <p className="credits-section-sub">Theo cấu hình hệ thống — admin có thể điều chỉnh. Giá hiển thị là mức hiện tại.</p>
+            </div>
+          </div>
+          <div className="credits-cost-grid">
             {COST_ROWS.map(({ key, label, icon: Icon, hint }) => {
               const v = aiCost[key]
               const display = v === undefined || v === null ? '—' : `${v} xu`
               return (
-                <div
-                  key={key}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    padding: '12px 14px',
-                    background: 'rgba(255,255,255,0.03)',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                  }}
-                >
-                  <Icon size={20} style={{ color: '#818cf8', flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>{label}</div>
-                    {hint && <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px' }}>{hint}</div>}
+                <div key={key} className="credits-cost-row">
+                  <div className="credits-cost-icon">
+                    <Icon size={19} strokeWidth={2} aria-hidden />
                   </div>
-                  <div style={{ fontWeight: 800, color: '#fbbf24', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{display}</div>
+                  <div className="credits-cost-body">
+                    <div className="credits-cost-title">{label}</div>
+                    {hint && <div className="credits-cost-hint">{hint}</div>}
+                  </div>
+                  <div className="credits-cost-xu">
+                    <Gem size={15} strokeWidth={2} aria-hidden />
+                    {display}
+                  </div>
                 </div>
               )
             })}
           </div>
         </section>
 
-        <section
-          style={{
-            background: 'rgba(15,23,42,0.5)',
-            border: '1px solid rgba(52,211,153,0.25)',
-            borderRadius: '16px',
-            padding: '22px 24px',
-            marginBottom: '28px',
-          }}
-        >
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '0 0 8px' }}>Gợi ý cho người mới</h2>
-          <ul style={{ margin: 0, paddingLeft: '1.15rem', color: '#94a3b8', lineHeight: 1.7, fontSize: '0.95rem' }}>
-            <li>Bắt đầu với <strong style={{ color: '#e2e8f0' }}>bài học có video/lý thuyết</strong> — không tốn xu.</li>
-            <li>Dùng <strong style={{ color: '#e2e8f0' }}>chế độ chat tiết kiệm</strong> (0 xu) khi chỉ cần gợi ý ngắn.</li>
-            <li>Khi số dư còn khoảng <strong style={{ color: '#fbbf24' }}>{warnAt} xu</strong>, hệ thống sẽ nhắc bạn nạp thêm.</li>
+        <section className="credits-section credits-section--tips credits-tips">
+          <div className="credits-section-head">
+            <div className="credits-section-icon">
+              <Sparkles size={20} strokeWidth={2} aria-hidden />
+            </div>
+            <div>
+              <h2>Gợi ý cho người mới</h2>
+              <p className="credits-section-sub">Tối ưu xu khi mới bắt đầu.</p>
+            </div>
+          </div>
+          <ul>
+            <li>
+              Bắt đầu với <strong>bài học có video/lý thuyết</strong> — không tốn xu.
+            </li>
+            <li>
+              Dùng <strong>chế độ chat tiết kiệm</strong> (0 xu) khi chỉ cần gợi ý ngắn.
+            </li>
+            <li>
+              Khi số dư còn khoảng <strong className="credits-gold">{warnAt} xu</strong>, hệ thống sẽ nhắc bạn nạp thêm.
+            </li>
           </ul>
         </section>
 
         {packages.length > 0 && (
-          <section style={{ marginBottom: '32px' }}>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '0 0 16px' }}>Gói nạp xu</h2>
-            <div style={{ display: 'grid', gap: '12px' }}>
+          <section className="credits-section">
+            <div className="credits-packages-head">
+              <div className="credits-section-icon credits-section-icon--gold">
+                <Coins size={22} strokeWidth={2} aria-hidden />
+              </div>
+              <h2>Gói nạp xu</h2>
+            </div>
+            <div className="credits-package-grid">
               {packages.map((p) => (
-                <div
-                  key={p.id}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: '16px',
-                    padding: '14px 18px',
-                    background: 'rgba(255,255,255,0.04)',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                  }}
-                >
-                  <div>
-                    <div style={{ fontWeight: 700 }}>{p.label}</div>
-                    <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-                      {p.coins} xu{p.bonus && p.bonus !== '0%' ? ` · ${p.bonus}` : ''}
+                <div key={p.id} className="credits-package-card">
+                  <div className="credits-package-left">
+                    <div className="credits-package-coin">
+                      <Gem size={20} strokeWidth={2} aria-hidden />
+                    </div>
+                    <div>
+                      <div className="credits-package-title">{p.label}</div>
+                      <div className="credits-package-meta">
+                        <Coins size={14} strokeWidth={2} aria-hidden />
+                        {p.coins} xu
+                        {p.bonus && p.bonus !== '0%' ? ` · ${p.bonus}` : ''}
+                      </div>
                     </div>
                   </div>
-                  <div style={{ fontWeight: 800, color: '#a5b4fc' }}>{p.price}</div>
+                  <div className="credits-package-price">{p.price}</div>
                 </div>
               ))}
             </div>
-            <Link
-              to="/deposit"
-              style={{
-                marginTop: '18px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 22px',
-                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '12px',
-                fontWeight: 800,
-                fontSize: '0.92rem',
-              }}
-            >
-              Đi tới nạp xu <ArrowRight size={18} />
+            <Link className="credits-deposit-cta" to="/deposit">
+              Đi tới nạp xu
+              <ArrowRight size={18} strokeWidth={2.5} aria-hidden />
             </Link>
           </section>
         )}
 
-        <p style={{ fontSize: '0.82rem', color: '#64748b', margin: 0 }}>
+        <p className="credits-footnote">
           Học viên đã đăng ký trước khi đổi chính sách có thể có số xu khác theo lịch sử tài khoản.
         </p>
       </main>

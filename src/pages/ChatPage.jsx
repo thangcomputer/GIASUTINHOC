@@ -684,7 +684,7 @@ export default function ChatPage() {
             <div className="chat-welcome">
               <div>
                 <h1 className="welcome-title">Gặp gỡ Gia Sư AI của bạn</h1>
-                <p className="welcome-subtitle">Trợ lý chuyên nghiệp — trả lời rõ ràng, có cấu trúc · Đào tạo tin học 1 kèm 1 (trực tiếp &amp; từ xa)</p>
+                <p className="welcome-subtitle">Trợ lý chuyên nghiệp — trả lời rõ ràng, có cấu trúc · Học tin học online cùng Gia Sư Tin Học</p>
               </div>
 
               <div className="welcome-input-wrap">
@@ -898,7 +898,7 @@ export default function ChatPage() {
                   </div>
                 </div>
                 <div className="input-hint">
-                  <Shield size={11} /> Đào tạo 1 kèm 1 · Trực tiếp &amp; từ xa
+                  <Shield size={11} /> Gia Sư Tin Học · Học online có lộ trình
                 </div>
               </div>
             </>

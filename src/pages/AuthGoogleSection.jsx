@@ -57,10 +57,7 @@ export default function AuthGoogleSection({
         setLoading(false)
       }
     },
-    onError: () =>
-      setErrorMsg(
-        'Đăng nhập Google thất bại. Nếu Google báo origin_mismatch: vào Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client ID → Authorized JavaScript origins → thêm đúng URL trang này (cả http/https và cổng, ví dụ http://localhost:5173 và http://127.0.0.1:5173).',
-      ),
+    onError: () => setErrorMsg('Đăng nhập Google thất bại. Vui lòng thử lại.'),
   })
 
   return (
@@ -77,7 +74,7 @@ export default function AuthGoogleSection({
         onClick={() => handleGoogleLogin()}
         disabled={loading}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
             fill="#4285F4"
@@ -97,13 +94,6 @@ export default function AuthGoogleSection({
         </svg>
         Tiếp tục với Google
       </button>
-
-      <p className="authPage-googleHint">
-        <strong>origin_mismatch:</strong> Google Cloud → Credentials → OAuth client (Web) →{' '}
-        <strong>Authorized JavaScript origins</strong> — thêm <em>đúng</em> URL trên thanh địa chỉ (vd.{' '}
-        <code>http://localhost:5173</code> <em>và</em> <code>http://127.0.0.1:5173</code> là hai dòng riêng).
-        Nếu app đang <strong>Testing</strong>: OAuth consent screen → <strong>Test users</strong> — thêm email Google của bạn.
-      </p>
     </>
   )
 }

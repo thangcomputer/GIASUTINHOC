@@ -122,7 +122,7 @@ export default function AdminDashboard() {
     logoTagline: 'Nền tảng học tập thông minh',
     logoUrl:     '',
     col1Title: 'Về Chúng Tôi',
-    col1Lines: 'Chuyên đào tạo Tin học 1 kèm 1\nGiảng viên kinh nghiệm 10+ năm\nHọc mọi lúc, mọi nơi với AI',
+    col1Lines: 'Học tin học online cùng Gia Sư Tin Học\nGiảng viên kinh nghiệm 10+ năm\nHọc mọi lúc, mọi nơi với AI',
     col2Title: 'Liên Kết Nhanh',
     col2Links: '/\tTrang Chủ\n/lessons\tKhoá Học\n/chat\tChat AI\n/quiz\tThi Trắc Nghiệm',
     col3Title: 'Liên Hệ',

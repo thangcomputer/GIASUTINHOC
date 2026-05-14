@@ -599,3 +599,83 @@
   color: #64748b;
   font-weight: 600;
 }
+
+/* ── Video: cảnh báo trước quiz + thanh mốc kiểm tra ───────────────── */
+.lesson-quiz-prewarn {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 5;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e0e7ff;
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.35), rgba(30, 27, 75, 0.75));
+  border: 1px solid rgba(165, 180, 252, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.lesson-video-checkpoint-rail {
+  padding: 10px 14px 12px;
+  background: rgba(15, 23, 42, 0.96);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lesson-video-checkpoint-rail__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.lesson-video-checkpoint-rail__label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.lesson-video-checkpoint-rail__hint {
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+.lesson-video-checkpoint-rail__track {
+  position: relative;
+  height: 22px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lesson-video-checkpoint-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(15, 23, 42, 0.95);
+  background: linear-gradient(145deg, #f59e0b, #ea580c);
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lesson-video-checkpoint-marker:hover,
+.lesson-video-checkpoint-marker:focus-visible {
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.55);
+  outline: none;
+}
+
+.lesson-video-checkpoint-marker--done {
+  background: linear-gradient(145deg, #34d399, #059669);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35);
+}

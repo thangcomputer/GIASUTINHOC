@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
           title: 'Cách Của Chúng Tôi',
           subtitle: 'Hệ Sinh Thái Học Tập Toàn Diện',
           items: [
-            { title: '1 Kèm 1 Trực Tiếp', desc: 'Học viên được học 1 kèm 1 với giáo viên chuyên nghiệp.', badge: 'Phổ Biến Nhất', badgeColor: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)', iconName: 'HeartHandshake', features: ['Lịch học linh hoạt', 'Giáo viên tận tâm'], link: '/chat?mode=basic', cta: 'Đặt Lịch Học' },
+            { title: 'Học online có lộ trình', desc: 'Video, quiz và chat AI — học cùng gia sư tin học, ôn mọi lúc.', badge: 'Phổ Biến Nhất', badgeColor: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)', iconName: 'HeartHandshake', features: ['Học mọi lúc', 'Tiến độ rõ ràng'], link: '/lessons', cta: 'Vào bài học' },
             { title: 'Học Cùng Gia Sư AI', desc: 'Trò chuyện trực tiếp với AI thông minh, đặt câu hỏi.', badge: 'AI - 24/7', badgeColor: '#06b6d4', gradient: 'linear-gradient(135deg, #06b6d4, #0284c7)', iconName: 'Bot', features: ['Hỏi đáp không giới hạn', 'Giải thích dễ hiểu'], link: '/chat', cta: 'Chat Với AI Ngay' },
             { title: 'Bài Học Có Cấu Trúc', desc: 'Hệ thống bài học được thiết kế theo lộ trình.', badge: 'Tự Học', badgeColor: '#10b981', gradient: 'linear-gradient(135deg, #10b981, #059669)', iconName: 'BookOpen', features: ['Video chất lượng cao', 'Bài tập thực hành'], link: '/lessons', cta: 'Xem Bài Học' },
             { title: 'Luyện Đề & Kiểm Tra', desc: 'Thư viện đề thi MOS, IC3.', badge: 'Luyện Tập', badgeColor: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #ef4444)', iconName: 'Target', features: ['Đề thi chuẩn MOS', 'Thống kê điểm số'], link: '/quiz', cta: 'Luyện Thi Ngay' }

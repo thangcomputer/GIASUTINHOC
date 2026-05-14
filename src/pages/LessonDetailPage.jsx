@@ -50,6 +50,11 @@ function formatVideoTime(sec) {
   return `${m}:${r.toString().padStart(2, '0')}`;
 }
 
+/** Cảnh báo nhẹ trước khi tới mốc quiz (giây). */
+const QUIZ_PREWARN_WINDOW_SEC = 4;
+/** Tua tới trước mốc ít nhất bấy nhiêu giây mới coi là “nhảy cóc” tới. */
+const SEEK_FORWARD_SKIP_MIN_SEC = 0.75;
+
 function escapeForSwalHtml(s) {
   return String(s || '')
     .replace(/&/g, '&amp;')
@@ -275,8 +280,29 @@ export default function LessonDetailPage() {
   const [playbackRate, setPlaybackRate] = useState(1)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [transcriptQuery, setTranscriptQuery] = useState('')
+  const [videoDuration, setVideoDuration] = useState(0)
+  /** { secondsLeft, timeInSeconds } | null — gợi ý trước khi video dừng tại mốc quiz */
+  const [quizPrewarn, setQuizPrewarn] = useState(null)
   const playerRef = useRef(null)
   const lastWatchPostRef = useRef(0)
+  const lastTimeRef = useRef(0)
+  const seekOriginRef = useRef(null)
+  const skipSeekMissCheckRef = useRef(false)
+  /** Tránh coi seeked lúc khởi tải là tua qua checkpoint */
+  const userSeenVideoRef = useRef(false)
+
+  const sortedQuizCheckpoints = useMemo(() => {
+    if (!lesson?.steps?.[currentStep]) return []
+    const cps = lesson.steps[currentStep].quizCheckpoints || []
+    return [...cps]
+      .filter(
+        (cp) =>
+          Array.isArray(cp?.questions) &&
+          cp.questions.length > 0 &&
+          Number.isFinite(Number(cp.timeInSeconds)),
+      )
+      .sort((a, b) => Number(a.timeInSeconds) - Number(b.timeInSeconds))
+  }, [lesson, currentStep])
   
   const user = (() => { try { return JSON.parse(localStorage.getItem('giasu_user') || '{}') } catch { return {} } })()
 
@@ -398,6 +424,12 @@ export default function LessonDetailPage() {
     setQuizWrongCount(0);
     setTextQuizInput('');
     setOrderPermutation(null);
+    setVideoDuration(0);
+    setQuizPrewarn(null);
+    lastTimeRef.current = 0;
+    seekOriginRef.current = null;
+    skipSeekMissCheckRef.current = false;
+    userSeenVideoRef.current = false;
   }, [currentStep]);
 
   // Xáo thứ tự câu kéo-thả khi đổi câu trong checkpoint
@@ -448,6 +480,11 @@ export default function LessonDetailPage() {
   if (!lesson) return null;
 
   const step = lesson.steps[currentStep];
+
+  const timelineEndSec =
+    videoDuration > 2
+      ? videoDuration
+      : Math.max(60, ...sortedQuizCheckpoints.map((c) => Number(c.timeInSeconds) + 15));
 
   
   const checkAndShowExamPopup = (courseId) => {
@@ -504,27 +541,65 @@ export default function LessonDetailPage() {
   }
   const handlePrev = () => { if (!isFirstStep) { setCurrentStep(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }) } }
 
+  /** @returns {boolean} true nếu vừa mở overlay quiz */
   const handleTimeUpdate = (e) => {
-    const checkpoints = step?.quizCheckpoints;
-    if (!checkpoints || checkpoints.length === 0) return;
+    if (!sortedQuizCheckpoints.length) return false;
     const t = e.target?.currentTime ?? 0;
-    if (activeCheckpoint) return;
+    if (activeCheckpoint) return false;
 
-    const sorted = [...checkpoints].sort((a, b) => a.timeInSeconds - b.timeInSeconds);
-    for (const cp of sorted) {
+    for (const cp of sortedQuizCheckpoints) {
       const cpKey = `cp-${cp.timeInSeconds}`;
-      if (t >= cp.timeInSeconds && !completedCheckpoints.has(cpKey) && cp.questions?.length > 0) {
+      if (t >= cp.timeInSeconds && !completedCheckpoints.has(cpKey)) {
         setVideoPlaying(false);
         setActiveCheckpoint(cp);
         setCurrentQuestionIndex(0);
-        return;
+        return true;
       }
     }
+    return false;
   };
 
   const handlePlayerProgress = (st) => {
     const playedSeconds = st?.playedSeconds ?? 0;
-    handleTimeUpdate({ target: { currentTime: playedSeconds } });
+    lastTimeRef.current = playedSeconds;
+    if (playedSeconds > 0.5) userSeenVideoRef.current = true;
+
+    const openedCheckpoint = handleTimeUpdate({ target: { currentTime: playedSeconds } });
+
+    if (openedCheckpoint) {
+      setQuizPrewarn(null);
+    } else if (!sortedQuizCheckpoints.length || activeCheckpoint) {
+      setQuizPrewarn(null);
+    } else {
+      const t = playedSeconds;
+      let nextPrewarn = null;
+      for (const cp of sortedQuizCheckpoints) {
+        const cpKey = `cp-${cp.timeInSeconds}`;
+        if (completedCheckpoints.has(cpKey)) continue;
+        const dt = Number(cp.timeInSeconds) - t;
+        if (dt > 0 && dt <= QUIZ_PREWARN_WINDOW_SEC) {
+          nextPrewarn = {
+            timeInSeconds: Number(cp.timeInSeconds),
+            secondsLeft: Math.max(1, Math.ceil(dt)),
+          };
+          break;
+        }
+        if (dt > QUIZ_PREWARN_WINDOW_SEC) break;
+      }
+      setQuizPrewarn((prev) => {
+        if (!nextPrewarn && !prev) return prev;
+        if (
+          nextPrewarn &&
+          prev &&
+          nextPrewarn.timeInSeconds === prev.timeInSeconds &&
+          nextPrewarn.secondsLeft === prev.secondsLeft
+        ) {
+          return prev;
+        }
+        return nextPrewarn;
+      });
+    }
+
     if (!user?._id || !lesson?.id || !isCurrentStepFree || activeCheckpoint) return;
     const now = Date.now();
     if (now - lastWatchPostRef.current < 14000) return;
@@ -550,6 +625,79 @@ export default function LessonDetailPage() {
     }
     setVideoPlaying(true);
     setSidebarOpen(false);
+  };
+
+  const onVideoSeeking = (e) => {
+    if (!isCurrentStepFree) return;
+    const el = e?.currentTarget;
+    const t =
+      el && typeof el.currentTime === 'number' && Number.isFinite(el.currentTime)
+        ? el.currentTime
+        : lastTimeRef.current;
+    seekOriginRef.current = t;
+  };
+
+  const onVideoSeeked = (e) => {
+    const el = e?.currentTarget ?? playerRef.current;
+    const newT =
+      el && typeof el.currentTime === 'number' && Number.isFinite(el.currentTime)
+        ? el.currentTime
+        : lastTimeRef.current;
+
+    if (skipSeekMissCheckRef.current) {
+      skipSeekMissCheckRef.current = false;
+      lastTimeRef.current = newT;
+      seekOriginRef.current = null;
+      return;
+    }
+
+    if (!isCurrentStepFree || !sortedQuizCheckpoints.length) {
+      lastTimeRef.current = newT;
+      seekOriginRef.current = null;
+      return;
+    }
+
+    if (!userSeenVideoRef.current) {
+      lastTimeRef.current = newT;
+      seekOriginRef.current = null;
+      return;
+    }
+
+    const oldT = seekOriginRef.current != null ? seekOriginRef.current : lastTimeRef.current;
+    seekOriginRef.current = null;
+    lastTimeRef.current = newT;
+
+    if (newT <= oldT + SEEK_FORWARD_SKIP_MIN_SEC) return;
+
+    const missed = sortedQuizCheckpoints.filter((cp) => {
+      const cpKey = `cp-${cp.timeInSeconds}`;
+      const tm = Number(cp.timeInSeconds);
+      return tm > oldT + 0.05 && tm < newT - 0.05 && !completedCheckpoints.has(cpKey);
+    });
+    if (!missed.length) return;
+
+    setVideoPlaying(false);
+    const labels = missed.map((cp) => formatVideoTime(cp.timeInSeconds)).join(', ');
+    Swal.fire({
+      title: 'Đã tua qua điểm kiểm tra',
+      html: `<p style="color:#94a3b8;line-height:1.65">Có <strong style="color:#e2e8f0">${missed.length}</strong> mốc kiểm tra chưa làm (${labels}). Video đã tạm dừng.</p>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Quay lại mốc đầu tiên',
+      cancelButtonText: 'Làm kiểm tra tại vị trí hiện tại',
+      confirmButtonColor: '#6366f1',
+      cancelButtonColor: '#475569',
+    }).then((res) => {
+      if (res.isConfirmed) {
+        seekToSeconds(Math.max(0, missed[0].timeInSeconds - 0.5));
+      } else {
+        setActiveCheckpoint(missed[0]);
+        setCurrentQuestionIndex(0);
+        setQuizWrongCount(0);
+        setTextQuizInput('');
+        setOrderPermutation(null);
+      }
+    });
   };
 
   const closeCheckpointAndResume = () => {
@@ -993,12 +1141,23 @@ export default function LessonDetailPage() {
                           const playedSeconds = e?.currentTarget?.currentTime ?? 0;
                           handlePlayerProgress({ playedSeconds });
                         }}
+                        onLoadedMetadata={(e) => {
+                          const d = e?.currentTarget?.duration;
+                          if (typeof d === 'number' && Number.isFinite(d) && d > 2) setVideoDuration(d);
+                        }}
+                        onSeeking={onVideoSeeking}
+                        onSeeked={onVideoSeeked}
                         onEnded={() => markStepDone(currentStep)}
                         width="100%"
                         height="100%"
                         style={{ position: 'absolute', top: 0, left: 0 }}
                         config={{ youtube: { playerVars: { cc_load_policy: 1 } } }}
                       />
+                      {quizPrewarn && !activeCheckpoint && (
+                        <div className="lesson-quiz-prewarn" role="status" aria-live="polite">
+                          Sắp có kiểm tra tại {formatVideoTime(quizPrewarn.timeInSeconds)} — còn khoảng {quizPrewarn.secondsLeft}s
+                        </div>
+                      )}
                     </div>
                   ) : (
                     /* Module bị khóa: thumbnail mờ */
@@ -1012,6 +1171,34 @@ export default function LessonDetailPage() {
                     </div>
                   )}
                 </div>
+
+                {isCurrentStepFree && sortedQuizCheckpoints.length > 0 && (
+                  <div className="lesson-video-checkpoint-rail" role="group" aria-label="Mốc kiểm tra trên video">
+                    <div className="lesson-video-checkpoint-rail__head">
+                      <span className="lesson-video-checkpoint-rail__label">Mốc kiểm tra</span>
+                      <span className="lesson-video-checkpoint-rail__hint">Bấm chấm để nhảy tới</span>
+                    </div>
+                    <div className="lesson-video-checkpoint-rail__track">
+                      {sortedQuizCheckpoints.map((cp) => {
+                        const cpKey = `cp-${cp.timeInSeconds}`;
+                        const done = completedCheckpoints.has(cpKey);
+                        const denom = timelineEndSec > 0 ? timelineEndSec : 1;
+                        const pct = Math.min(100, Math.max(0, (Number(cp.timeInSeconds) / denom) * 100));
+                        return (
+                          <button
+                            key={cpKey}
+                            type="button"
+                            className={`lesson-video-checkpoint-marker${done ? ' lesson-video-checkpoint-marker--done' : ''}`}
+                            style={{ left: `${pct}%` }}
+                            title={`Kiểm tra · ${formatVideoTime(cp.timeInSeconds)}${done ? ' (đã xong)' : ''}`}
+                            aria-label={`Nhảy tới kiểm tra lúc ${formatVideoTime(cp.timeInSeconds)}${done ? ', đã hoàn thành' : ', chưa làm'}`}
+                            onClick={() => seekToSeconds(Math.max(0, Number(cp.timeInSeconds) - 0.25))}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {isCurrentStepFree && (
                   <div className="lesson-video-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', padding: '12px 14px', background: 'rgba(15,23,42,0.94)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
@@ -1125,7 +1312,7 @@ export default function LessonDetailPage() {
                         <Play size={20} color={lesson.color}/>
                         <h3 style={{ margin: 0, color: '#e2e8f0', fontSize: '1.1rem', fontWeight: 700 }}>Video Hướng Dẫn Thực Hành</h3>
                       </div>
-                      <p style={{ color: '#64748b', margin: '0 0 20px', fontSize: '0.9rem' }}>AI Avatar dẫn dắt từng thao tác trực quan — phong cách học 1 kèm 1.</p>
+                      <p style={{ color: '#64748b', margin: '0 0 20px', fontSize: '0.9rem' }}>AI Avatar dẫn dắt từng thao tác trực quan — học online cùng gia sư tin học.</p>
                       {isCurrentStepFree ? (
                         <div style={{ borderRadius: '12px', overflow: 'hidden', background: '#000', position: 'relative', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <p style={{ color: '#94a3b8', fontSize: '1rem' }}>☝️ Video hướng dẫn chi tiết đang được chiếu ở khung hình phía trên.</p>

@@ -101,7 +101,7 @@ Danh sách các câu làm sai:
 ${JSON.stringify(wrongAnswers)}
 
 Yêu cầu phân tích: Dựa trên tư cách là Gia sư chuyên gia của trung tâm đào tạo tin học thực chiến, hãy đưa ra lời nhận xét thấu cảm, giải thích cặn kẽ những nguyên nhân sai, và định hướng lộ trình ôn tập.
-TUYỆT ĐỐI TUÂN THỦ: Sử dụng ngôn ngữ chuẩn mực của trung tâm đào tạo 1 kèm 1 trực tiếp và từ xa. Tuyệt đối không dùng biểu tượng cảm xúc (emoji). Không thêm các lời chào hỏi thừa thãi.`;
+TUYỆT ĐỐI TUÂN THỦ: Sử dụng ngôn ngữ chuẩn mực của Gia Sư Tin Học — trung tâm đào tạo tin học online. Tuyệt đối không dùng biểu tượng cảm xúc (emoji). Không thêm các lời chào hỏi thừa thãi.`;
         try {
           const result = await model.generateContent(prompt);
           aiFeedback = result.response.text();

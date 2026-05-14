@@ -1,27 +1,69 @@
 import Swal from 'sweetalert2';
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import {
   Lock, HelpCircle, ArrowRight, Loader2, Eye, EyeOff, User, AtSign,
-  GraduationCap, Coins, Zap, Award, Smartphone, AlertCircle,
+  GraduationCap, Coins, Zap, Award, Smartphone, AlertCircle, Sparkles,
 } from 'lucide-react'
 import { WELCOME_COINS } from '../lib/creditsPolicy';
 import { parseJsonResponse } from '../lib/parseApiResponse.js';
 import { isGoogleOAuthConfigured } from '../lib/googleAuthEnv.js';
 import AuthGoogleSection from './AuthGoogleSection.jsx';
+import { AUTH_BRAND_VISUAL } from '../constants/authBrandVisual.js';
 import './AuthPage.css';
 
 const POST_LOGIN_REDIRECT_KEY = 'giasu_post_login_redirect'
+
+/** Ghi nhớ đăng nhập (localStorage) — chỉ nên dùng trên thiết bị cá nhân. */
+const AUTH_REMEMBER_FLAG = 'giasu_auth_remember_login'
+const AUTH_SAVED_IDENTIFIER = 'giasu_auth_saved_identifier'
+const AUTH_SAVED_PASSWORD = 'giasu_auth_saved_password'
+
+function clearSavedLoginCredentials() {
+  try {
+    localStorage.removeItem(AUTH_REMEMBER_FLAG)
+    localStorage.removeItem(AUTH_SAVED_IDENTIFIER)
+    localStorage.removeItem(AUTH_SAVED_PASSWORD)
+  } catch {
+    /* ignore */
+  }
+}
+
+function saveLoginCredentials(identifierVal, passwordVal) {
+  try {
+    localStorage.setItem(AUTH_REMEMBER_FLAG, '1')
+    localStorage.setItem(AUTH_SAVED_IDENTIFIER, identifierVal)
+    localStorage.setItem(AUTH_SAVED_PASSWORD, passwordVal)
+  } catch {
+    /* ignore */
+  }
+}
+
+function loadSavedLoginCredentials() {
+  try {
+    if (localStorage.getItem(AUTH_REMEMBER_FLAG) !== '1') return null
+    return {
+      identifier: localStorage.getItem(AUTH_SAVED_IDENTIFIER) || '',
+      password: localStorage.getItem(AUTH_SAVED_PASSWORD) || '',
+    }
+  } catch {
+    return null
+  }
+}
 
 export default function AuthPage() {
   const [searchParams] = useSearchParams()
   const location = useLocation()
   const navigate = useNavigate()
   const [sessionBanner, setSessionBanner] = useState('')
-  const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login'
   const redirectTo = searchParams.get('redirect') || '/'
-  const [mode, setMode] = useState(initialMode)
+  const [mode, setMode] = useState(() =>
+    location.pathname === '/register' || searchParams.get('mode') === 'register'
+      ? 'register'
+      : 'login',
+  )
+  const prevAuthRouteKey = useRef(null)
   const [identifier, setIdentifier] = useState('')
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
@@ -30,6 +72,7 @@ export default function AuthPage() {
   const [errorMsg, setErrorMsg] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [showPass2, setShowPass2] = useState(false)
+  const [rememberLogin, setRememberLogin] = useState(false)
 
   useEffect(() => {
     const msg = location.state?.sessionMessage
@@ -37,6 +80,36 @@ export default function AuthPage() {
     setSessionBanner(msg)
     navigate(`${location.pathname}${location.search}`, { replace: true, state: {} })
   }, [location.state, location.pathname, location.search, navigate])
+
+  useEffect(() => {
+    const rk = `${location.pathname}?${searchParams.toString()}`
+    const next =
+      location.pathname === '/register' || searchParams.get('mode') === 'register'
+        ? 'register'
+        : 'login'
+    if (prevAuthRouteKey.current === null) {
+      prevAuthRouteKey.current = rk
+      return
+    }
+    if (prevAuthRouteKey.current === rk) return
+    prevAuthRouteKey.current = rk
+    setErrorMsg('')
+    setIdentifier('')
+    setPassword('')
+    setPasswordConfirm('')
+    setName('')
+    if (next === 'register') setRememberLogin(false)
+    setMode(next)
+  }, [location.pathname, searchParams.toString()])
+
+  useEffect(() => {
+    if (mode !== 'login') return
+    const saved = loadSavedLoginCredentials()
+    if (!saved) return
+    if (saved.identifier) setIdentifier(saved.identifier)
+    if (saved.password) setPassword(saved.password)
+    setRememberLogin(true)
+  }, [mode])
 
   // Auto-detect whether identifier is phone or email
   const isPhone = /^[0-9+\s()-]{7,15}$/.test(identifier.trim())
@@ -89,6 +162,11 @@ export default function AuthPage() {
         const data = await parseJsonResponse(res)
         if (data.success) {
           const user = data.data
+          if (rememberLogin) {
+            saveLoginCredentials(identifier.trim(), password)
+          } else {
+            clearSavedLoginCredentials()
+          }
           if (data.token) localStorage.setItem('auth_token', data.token)
           localStorage.setItem('user_info', JSON.stringify({ id: user._id, name: user.name, identifier: user.email || user.phone, credits: user.coins }))
           localStorage.setItem('giasu_user', JSON.stringify(user))
@@ -114,7 +192,21 @@ export default function AuthPage() {
     }
   }
 
-  const switchMode = (m) => { setMode(m); setErrorMsg(''); setIdentifier(''); setPassword(''); setPasswordConfirm(''); setName('') }
+  const switchMode = (m) => {
+    setMode(m)
+    setErrorMsg('')
+    setIdentifier('')
+    setPassword('')
+    setPasswordConfirm('')
+    setName('')
+    if (m === 'register') setRememberLogin(false)
+  }
+
+  const setAuthMode = (m) => {
+    if (m === mode) return
+    switchMode(m)
+    navigate(m === 'login' ? '/login' : '/register', { replace: true })
+  }
 
   return (
     <div className="authPage-root">
@@ -130,7 +222,7 @@ export default function AuthPage() {
             <div className="authPage-brandHead">
               <div className="authPage-logoRow">
                 <div className="authPage-logoMark">
-                  <GraduationCap size={26} strokeWidth={2} />
+                  <GraduationCap size={22} strokeWidth={2} />
                 </div>
                 <div>
                   <div className="authPage-brandTitle">Gia Sư Tin Học</div>
@@ -139,12 +231,29 @@ export default function AuthPage() {
               </div>
 
               <h2 className="authPage-headline">
-                Học 1 kèm 1<br />
-                <span className="authPage-headlineAccent">trực tiếp và từ xa</span>
+                Học tin học online<br />
+                <span className="authPage-headlineAccent">cùng Gia Sư Tin Học &amp; AI</span>
               </h2>
               <p className="authPage-lead">
                 Nền tảng kết hợp giảng viên và AI trợ giảng — lộ trình rõ ràng, hướng tới chứng chỉ MOS/IC3.
               </p>
+
+              <figure className="authPage-brandVisual" aria-label={AUTH_BRAND_VISUAL.alt}>
+                <div className="authPage-brandVisual-frame">
+                  <img
+                    src={AUTH_BRAND_VISUAL.src}
+                    alt={AUTH_BRAND_VISUAL.alt}
+                    className="authPage-brandVisual-img"
+                    loading="lazy"
+                    decoding="async"
+                    crossOrigin="anonymous"
+                  />
+                  <div className="authPage-brandVisual-cap">
+                    <Sparkles size={14} strokeWidth={2} aria-hidden />
+                    <span>Học online cùng AI — gợi ý từng bước, ôn tập mọi lúc</span>
+                  </div>
+                </div>
+              </figure>
 
               <div className="authPage-features">
                 {[
@@ -155,7 +264,7 @@ export default function AuthPage() {
                 ].map(({ Icon, text }, i) => (
                   <div key={i} className="authPage-feature">
                     <div className="authPage-featureIcon">
-                      <Icon size={18} strokeWidth={2} />
+                      <Icon size={15} strokeWidth={2} />
                     </div>
                     <span className="authPage-featureText">{text}</span>
                   </div>
@@ -169,15 +278,15 @@ export default function AuthPage() {
           </div>
 
           <div className="authPage-formCol">
-            <div className="authPage-tabs" role="tablist">
-              {['login', 'register'].map(m => (
+            <div className="authPage-tabs" role="tablist" aria-label="Chế độ tài khoản">
+              {['login', 'register'].map((m) => (
                 <button
                   key={m}
                   type="button"
                   role="tab"
                   aria-selected={mode === m}
                   className={`authPage-tab ${mode === m ? 'authPage-tabActive' : ''}`}
-                  onClick={() => switchMode(m)}
+                  onClick={() => setAuthMode(m)}
                 >
                   {m === 'login' ? 'Đăng nhập' : 'Đăng ký'}
                 </button>
@@ -195,14 +304,14 @@ export default function AuthPage() {
 
             {sessionBanner && (
               <div className="authPage-alert authPage-alertSession" role="status">
-                <HelpCircle size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+                <HelpCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
                 <span>{sessionBanner}</span>
               </div>
             )}
 
             {errorMsg && (
               <div className="authPage-alert" role="alert">
-                <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+                <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
                 <span>{errorMsg}</span>
               </div>
             )}
@@ -212,7 +321,7 @@ export default function AuthPage() {
                 <div className="authPage-field">
                   <label className="authPage-label" htmlFor="auth-name">Họ và tên</label>
                   <div className="authPage-inputWrap">
-                    <User size={16} className="authPage-inputIcon" aria-hidden />
+                    <User size={14} className="authPage-inputIcon" aria-hidden />
                     <input
                       id="auth-name"
                       className="authPage-input"
@@ -229,7 +338,7 @@ export default function AuthPage() {
               <div className="authPage-field">
                 <label className="authPage-label" htmlFor="auth-id">Email hoặc số điện thoại</label>
                 <div className="authPage-inputWrap">
-                  <AtSign size={16} className="authPage-inputIcon" aria-hidden />
+                  <AtSign size={14} className="authPage-inputIcon" aria-hidden />
                   <input
                     id="auth-id"
                     className={`authPage-input${identifier.trim() ? ' authPage-inputWithBadge' : ''}`}
@@ -259,14 +368,14 @@ export default function AuthPage() {
                       onClick={() => Swal.fire({ icon: 'info', title: 'Quên mật khẩu?', text: 'Liên hệ quản trị viên hoặc hotline trung tâm để được hỗ trợ cấp lại mật khẩu.' })}
                     >
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                        <HelpCircle size={14} aria-hidden />
+                        <HelpCircle size={12} aria-hidden />
                         Quên mật khẩu?
                       </span>
                     </button>
                   )}
                 </div>
                 <div className="authPage-inputWrap">
-                  <Lock size={16} className="authPage-inputIcon" aria-hidden />
+                  <Lock size={14} className="authPage-inputIcon" aria-hidden />
                   <input
                     id="auth-pass"
                     className="authPage-input authPage-inputPadRight"
@@ -278,7 +387,7 @@ export default function AuthPage() {
                     required
                   />
                   <button type="button" className="authPage-toggleEye" onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
-                    {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
@@ -287,7 +396,7 @@ export default function AuthPage() {
                 <div className="authPage-field">
                   <label className="authPage-label" htmlFor="auth-pass2">Xác nhận mật khẩu</label>
                   <div className="authPage-inputWrap">
-                    <Lock size={16} className="authPage-inputIcon" aria-hidden />
+                    <Lock size={14} className="authPage-inputIcon" aria-hidden />
                     <input
                       id="auth-pass2"
                       className="authPage-input authPage-inputPadRight"
@@ -303,22 +412,45 @@ export default function AuthPage() {
                       }}
                     />
                     <button type="button" className="authPage-toggleEye" onClick={() => setShowPass2(!showPass2)} aria-label={showPass2 ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
-                      {showPass2 ? <EyeOff size={18} /> : <Eye size={18} />}
+                      {showPass2 ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                </div>
+              )}
+
+              {mode === 'login' && (
+                <div className="authPage-remember">
+                  <label className="authPage-rememberRow" htmlFor="auth-remember">
+                    <input
+                      id="auth-remember"
+                      type="checkbox"
+                      checked={rememberLogin}
+                      onChange={(e) => {
+                        const checked = e.target.checked
+                        setRememberLogin(checked)
+                        if (!checked) clearSavedLoginCredentials()
+                      }}
+                    />
+                    <span className="authPage-rememberLabel">
+                      Ghi nhớ tên đăng nhập và mật khẩu trên thiết bị này
+                    </span>
+                  </label>
+                  <p className="authPage-rememberHint">
+                    Nên chỉ bật trên máy cá nhân; tránh máy dùng chung hoặc nơi công cộng.
+                  </p>
                 </div>
               )}
 
               <button type="submit" className="authPage-submit" disabled={loading}>
                 {loading ? (
                   <>
-                    <Loader2 size={20} className="authPage-spin" aria-hidden />
+                    <Loader2 size={17} className="authPage-spin" aria-hidden />
                     Đang xử lý…
                   </>
                 ) : (
                   <>
                     {mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
-                    <ArrowRight size={18} aria-hidden />
+                    <ArrowRight size={16} aria-hidden />
                   </>
                 )}
               </button>
@@ -347,8 +479,12 @@ export default function AuthPage() {
             )}
 
             <p className="authPage-footNote">
-              <Lock size={12} aria-hidden />
-              Kết nối mã hóa TLS · Dữ liệu đăng nhập được bảo vệ theo chuẩn ngành
+              <span className="authPage-footNoteIcon" aria-hidden>
+                <Lock size={12} strokeWidth={2} />
+              </span>
+              <span className="authPage-footNoteText">
+                Kết nối mã hóa TLS · Dữ liệu đăng nhập được bảo vệ theo chuẩn ngành
+              </span>
             </p>
           </div>
         </div>
