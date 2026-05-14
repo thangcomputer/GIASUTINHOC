@@ -390,10 +390,12 @@ export default function DepositPage() {
   const [successPkg, setSuccessPkg] = useState(null)
   const [copied, setCopied] = useState('')
   const [packages, setPackages] = useState([])
-  /** Gói đang được nhấn mạnh trên thẻ (mặc định: miễn phí nếu chưa nạp, VIP nếu đã nạp) */
+  /** Gói gợi ý trên thẻ (mặc định: free / VIP tùy tài khoản) — dùng cho dim / gợi ý, không phải «đã chọn» */
   const [highlightedPlanId, setHighlightedPlanId] = useState(() =>
     resolveDefaultHighlightId([], 'month'),
   )
+  /** Chỉ sau khi học viên bấm chọn gói (hoặc đang checkout) mới coi là «ĐANG CHỌN» / viền cam — gợi ý mặc định VIP không tính */
+  const [chosenByUser, setChosenByUser] = useState(false)
   /** @type {'month'|'year'} */
   const [billingCycle, setBillingCycle] = useState('month')
 
@@ -422,6 +424,7 @@ export default function DepositPage() {
 
   useEffect(() => {
     depositHighlightUserSetRef.current = false
+    setChosenByUser(false)
   }, [billingCycle])
 
   useEffect(() => {
@@ -560,6 +563,7 @@ export default function DepositPage() {
     setCheckout(null)
     setConfirmed(true)
     depositHighlightUserSetRef.current = false
+    setChosenByUser(false)
     setHighlightedPlanId(resolveDefaultHighlightId(packages, billingCycle))
     Swal.fire({
       icon: 'success',
@@ -703,6 +707,7 @@ export default function DepositPage() {
         setCheckout(null)
         setConfirmed(true)
         depositHighlightUserSetRef.current = false
+        setChosenByUser(false)
         setHighlightedPlanId(resolveDefaultHighlightId(packages, billingCycle))
       } else {
         Swal.fire('Lỗi', d.message, 'error')
@@ -726,6 +731,7 @@ export default function DepositPage() {
       }
     }
     depositHighlightUserSetRef.current = true
+    setChosenByUser(true)
     const sameFreeReselect = isFree && idEq(highlightedPlanId, pkg.id)
     setHighlightedPlanId(String(pkg.id))
     const paid = Number(pkg.amount) >= 1000 && Number(pkg.credits) > 0
@@ -831,6 +837,7 @@ export default function DepositPage() {
               {visiblePackages.map((pkg) => {
                 const isHighlight = idEq(highlightedPlanId, pkg.id)
                 const inCheckout = idEq(selected?.id, pkg.id)
+                const showChosenUi = (chosenByUser && isHighlight) || inCheckout
                 const featuredId = featuredPlanIdForCycle(billingCycle)
                 const isFeatured = idEq(pkg.id, featuredId)
                 const popularId = popularPlanIdForCycle(billingCycle)
@@ -845,50 +852,50 @@ export default function DepositPage() {
                 const inUseLockedUi = paidUseLocked || freeUseLocked
                 const planCountdownLine =
                   isInUsePlan && !isFreePkg && untilIso ? formatTimeLeftVn(untilIso, clockTick) : ''
-                const showBadges = isFeatured || isHighlight || isPopularTier || isInUsePlan
+                const showBadges = isFeatured || showChosenUi || isPopularTier || isInUsePlan
                 const highlightInList = visiblePackages.some((p) => idEq(p.id, highlightedPlanId))
                 /** VIP «tin dùng» vẫn hiện nhãn, nhưng khi học viên đang chọn gói khác thì hạ độ nổi để thẻ «ĐANG CHỌN» nổi bật hơn */
                 const featuredRecessed =
                   isFeatured && highlightInList && !isHighlight && !isInUsePlan
                 const isDimmed = highlightInList && !isHighlight && !isFeatured && !isInUsePlan
                 /** Viền xanh «đang dùng»; khi đang thanh toán trên đúng thẻ đó thì dùng viền cam checkout */
-                const useGreenChrome = isInUsePlan && !(isHighlight && inCheckout)
+                const useGreenChrome = isInUsePlan && !(showChosenUi && inCheckout)
                 const highlightCardClass =
-                  isInUsePlan && !(isHighlight && inCheckout)
+                  isInUsePlan && !(showChosenUi && inCheckout)
                     ? 'package-card--current-tier'
-                    : isHighlight
+                    : showChosenUi
                       ? 'popular'
                       : ''
                 const iconAccent = useGreenChrome
                   ? '#34d399'
-                  : isHighlight
+                  : showChosenUi
                     ? '#f59e0b'
                     : isFeatured
                       ? '#c4b5fd'
                       : '#6366f1'
                 const pillBg = useGreenChrome
                   ? 'rgba(16,185,129,0.15)'
-                  : isHighlight
+                  : showChosenUi
                     ? 'rgba(245,158,11,0.15)'
                     : isFeatured
                       ? 'rgba(168,85,247,0.14)'
                       : 'rgba(99,102,241,0.12)'
                 const pillColor = useGreenChrome
                   ? '#34d399'
-                  : isHighlight
+                  : showChosenUi
                     ? '#f59e0b'
                     : isFeatured
                       ? '#c4b5fd'
                       : '#818cf8'
                 const pillBorder = useGreenChrome
                   ? 'rgba(16,185,129,0.35)'
-                  : isHighlight
+                  : showChosenUi
                     ? 'rgba(245,158,11,0.3)'
                     : isFeatured
                       ? 'rgba(168,85,247,0.35)'
                       : 'rgba(99,102,241,0.25)'
                 const topBadgeLabel =
-                  inCheckout && isHighlight
+                  inCheckout && showChosenUi
                     ? 'ĐANG CHỌN — thanh toán'
                     : isInUsePlan
                       ? 'ĐANG DÙNG'
@@ -918,7 +925,7 @@ export default function DepositPage() {
                           Phổ biến
                         </div>
                       )}
-                      {(isInUsePlan || isHighlight) && (
+                      {(isInUsePlan || showChosenUi) && (
                         <div className={`popular-badge ${isFeatured || isPopularTier ? 'popular-badge--below' : ''} ${isInUsePlan ? 'popular-badge--current' : ''}`}>
                           <Sparkles size={13} style={{ display: 'inline', marginRight: '4px' }} />
                           {topBadgeLabel}
@@ -1004,10 +1011,10 @@ export default function DepositPage() {
                       ...(inCheckout || useGreenChrome ? { background: 'linear-gradient(135deg,#059669,#10b981)' } : {}),
                     }}
                   >
-                    {isHighlight && !inCheckout && (isInUsePlan ? 'ĐANG DÙNG' : 'ĐANG CHỌN')}
-                    {isInUsePlan && !isHighlight && !inCheckout && 'ĐANG DÙNG'}
-                    {isHighlight && inCheckout && 'ĐANG CHỌN — thanh toán'}
-                    {!isHighlight && !isInUsePlan && `Chọn gói — ${pkg.billingCycle === 'year' ? 'năm' : 'tháng'}`}
+                    {showChosenUi && !inCheckout && (isInUsePlan ? 'ĐANG DÙNG' : 'ĐANG CHỌN')}
+                    {isInUsePlan && !showChosenUi && !inCheckout && 'ĐANG DÙNG'}
+                    {showChosenUi && inCheckout && 'ĐANG CHỌN — thanh toán'}
+                    {!showChosenUi && !isInUsePlan && `Chọn gói — ${pkg.billingCycle === 'year' ? 'năm' : 'tháng'}`}
                   </button>
                 </div>
                 )
